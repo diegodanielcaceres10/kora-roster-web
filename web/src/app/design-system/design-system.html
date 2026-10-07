@@ -1,0 +1,180 @@
+<main class="mx-auto max-w-3xl space-y-10 p-4 pb-24">
+  <header class="space-y-2">
+    <h1>Design system</h1>
+    <p>Elementos básicos de MVP 1, con sus variantes y estados.</p>
+  </header>
+
+  <section class="space-y-3" aria-labelledby="ds-colors">
+    <h2 id="ds-colors">Colores</h2>
+    <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+      @for (color of colors; track color.name) {
+        <div class="overflow-hidden rounded-xl border border-secondary/15">
+          <div class="h-16" [class]="color.swatch"></div>
+          <div class="space-y-1 p-3 text-sm">
+            <p class="font-semibold">{{ color.name }}</p>
+            <p>{{ color.hex }}</p>
+            <p class="text-secondary/70">{{ color.usage }}</p>
+          </div>
+        </div>
+      }
+    </div>
+  </section>
+
+  <section class="space-y-3" aria-labelledby="ds-typography">
+    <h2 id="ds-typography">Tipografía</h2>
+    <h1>Título 1: Amistoso rápido</h1>
+    <h2>Título 2: Pegá la lista</h2>
+    <h3>Título 3: Equipo A</h3>
+    <p>Párrafo: pegá la lista del grupo y armamos los equipos al azar.</p>
+  </section>
+
+  <section class="space-y-3" aria-labelledby="ds-buttons">
+    <h2 id="ds-buttons">Botones</h2>
+    <div class="flex flex-wrap items-start gap-3">
+      @for (variant of variants; track variant) {
+        <ui-button [variant]="variant">{{ variant }}</ui-button>
+      }
+    </div>
+    <div class="flex flex-wrap items-start gap-3">
+      @for (variant of variants; track variant) {
+        <ui-button [variant]="variant" size="lg">{{ variant }} lg</ui-button>
+      }
+    </div>
+    <div class="flex flex-wrap items-start gap-3">
+      @for (variant of variants; track variant) {
+        <ui-button [variant]="variant" [disabled]="true">{{ variant }}</ui-button>
+      }
+    </div>
+    <ui-button>
+      <i class="fa-solid fa-shuffle" aria-hidden="true"></i>
+      Volver a sortear
+    </ui-button>
+  </section>
+
+  <section class="space-y-3" aria-labelledby="ds-icon-buttons">
+    <h2 id="ds-icon-buttons">Botones de ícono</h2>
+    <div class="flex flex-wrap items-center gap-3">
+      <ui-icon-button label="Editar jugador">
+        <i class="fa-solid fa-pencil" aria-hidden="true"></i>
+      </ui-icon-button>
+      <ui-icon-button label="Quitar jugador" variant="danger">
+        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+      </ui-icon-button>
+      <ui-icon-button
+        data-demo="goalkeeper"
+        [label]="goalkeeper() ? 'Quitar arquero' : 'Marcar como arquero'"
+        [pressed]="goalkeeper()"
+        (click)="toggleGoalkeeper()"
+      >
+        <i class="fa-solid fa-mitten" aria-hidden="true"></i>
+      </ui-icon-button>
+      <ui-icon-button label="Copiar texto">
+        <i class="fa-solid fa-copy" aria-hidden="true"></i>
+      </ui-icon-button>
+      <ui-icon-button label="Sortear de nuevo">
+        <i class="fa-solid fa-shuffle" aria-hidden="true"></i>
+      </ui-icon-button>
+      <ui-icon-button label="Editar jugador (deshabilitado)" [disabled]="true">
+        <i class="fa-solid fa-pencil" aria-hidden="true"></i>
+      </ui-icon-button>
+    </div>
+    <p class="text-sm text-secondary/70">
+      El guante marca y desmarca al arquero: {{ goalkeeper() ? 'activado' : 'apagado' }}.
+    </p>
+  </section>
+
+  <section class="space-y-3" aria-labelledby="ds-textarea">
+    <h2 id="ds-textarea">Campo de texto</h2>
+    <ui-textarea label="Vacío" placeholder="Pegá la lista de WhatsApp" [(value)]="empty" />
+    <ui-textarea label="Con texto" [(value)]="filled" />
+    <ui-textarea
+      label="Con ayuda"
+      hint="Una línea por jugador, con o sin número."
+      [rows]="3"
+      [(value)]="withHint"
+    />
+  </section>
+
+  <section class="space-y-3" aria-labelledby="ds-cards">
+    <h2 id="ds-cards">Tarjeta</h2>
+    <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+      @for (team of teams; track team.title) {
+        <ui-card [accent]="team.accent">
+          <h3 card-header>{{ team.title }}</h3>
+          <p>{{ team.players }}</p>
+        </ui-card>
+      }
+    </div>
+    <ui-card>
+      <p>Tarjeta sin acento ni encabezado.</p>
+    </ui-card>
+  </section>
+
+  <section class="space-y-3" aria-labelledby="ds-badges">
+    <h2 id="ds-badges">Etiquetas</h2>
+    <div class="flex flex-wrap gap-2">
+      @for (badge of badges; track badge.tone) {
+        <ui-badge [tone]="badge.tone">{{ badge.text }}</ui-badge>
+      }
+    </div>
+  </section>
+
+  <section class="space-y-3" aria-labelledby="ds-rows">
+    <h2 id="ds-rows">Fila de jugador</h2>
+    <div role="list" class="space-y-1">
+      <ui-list-row>
+        <span row-start class="font-semibold">1</span>
+        <span>Diego</span>
+        <ui-icon-button row-end label="Editar a Diego">
+          <i class="fa-solid fa-pencil" aria-hidden="true"></i>
+        </ui-icon-button>
+        <ui-icon-button row-end label="Quitar a Diego" variant="danger">
+          <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+        </ui-icon-button>
+      </ui-list-row>
+      <ui-list-row [highlight]="true">
+        <span row-start class="font-semibold">2</span>
+        <div class="flex flex-wrap items-center gap-2">
+          <span>Nico</span>
+          <ui-badge tone="primary">Dudoso</ui-badge>
+        </div>
+        <ui-icon-button row-end label="Editar a Nico">
+          <i class="fa-solid fa-pencil" aria-hidden="true"></i>
+        </ui-icon-button>
+        <ui-icon-button row-end label="Quitar a Nico" variant="danger">
+          <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+        </ui-icon-button>
+      </ui-list-row>
+      <ui-list-row>
+        <span row-start class="font-semibold">3</span>
+        <div class="flex flex-wrap items-center gap-2">
+          <span>Mati</span>
+          <ui-badge tone="alternative">Arquero</ui-badge>
+        </div>
+        <ui-icon-button row-end label="Quitar arquero a Mati" [pressed]="true">
+          <i class="fa-solid fa-mitten" aria-hidden="true"></i>
+        </ui-icon-button>
+        <ui-icon-button row-end label="Editar a Mati">
+          <i class="fa-solid fa-pencil" aria-hidden="true"></i>
+        </ui-icon-button>
+        <ui-icon-button row-end label="Quitar a Mati" variant="danger">
+          <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+        </ui-icon-button>
+      </ui-list-row>
+    </div>
+  </section>
+
+  <section class="space-y-3" aria-labelledby="ds-segmented">
+    <h2 id="ds-segmented">Selector de idioma</h2>
+    <ui-segmented label="Idioma" [options]="languages" [(value)]="language" />
+    <p class="text-sm text-secondary/70">Seleccionado: {{ language() }}</p>
+  </section>
+
+  <section class="space-y-3" aria-labelledby="ds-toast">
+    <h2 id="ds-toast">Aviso</h2>
+    <ui-button data-demo="toast" variant="secondary" (click)="showToast()">
+      <i class="fa-solid fa-copy" aria-hidden="true"></i>
+      Copiar lista
+    </ui-button>
+  </section>
+</main>
