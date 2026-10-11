@@ -5,9 +5,9 @@ export interface ParsedPlayerName {
 
 // List markers: "1.", "1)", "1 -", "1:", keycap digits, the keycap ten, or a bullet.
 // A separator followed by a digit is not a marker ("21:30", "1.5"), and a
-// "*" only counts as a bullet when whitespace follows it (otherwise it is bold).
+// "*" only counts as a bullet when whitespace or the end of the line follows it (otherwise it is bold).
 const LEADING_MARKER_REGEX =
-  /^\s*(?:(?:\d\uFE0F?\u20E3)+|\u{1F51F}|\d+\s*[.)\-–—:](?!\d)|[-•–—]|\*(?=\s))\s*/u;
+  /^\s*(?:(?:\d\uFE0F?\u20E3)+|\u{1F51F}|\d+\s*[.)\-–—:](?!\d)|[-•–—]|\*(?=\s|$))\s*/u;
 
 const GOALKEEPER_MARKER_SOURCE =
   '\\(\\s*(?:arquero|portero|guardameta|goleiro|goleira|goalkeeper|goalkeper|goalie|gk|🧤)\\s*\\)|🧤';

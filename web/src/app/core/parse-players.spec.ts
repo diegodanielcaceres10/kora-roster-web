@@ -100,6 +100,14 @@ describe('parsePastedNames', () => {
     },
   );
 
+  it.each([['*'], ['* '], ['- \n * ']])('ignores lines that hold only a bullet: %j', (input) => {
+    expect(names(input)).toEqual([]);
+  });
+
+  it('skips empty bullet lines between names', () => {
+    expect(names('- Diego\n*\n- Mati')).toEqual(['Diego', 'Mati']);
+  });
+
   it('keeps an asterisk that is not a bullet and not a pair', () => {
     expect(names('*Diego')).toEqual(['*Diego']);
   });

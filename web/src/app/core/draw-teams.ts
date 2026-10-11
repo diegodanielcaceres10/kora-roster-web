@@ -6,6 +6,14 @@ export type DrawError = 'too-few' | 'too-many' | 'odd';
 export type DrawResult<T> =
   { ok: true; teams: [T[], T[]] } | { ok: false; error: DrawError; count: number };
 
+// The range is checked before the parity, so 9 players are "too few", not "odd".
+export function checkPlayerCount(count: number): DrawError | null {
+  if (count < MIN_PLAYERS) return 'too-few';
+  if (count > MAX_PLAYERS) return 'too-many';
+  if (count % 2 !== 0) return 'odd';
+  return null;
+}
+
 // Fisher-Yates on a copy, so the caller's list is never touched.
 function shuffled<T>(items: readonly T[], random: () => number): T[] {
   const copy = [...items];
@@ -21,9 +29,8 @@ export function drawTeams<T extends { isGoalkeeper: boolean }>(
   random: () => number = Math.random,
 ): DrawResult<T> {
   const count = players.length;
-  if (count < MIN_PLAYERS) return { ok: false, error: 'too-few', count };
-  if (count > MAX_PLAYERS) return { ok: false, error: 'too-many', count };
-  if (count % 2 !== 0) return { ok: false, error: 'odd', count };
+  const error = checkPlayerCount(count);
+  if (error) return { ok: false, error, count };
 
   const keepers = shuffled(
     players.filter((p) => p.isGoalkeeper),

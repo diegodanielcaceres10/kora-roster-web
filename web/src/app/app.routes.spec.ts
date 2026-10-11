@@ -4,6 +4,7 @@ import { RouterTestingHarness } from '@angular/router/testing';
 import { routes } from './app.routes';
 import { DICTIONARIES } from './i18n/dictionaries';
 import { I18n } from './i18n/i18n';
+import { AmistosoStore } from './state/amistoso.store';
 
 async function open(url: string) {
   TestBed.configureTestingModule({ providers: [provideRouter(routes)] });
@@ -34,7 +35,7 @@ describe('app routes', () => {
     async (lang) => {
       const { root, i18n } = await open(`/${lang}/amistoso`);
       expect(i18n.lang()).toBe(lang);
-      expect(heading(root)).toContain(DICTIONARIES[lang].meta.tool.title);
+      expect(heading(root)).toContain(DICTIONARIES[lang].tool.heading);
     },
   );
 
@@ -80,6 +81,28 @@ describe('app routes', () => {
     portuguese.click();
     await harness.fixture.whenStable();
     expect(router.url).toBe('/pt/amistoso');
-    expect(heading(root)).toContain(DICTIONARIES.pt.meta.tool.title);
+    expect(heading(root)).toContain(DICTIONARIES.pt.tool.heading);
+  });
+
+  it('keeps the pasted list when the language changes', async () => {
+    const { harness, root, router } = await open('/es/amistoso');
+    const store = TestBed.inject(AmistosoStore);
+    const field = root.querySelector('textarea') as HTMLTextAreaElement;
+    field.value = Array.from({ length: 12 }, (_, i) => `Player ${i + 1}`).join('\n');
+    field.dispatchEvent(new Event('input'));
+    harness.fixture.detectChanges();
+    (root.querySelector('ui-button button') as HTMLButtonElement).click();
+    harness.fixture.detectChanges();
+    expect(root.textContent).toContain(DICTIONARIES.es.tool.preview.count(12));
+
+    const portuguese = Array.from(root.querySelectorAll('[role="radio"]')).find(
+      (r) => r.textContent?.trim() === 'PT',
+    ) as HTMLButtonElement;
+    portuguese.click();
+    await harness.fixture.whenStable();
+
+    expect(router.url).toBe('/pt/amistoso');
+    expect(store.players()).toHaveLength(12);
+    expect(root.textContent).toContain(DICTIONARIES.pt.tool.preview.count(12));
   });
 });

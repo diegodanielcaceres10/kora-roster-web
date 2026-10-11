@@ -1,4 +1,4 @@
-import { drawTeams, DrawResult } from './draw-teams';
+import { checkPlayerCount, drawTeams, DrawResult } from './draw-teams';
 
 interface Player {
   name: string;
@@ -148,5 +148,32 @@ describe('drawTeams', () => {
         }
       }
     });
+  });
+});
+
+describe('checkPlayerCount', () => {
+  it.each([
+    [0, 'too-few'],
+    [9, 'too-few'],
+    [23, 'too-many'],
+    [24, 'too-many'],
+    [11, 'odd'],
+    [13, 'odd'],
+    [21, 'odd'],
+  ])('reports %i players as %s', (count, error) => {
+    expect(checkPlayerCount(count)).toBe(error);
+  });
+
+  it.each([10, 12, 16, 22])('accepts %i players', (count) => {
+    expect(checkPlayerCount(count)).toBeNull();
+  });
+
+  it('agrees with drawTeams for every count from 0 to 30', () => {
+    for (let count = 0; count <= 30; count++) {
+      const error = checkPlayerCount(count);
+      const result = drawTeams(squad(count), seeded(1));
+      expect(result.ok, `count ${count}`).toBe(error === null);
+      if (!result.ok) expect(result.error, `count ${count}`).toBe(error);
+    }
   });
 });
