@@ -26,7 +26,7 @@ describe('app routes', () => {
   it.each(['en', 'es', 'pt'] as const)('shows the landing in its language at /%s', async (lang) => {
     const { root, i18n } = await open(`/${lang}`);
     expect(i18n.lang()).toBe(lang);
-    expect(heading(root)).toContain(DICTIONARIES[lang].meta.landing.title);
+    expect(heading(root)).toContain(DICTIONARIES[lang].landing.hero.title);
     expect(document.documentElement.lang).toBe(lang);
   });
 
@@ -104,5 +104,37 @@ describe('app routes', () => {
     expect(router.url).toBe('/pt/amistoso');
     expect(store.players()).toHaveLength(12);
     expect(root.textContent).toContain(DICTIONARIES.pt.tool.preview.count(12));
+  });
+
+  it.each(['en', 'es', 'pt'] as const)(
+    'leads from the landing to the tool in the same language: /%s',
+    async (lang) => {
+      const { harness, root, router } = await open(`/${lang}`);
+      (root.querySelector(`main a[href="/${lang}/amistoso"]`) as HTMLAnchorElement).click();
+      await harness.fixture.whenStable();
+      expect(router.url).toBe(`/${lang}/amistoso`);
+      expect(heading(root)).toContain(DICTIONARIES[lang].tool.heading);
+    },
+  );
+
+  it('brings the person back to the list they left when they return from the landing', async () => {
+    const { harness, root, router } = await open('/es/amistoso');
+    const field = root.querySelector('textarea') as HTMLTextAreaElement;
+    field.value = Array.from({ length: 12 }, (_, i) => `Player ${i + 1}`).join('\n');
+    field.dispatchEvent(new Event('input'));
+    harness.fixture.detectChanges();
+    (root.querySelector('ui-button button') as HTMLButtonElement).click();
+    harness.fixture.detectChanges();
+    expect(root.textContent).toContain(DICTIONARIES.es.tool.preview.count(12));
+
+    (root.querySelector('header a') as HTMLAnchorElement).click();
+    await harness.fixture.whenStable();
+    expect(router.url).toBe('/es');
+    expect(heading(root)).toContain(DICTIONARIES.es.landing.hero.title);
+
+    (root.querySelector('main a[href="/es/amistoso"]') as HTMLAnchorElement).click();
+    await harness.fixture.whenStable();
+    expect(router.url).toBe('/es/amistoso');
+    expect(root.textContent).toContain(DICTIONARIES.es.tool.preview.count(12));
   });
 });

@@ -16,6 +16,41 @@ export const es: Dictionary = {
         'Pega la lista, revisa los nombres, sortea dos equipos y copia el mensaje para tu grupo de WhatsApp.',
     },
   },
+  landing: {
+    hero: {
+      title: 'Arma los equipos del partido en segundos',
+      subtitle:
+        'Pega la lista del grupo de WhatsApp y Kora limpia los nombres, sortea dos equipos parejos y te deja el mensaje listo para enviar.',
+      cta: 'Amistoso rápido',
+    },
+    benefits: {
+      title: 'Por qué Kora',
+      noAccount: {
+        title: 'Sin cuenta, sin instalar nada',
+        text: 'Abres la página, pegas la lista y listo. Funciona en el móvil.',
+      },
+      anyList: {
+        title: 'Entiende cualquier lista',
+        text: 'Números, viñetas, emojis y negritas: Kora se queda solo con los nombres.',
+      },
+      fairDraw: {
+        title: 'Sorteo justo, con arqueros repartidos',
+        text: 'Equipos del mismo tamaño y los arqueros en lados opuestos.',
+      },
+    },
+    steps: {
+      title: 'Cómo funciona',
+      paste: { title: 'Pega la lista', text: 'Cópiala del grupo de WhatsApp tal como está.' },
+      check: {
+        title: 'Revisa los nombres',
+        text: 'Corrige uno, quita a alguien o marca a los arqueros.',
+      },
+      draw: {
+        title: 'Sortea y copia',
+        text: 'Vuelve a sortear cuantas veces quieras y copia el texto para el grupo.',
+      },
+    },
+  },
   tool: {
     heading: 'Amistoso rápido',
     teamTitle: (n) => `Equipo ${n}`,

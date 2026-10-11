@@ -16,6 +16,41 @@ export const pt: Dictionary = {
         'Cole a lista, confira os nomes, sorteie dois times e copie a mensagem para o seu grupo do WhatsApp.',
     },
   },
+  landing: {
+    hero: {
+      title: 'Monte os times da partida em segundos',
+      subtitle:
+        'Cole a lista do grupo do WhatsApp e o Kora limpa os nomes, sorteia dois times equilibrados e deixa a mensagem pronta para enviar.',
+      cta: 'Amistoso rápido',
+    },
+    benefits: {
+      title: 'Por que o Kora',
+      noAccount: {
+        title: 'Sem conta, sem instalar nada',
+        text: 'Abra a página, cole a lista e pronto. Funciona no celular.',
+      },
+      anyList: {
+        title: 'Entende qualquer lista',
+        text: 'Números, marcadores, emojis e negrito: o Kora fica só com os nomes.',
+      },
+      fairDraw: {
+        title: 'Sorteio justo, com goleiros separados',
+        text: 'Times do mesmo tamanho e os goleiros em lados opostos.',
+      },
+    },
+    steps: {
+      title: 'Como funciona',
+      paste: { title: 'Cole a lista', text: 'Copie do grupo do WhatsApp do jeito que está.' },
+      check: {
+        title: 'Confira os nomes',
+        text: 'Corrija um nome, remova alguém ou marque os goleiros.',
+      },
+      draw: {
+        title: 'Sorteie e copie',
+        text: 'Sorteie de novo quantas vezes quiser e copie o texto para o grupo.',
+      },
+    },
+  },
   tool: {
     heading: 'Amistoso rápido',
     teamTitle: (n) => `Time ${n}`,
