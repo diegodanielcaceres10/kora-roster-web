@@ -45,11 +45,11 @@ describe('app routes', () => {
     expect(root.querySelector('footer')).not.toBeNull();
   });
 
-  it('keeps /design-system outside the languages and without the shared header', async () => {
-    const { root, i18n } = await open('/design-system');
-    expect(heading(root)).toContain('Design system');
-    expect(i18n.lang()).toBe('en');
-    expect(root.querySelector('app-language-selector')).toBeNull();
+  it('no longer has a /design-system page: it goes through the language choice', async () => {
+    Object.defineProperty(navigator, 'languages', { value: ['es'], configurable: true });
+    const { harness, router } = await open('/design-system');
+    await harness.fixture.whenStable();
+    expect(router.url).toBe('/es');
   });
 
   it('sends "/" to the first supported browser language', async () => {
