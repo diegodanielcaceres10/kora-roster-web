@@ -1,13 +1,15 @@
+import { Provider } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { routes } from './app.routes';
+import { makeCredential, provideFakeGoogle } from './auth/testing';
 import { DICTIONARIES } from './i18n/dictionaries';
 import { I18n } from './i18n/i18n';
 import { AmistosoStore } from './state/amistoso.store';
 
-async function open(url: string) {
-  TestBed.configureTestingModule({ providers: [provideRouter(routes)] });
+async function open(url: string, providers: Provider[] = []) {
+  TestBed.configureTestingModule({ providers: [provideRouter(routes), ...providers] });
   const harness = await RouterTestingHarness.create();
   await harness.navigateByUrl(url);
   const root = harness.fixture.nativeElement as HTMLElement;
@@ -136,5 +138,94 @@ describe('app routes', () => {
     await harness.fixture.whenStable();
     expect(router.url).toBe('/es/amistoso');
     expect(root.textContent).toContain(DICTIONARIES.es.tool.preview.count(12));
+  });
+
+  describe('the account', () => {
+    const pickAccount = async (
+      fake: { pick(credential: string): void },
+      harness: { fixture: { whenStable(): Promise<unknown>; detectChanges(): void } },
+    ) => {
+      harness.fixture.detectChanges();
+      await harness.fixture.whenStable();
+      fake.pick(makeCredential());
+      harness.fixture.detectChanges();
+      await harness.fixture.whenStable();
+      harness.fixture.detectChanges();
+    };
+
+    afterEach(() => localStorage.clear());
+
+    it.each(['en', 'es', 'pt'] as const)(
+      'shows the account page in its language at /%s/cuenta',
+      async (lang) => {
+        const { root, i18n } = await open(`/${lang}/cuenta`);
+        expect(i18n.lang()).toBe(lang);
+        expect(heading(root)).toContain(DICTIONARIES[lang].account.title);
+      },
+    );
+
+    it('has no sign in link in the header while sign in is off', async () => {
+      const { root } = await open('/es');
+      expect(root.querySelector('header a[href$="/cuenta"]')).toBeNull();
+    });
+
+    it('goes from the header link to the account page, signs in, and the header shows the photo', async () => {
+      const google = provideFakeGoogle();
+      const { harness, root, router } = await open('/es', google.providers);
+      (root.querySelector('header a[href="/es/cuenta"]') as HTMLAnchorElement).click();
+      await harness.fixture.whenStable();
+      expect(router.url).toBe('/es/cuenta');
+
+      await pickAccount(google.fake, harness);
+      expect(root.querySelector('main')?.textContent).toContain('diego@example.com');
+      expect(root.querySelector('header app-user-avatar img')).not.toBeNull();
+    });
+
+    it('is still signed in after the page is reloaded', async () => {
+      const first = provideFakeGoogle();
+      const opened = await open('/es/cuenta', first.providers);
+      await pickAccount(first.fake, opened.harness);
+
+      TestBed.resetTestingModule();
+      const second = provideFakeGoogle();
+      const { root } = await open('/es/cuenta', second.providers);
+      expect(root.querySelector('main')?.textContent).toContain('diego@example.com');
+      expect(second.fake.hosts).toHaveLength(0);
+    });
+
+    it('stays signed in when the language changes', async () => {
+      const google = provideFakeGoogle();
+      const { harness, root, router } = await open('/es/cuenta', google.providers);
+      await pickAccount(google.fake, harness);
+
+      const portuguese = Array.from(root.querySelectorAll('[role="radio"]')).find(
+        (r) => r.textContent?.trim() === 'PT',
+      ) as HTMLButtonElement;
+      portuguese.click();
+      await harness.fixture.whenStable();
+      harness.fixture.detectChanges();
+
+      expect(router.url).toBe('/pt/cuenta');
+      expect(heading(root)).toContain(DICTIONARIES.pt.account.title);
+      expect(root.querySelector('main')?.textContent).toContain('diego@example.com');
+    });
+
+    it('signs out and the header offers to sign in again', async () => {
+      const google = provideFakeGoogle();
+      const { harness, root } = await open('/es/cuenta', google.providers);
+      await pickAccount(google.fake, harness);
+
+      const signOut = Array.from(root.querySelectorAll('main ui-button button')).find(
+        (b) => b.textContent?.trim() === DICTIONARIES.es.account.signOut,
+      ) as HTMLButtonElement;
+      signOut.click();
+      await harness.fixture.whenStable();
+      harness.fixture.detectChanges();
+
+      expect(root.querySelector('header app-user-avatar')).toBeNull();
+      expect(root.querySelector('header a[href="/es/cuenta"]')?.textContent?.trim()).toBe(
+        DICTIONARIES.es.account.signInLink,
+      );
+    });
   });
 });

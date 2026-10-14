@@ -5,9 +5,10 @@ import { I18n } from './i18n';
 import { DEFAULT_LANG, Lang, SUPPORTED_LANGS } from './languages';
 import { SITE_URL } from './site';
 
-export type PageKind = 'landing' | 'tool';
+export type PageKind = 'landing' | 'tool' | 'account';
 
-const PATHS: Record<PageKind, string> = { landing: '', tool: '/amistoso' };
+// Pages that search engines may index, with the path that follows the language.
+const INDEXED_PATHS: Partial<Record<PageKind, string>> = { landing: '', tool: '/amistoso' };
 
 @Injectable({ providedIn: 'root' })
 export class PageMeta {
@@ -21,16 +22,23 @@ export class PageMeta {
     const { title, description } = this.i18n.t().meta[kind];
     this.title.setTitle(title);
     this.meta.updateTag({ name: 'description', content: description });
+    this.updateRobots(kind);
     this.updateLinks(kind);
+  }
+
+  private updateRobots(kind: PageKind): void {
+    if (kind === 'account') this.meta.updateTag({ name: 'robots', content: 'noindex' });
+    else this.meta.removeTag('name="robots"');
   }
 
   private updateLinks(kind: PageKind): void {
     this.document.head.querySelectorAll('link[data-kora-seo]').forEach((el) => el.remove());
 
+    const path = INDEXED_PATHS[kind];
     const origin = this.siteUrl.replace(/\/+$/, '');
-    if (!origin) return;
+    if (path === undefined || !origin) return;
 
-    const urlFor = (lang: Lang) => `${origin}/${lang}${PATHS[kind]}`;
+    const urlFor = (lang: Lang) => `${origin}/${lang}${path}`;
     this.addLink('canonical', urlFor(this.i18n.lang()));
     for (const lang of SUPPORTED_LANGS) this.addLink('alternate', urlFor(lang), lang);
     this.addLink('alternate', urlFor(DEFAULT_LANG), 'x-default');

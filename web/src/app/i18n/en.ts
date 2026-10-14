@@ -13,6 +13,21 @@ export const en = {
       description:
         'Paste the list, check the names, draw two teams and copy the message for your WhatsApp group.',
     },
+    account: {
+      title: 'My account – Kora Roster',
+      description: 'Sign in with Google and manage your Kora Roster preferences.',
+    },
+  },
+  account: {
+    title: 'My account',
+    signInLink: 'Sign in',
+    signInPrompt: 'Sign in with your Google account to save your preferences on this device.',
+    unavailable: 'Signing in is not available yet.',
+    scriptError: 'Could not load Google sign-in. Check your connection and try again.',
+    invalidToken: 'The sign-in could not be verified. Try again.',
+    signOut: 'Sign out',
+    nameLabel: 'Name',
+    emailLabel: 'Email',
   },
   landing: {
     hero: {

@@ -19,7 +19,7 @@ function setup(siteUrl?: string) {
 describe('PageMeta', () => {
   afterEach(() => {
     document.head
-      .querySelectorAll('link[data-kora-seo], meta[name="description"]')
+      .querySelectorAll('link[data-kora-seo], meta[name="description"], meta[name="robots"]')
       .forEach((el) => el.remove());
     document.title = '';
     document.documentElement.lang = 'en';
@@ -86,5 +86,42 @@ describe('PageMeta', () => {
     const { pageMeta } = setup('https://kora.test/');
     pageMeta.apply('landing');
     expect(links('canonical')[0].href).toBe('https://kora.test/en');
+  });
+
+  describe('the account page', () => {
+    const robots = () =>
+      document.head.querySelector('meta[name="robots"]')?.getAttribute('content');
+
+    it('has its own title and description in the current language', () => {
+      const { i18n, pageMeta } = setup();
+      i18n.setLang('es');
+      pageMeta.apply('account');
+      expect(document.title).toBe(DICTIONARIES.es.meta.account.title);
+      expect(description()).toBe(DICTIONARIES.es.meta.account.description);
+    });
+
+    it('is kept out of search results', () => {
+      const { pageMeta } = setup();
+      pageMeta.apply('account');
+      expect(robots()).toBe('noindex');
+    });
+
+    it('lets the other pages be indexed again', () => {
+      const { pageMeta } = setup();
+      pageMeta.apply('account');
+      pageMeta.apply('landing');
+      expect(robots()).toBeUndefined();
+      pageMeta.apply('account');
+      pageMeta.apply('tool');
+      expect(robots()).toBeUndefined();
+    });
+
+    it('writes no canonical or alternate links, even once SITE_URL is set', () => {
+      const { pageMeta } = setup('https://kora.test');
+      pageMeta.apply('landing');
+      pageMeta.apply('account');
+      expect(links('canonical')).toHaveLength(0);
+      expect(links('alternate')).toHaveLength(0);
+    });
   });
 });

@@ -127,5 +127,10 @@ Not components, but just as easy to duplicate by accident:
 - `i18n/`: the `I18n` service (`lang()`, `t()`), the dictionaries (`en.ts` defines the type,
   `es.ts` and `pt.ts` must match), `PageMeta` (title, description, canonical and hreflang),
   `SITE_URL`, `LanguageSelector` and `switchLanguageUrl`.
+- `auth/`: `Auth` (`user()`, `enabled`, `renderButton`, `signOut`) knows who signed in with
+  Google; `GOOGLE_CLIENT_ID` turns sign in on (empty means off); `UserAvatar` shows a person's
+  photo or initial; `browserStorage` reads the page storage safely. Talk to Google only through
+  `Auth`, never directly.
 - `state/`: `AmistosoStore`, the NgRx Signals store of the quick match flow.
-- `layout/shell.ts`: the header, language selector and footer shared by every language route.
+- `layout/shell.ts`: the header (logo, account link or photo, language selector) and footer
+  shared by every language route.

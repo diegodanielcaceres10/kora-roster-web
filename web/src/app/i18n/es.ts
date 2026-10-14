@@ -15,6 +15,23 @@ export const es: Dictionary = {
       description:
         'Pega la lista, revisa los nombres, sortea dos equipos y copia el mensaje para tu grupo de WhatsApp.',
     },
+    account: {
+      title: 'Mi cuenta – Kora Roster',
+      description: 'Inicia sesión con Google y gestiona tus preferencias de Kora Roster.',
+    },
+  },
+  account: {
+    title: 'Mi cuenta',
+    signInLink: 'Iniciar sesión',
+    signInPrompt:
+      'Inicia sesión con tu cuenta de Google para guardar tus preferencias en este dispositivo.',
+    unavailable: 'El inicio de sesión todavía no está disponible.',
+    scriptError:
+      'No se pudo cargar el inicio de sesión de Google. Revisa tu conexión e inténtalo de nuevo.',
+    invalidToken: 'No se pudo verificar el inicio de sesión. Inténtalo de nuevo.',
+    signOut: 'Cerrar sesión',
+    nameLabel: 'Nombre',
+    emailLabel: 'Correo',
   },
   landing: {
     hero: {

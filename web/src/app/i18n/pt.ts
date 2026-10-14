@@ -15,6 +15,22 @@ export const pt: Dictionary = {
       description:
         'Cole a lista, confira os nomes, sorteie dois times e copie a mensagem para o seu grupo do WhatsApp.',
     },
+    account: {
+      title: 'Minha conta – Kora Roster',
+      description: 'Entre com o Google e gerencie suas preferências do Kora Roster.',
+    },
+  },
+  account: {
+    title: 'Minha conta',
+    signInLink: 'Entrar',
+    signInPrompt: 'Entre com sua conta do Google para salvar suas preferências neste dispositivo.',
+    unavailable: 'O login ainda não está disponível.',
+    scriptError:
+      'Não foi possível carregar o login do Google. Verifique sua conexão e tente novamente.',
+    invalidToken: 'Não foi possível verificar o login. Tente novamente.',
+    signOut: 'Sair',
+    nameLabel: 'Nome',
+    emailLabel: 'E-mail',
   },
   landing: {
     hero: {

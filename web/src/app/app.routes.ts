@@ -18,6 +18,10 @@ export const routes: Routes = [
         path: 'amistoso',
         loadComponent: () => import('./pages/tool/tool').then((m) => m.Tool),
       },
+      {
+        path: 'cuenta',
+        loadComponent: () => import('./pages/account/account').then((m) => m.Account),
+      },
     ],
   })),
   { path: '**', redirectTo: '' },
