@@ -14,11 +14,12 @@ import { UserAvatar } from '../../auth/user-avatar';
 import { I18n } from '../../i18n/i18n';
 import { PageMeta } from '../../i18n/page-meta';
 import { UiButton } from '../../ui';
+import { PreferencesEditor } from './preferences-editor';
 
 @Component({
   selector: 'app-account',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [UiButton, UserAvatar],
+  imports: [UiButton, UserAvatar, PreferencesEditor],
   template: `
     <section class="mx-auto max-w-3xl space-y-6 p-4">
       <h1>{{ t().title }}</h1>
@@ -40,6 +41,7 @@ import { UiButton } from '../../ui';
           </dl>
         </div>
         <ui-button variant="outline" (click)="signOut()">{{ t().signOut }}</ui-button>
+        <app-preferences-editor />
       } @else {
         <p>{{ t().signInPrompt }}</p>
         <div #googleButton data-google-button></div>

@@ -32,6 +32,31 @@ export const pt: Dictionary = {
     nameLabel: 'Nome',
     emailLabel: 'E-mail',
   },
+  preferences: {
+    title: 'Preferências',
+    description:
+      'Ficam salvas neste dispositivo e são usadas quando você monta times com a sessão iniciada.',
+    playersPerTeam: { label: 'Jogadores por time', any: 'Qualquer' },
+    teams: {
+      iconLabel: (team) => `${team}: ícone`,
+      colorLabel: (team) => `${team}: cor`,
+    },
+    template: {
+      header: 'Cabeçalho da mensagem',
+      headerPlaceholder: 'Por exemplo: Amistoso de quinta às 21h',
+      footer: 'Rodapé da mensagem',
+      footerPlaceholder: 'Por exemplo: Confirmem presença',
+      numbering: 'Numeração',
+      numberingDot: '1. Nome',
+      numberingParen: '1) Nome',
+      numberingDash: '1- Nome',
+      numberingNone: 'Sem números',
+    },
+    preview: { title: 'Prévia' },
+    save: 'Salvar',
+    saved: 'Salvo',
+    restore: 'Restaurar padrões',
+  },
   landing: {
     hero: {
       title: 'Monte os times da partida em segundos',

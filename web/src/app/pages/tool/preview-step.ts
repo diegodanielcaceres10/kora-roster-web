@@ -3,7 +3,6 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
-  ElementRef,
   inject,
   Injector,
   signal,
@@ -11,13 +10,13 @@ import {
 } from '@angular/core';
 import { MAX_PLAYERS, MIN_PLAYERS } from '../../core/draw-teams';
 import { I18n } from '../../i18n/i18n';
-import { AmistosoStore } from '../../state/amistoso.store';
-import { UiBadge, UiButton, UiIconButton, UiListRow } from '../../ui';
+import { AmistosoStore, Player } from '../../state/amistoso.store';
+import { UiBadge, UiButton, UiIconButton, UiInput, UiListRow } from '../../ui';
 
 @Component({
   selector: 'app-preview-step',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [UiBadge, UiButton, UiIconButton, UiListRow],
+  imports: [UiBadge, UiButton, UiIconButton, UiInput, UiListRow],
   template: `
     <section class="space-y-4">
       <h2>{{ t().preview.title }}</h2>
@@ -32,15 +31,14 @@ import { UiBadge, UiButton, UiIconButton, UiListRow } from '../../ui';
           <ui-list-row>
             <span row-start class="inline-block w-6 text-right font-semibold">{{ i + 1 }}</span>
             @if (editingId() === player.id) {
-              <input
-                #editor
-                type="text"
-                class="w-full rounded-lg border border-secondary/30 bg-white px-3 py-2 text-base text-secondary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary"
-                [attr.aria-label]="t().preview.nameLabel"
-                [value]="player.name"
-                (keydown.enter)="save(player.id, editor.value)"
+              <ui-input
+                [label]="t().preview.nameLabel"
+                [labelHidden]="true"
+                [value]="draftName()"
+                (valueChange)="draftName.set($event)"
+                (keydown.enter)="save(player.id)"
                 (keydown.escape)="cancel()"
-                (blur)="save(player.id, editor.value)"
+                (focusout)="save(player.id)"
               />
             } @else {
               <div class="flex flex-wrap items-center gap-2">
@@ -65,7 +63,7 @@ import { UiBadge, UiButton, UiIconButton, UiListRow } from '../../ui';
             <ui-icon-button
               row-end
               [label]="t().preview.edit(player.name)"
-              (click)="startEdit(player.id)"
+              (click)="startEdit(player)"
             >
               <i class="fa-solid fa-pencil" aria-hidden="true"></i>
             </ui-icon-button>
@@ -97,7 +95,8 @@ export class PreviewStep {
 
   protected readonly t = computed(() => this.i18n.t().tool);
   protected readonly editingId = signal<string | null>(null);
-  private readonly editor = viewChild<ElementRef<HTMLInputElement>>('editor');
+  protected readonly draftName = signal('');
+  private readonly editor = viewChild(UiInput);
 
   protected readonly status = computed(() => {
     const { status } = this.t().preview;
@@ -118,23 +117,23 @@ export class PreviewStep {
     this.store.canDraw() ? 'text-alternative' : 'text-red-700',
   );
 
-  protected startEdit(id: string): void {
-    this.editingId.set(id);
+  protected startEdit(player: Player): void {
+    this.draftName.set(player.name);
+    this.editingId.set(player.id);
     afterNextRender(
       () => {
-        const input = this.editor()?.nativeElement;
-        input?.focus();
-        input?.select();
+        this.editor()?.focus();
+        this.editor()?.select();
       },
       { injector: this.injector },
     );
   }
 
-  // Enter and blur both save. Closing the field after Escape can fire a blur too,
-  // which must not save, so only the row that is still being edited is saved.
-  protected save(id: string, value: string): void {
+  // Enter and losing focus both save. Closing the field after Escape can fire a focusout
+  // too, which must not save, so only the row that is still being edited is saved.
+  protected save(id: string): void {
     if (this.editingId() !== id) return;
-    this.store.renamePlayer(id, value);
+    this.store.renamePlayer(id, this.draftName());
     this.editingId.set(null);
   }
 

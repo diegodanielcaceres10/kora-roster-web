@@ -149,4 +149,27 @@ describe('Account page', () => {
       );
     });
   });
+
+  describe('the preferences', () => {
+    it('are not offered while signed out', async () => {
+      const { el } = await setup();
+      expect(el.querySelector('app-preferences-editor')).toBeNull();
+    });
+
+    it('are offered once the person signs in, and go away when they sign out', async () => {
+      const { el, fake, settle, signOutButton } = await setup();
+      fake.pick(makeCredential());
+      await settle();
+      expect(el.querySelector('app-preferences-editor')).not.toBeNull();
+      (signOutButton() as HTMLButtonElement).click();
+      await settle();
+      expect(el.querySelector('app-preferences-editor')).toBeNull();
+    });
+
+    it('are offered right away to a session that was already saved', async () => {
+      localStorage.setItem(SESSION_KEY, JSON.stringify(SAVED));
+      const { el } = await setup();
+      expect(el.querySelector('app-preferences-editor')).not.toBeNull();
+    });
+  });
 });

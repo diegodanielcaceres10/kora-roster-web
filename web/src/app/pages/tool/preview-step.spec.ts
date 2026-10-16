@@ -33,11 +33,17 @@ function setup(text: string) {
     fixture.detectChanges();
   };
   const blur = () => {
-    editor()?.dispatchEvent(new Event('blur'));
+    editor()?.dispatchEvent(new FocusEvent('focusout', { bubbles: true }));
     fixture.detectChanges();
   };
   const names = () => store.players().map((p) => p.name);
-  return { fixture, el, store, rows, byLabel, byText, editor, click, press, blur, names };
+  const type = (value: string) => {
+    const field = editor() as HTMLInputElement;
+    field.value = value;
+    field.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+  };
+  return { fixture, el, store, rows, byLabel, byText, editor, click, press, blur, names, type };
 }
 
 describe('PreviewStep', () => {
@@ -129,49 +135,51 @@ describe('PreviewStep', () => {
 
   describe('editing a name', () => {
     it('opens a field with the current name and focuses it', async () => {
-      const { fixture, editor, byLabel, click } = setup('Diego\nMati');
+      const { fixture, el, editor, byLabel, click } = setup('Diego\nMati');
       click(byLabel(T.preview.edit('Mati')));
       await fixture.whenStable();
       expect(editor()?.value).toBe('Mati');
-      expect(editor()?.getAttribute('aria-label')).toBe(T.preview.nameLabel);
+      const label = el.querySelector('label.sr-only') as HTMLLabelElement;
+      expect(label.textContent?.trim()).toBe(T.preview.nameLabel);
+      expect(label.control).toBe(editor());
       expect(document.activeElement).toBe(editor());
     });
 
     it('saves with Enter and closes the field', () => {
-      const { editor, byLabel, click, press, names } = setup('Diego\nMati');
+      const { byLabel, click, press, names, editor, type } = setup('Diego\nMati');
       click(byLabel(T.preview.edit('Mati')));
-      (editor() as HTMLInputElement).value = 'Matías';
+      type('Matías');
       press('Enter');
       expect(names()).toEqual(['Diego', 'Matías']);
       expect(editor()).toBeNull();
     });
 
     it('cancels with Escape, even if a blur arrives while the field is closing', () => {
-      const { fixture, editor, byLabel, click, names } = setup('Diego\nMati');
+      const { fixture, editor, byLabel, click, names, type } = setup('Diego\nMati');
       click(byLabel(T.preview.edit('Mati')));
       const field = editor() as HTMLInputElement;
-      field.value = 'Changed';
+      type('Changed');
       field.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
       // Browsers can fire the blur before Angular removes the field from the page.
-      field.dispatchEvent(new Event('blur'));
+      field.dispatchEvent(new FocusEvent('focusout', { bubbles: true }));
       fixture.detectChanges();
       expect(names()).toEqual(['Diego', 'Mati']);
       expect(editor()).toBeNull();
     });
 
     it('keeps the old name when it is left empty, and closes the field', () => {
-      const { editor, byLabel, click, press, names } = setup('Diego\nMati');
+      const { byLabel, click, press, names, editor, type } = setup('Diego\nMati');
       click(byLabel(T.preview.edit('Mati')));
-      (editor() as HTMLInputElement).value = '   ';
+      type('   ');
       press('Enter');
       expect(names()).toEqual(['Diego', 'Mati']);
       expect(editor()).toBeNull();
     });
 
     it('saves when the field loses focus', () => {
-      const { editor, byLabel, click, blur, names } = setup('Diego\nMati');
+      const { byLabel, click, blur, names, type } = setup('Diego\nMati');
       click(byLabel(T.preview.edit('Mati')));
-      (editor() as HTMLInputElement).value = 'Matías';
+      type('Matías');
       blur();
       expect(names()).toEqual(['Diego', 'Matías']);
     });

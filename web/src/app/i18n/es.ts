@@ -33,6 +33,31 @@ export const es: Dictionary = {
     nameLabel: 'Nombre',
     emailLabel: 'Correo',
   },
+  preferences: {
+    title: 'Preferencias',
+    description:
+      'Se guardan en este dispositivo y se usan cuando armas equipos con la sesión iniciada.',
+    playersPerTeam: { label: 'Jugadores por equipo', any: 'Cualquiera' },
+    teams: {
+      iconLabel: (team) => `${team}: ícono`,
+      colorLabel: (team) => `${team}: color`,
+    },
+    template: {
+      header: 'Encabezado del mensaje',
+      headerPlaceholder: 'Por ejemplo: Amistoso del jueves a las 21',
+      footer: 'Pie del mensaje',
+      footerPlaceholder: 'Por ejemplo: Confirmen asistencia',
+      numbering: 'Numeración',
+      numberingDot: '1. Nombre',
+      numberingParen: '1) Nombre',
+      numberingDash: '1- Nombre',
+      numberingNone: 'Sin números',
+    },
+    preview: { title: 'Vista previa' },
+    save: 'Guardar',
+    saved: 'Guardado',
+    restore: 'Restaurar valores',
+  },
   landing: {
     hero: {
       title: 'Arma los equipos del partido en segundos',

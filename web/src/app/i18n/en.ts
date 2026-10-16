@@ -29,6 +29,30 @@ export const en = {
     nameLabel: 'Name',
     emailLabel: 'Email',
   },
+  preferences: {
+    title: 'Preferences',
+    description: 'They are saved on this device and used when you build teams while signed in.',
+    playersPerTeam: { label: 'Players per team', any: 'Any' },
+    teams: {
+      iconLabel: (team: string) => `${team}: icon`,
+      colorLabel: (team: string) => `${team}: color`,
+    },
+    template: {
+      header: 'Message header',
+      headerPlaceholder: 'For example: Friendly on Thursday at 9 pm',
+      footer: 'Message footer',
+      footerPlaceholder: 'For example: Please confirm your attendance',
+      numbering: 'Numbering',
+      numberingDot: '1. Name',
+      numberingParen: '1) Name',
+      numberingDash: '1- Name',
+      numberingNone: 'No numbers',
+    },
+    preview: { title: 'Preview' },
+    save: 'Save',
+    saved: 'Saved',
+    restore: 'Restore defaults',
+  },
   landing: {
     hero: {
       title: 'Build the match teams in seconds',

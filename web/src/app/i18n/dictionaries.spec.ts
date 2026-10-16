@@ -91,4 +91,17 @@ describe('dictionaries', () => {
       expect(preview.remove('Diego')).toBe(remove);
     });
   });
+
+  describe('preference texts that take a team name', () => {
+    it.each([
+      ['en', 'Team 1: icon', 'Team 1: color'],
+      ['es', 'Equipo 1: ícono', 'Equipo 1: color'],
+      ['pt', 'Time 1: ícone', 'Time 1: cor'],
+    ] as const)('names the icon and the color of a team in %s', (lang, icon, color) => {
+      const { teams } = DICTIONARIES[lang].preferences;
+      const title = DICTIONARIES[lang].tool.teamTitle(1);
+      expect(teams.iconLabel(title)).toBe(icon);
+      expect(teams.colorLabel(title)).toBe(color);
+    });
+  });
 });

@@ -228,4 +228,41 @@ describe('app routes', () => {
       );
     });
   });
+
+  describe('the preferences', () => {
+    afterEach(() => localStorage.clear());
+
+    it('are saved on the account page and are still there after a reload', async () => {
+      const first = provideFakeGoogle();
+      const opened = await open('/es/cuenta', first.providers);
+      opened.harness.fixture.detectChanges();
+      await opened.harness.fixture.whenStable();
+      first.fake.pick(makeCredential());
+      opened.harness.fixture.detectChanges();
+      await opened.harness.fixture.whenStable();
+      opened.harness.fixture.detectChanges();
+
+      const header = Array.from(opened.root.querySelectorAll('label')).find(
+        (l) => l.textContent?.trim() === DICTIONARIES.es.preferences.template.header,
+      ) as HTMLLabelElement;
+      const input = header.control as HTMLInputElement;
+      input.value = 'Mi encabezado';
+      input.dispatchEvent(new Event('input'));
+      opened.harness.fixture.detectChanges();
+      (
+        Array.from(opened.root.querySelectorAll('ui-button button')).find(
+          (b) => b.textContent?.trim() === DICTIONARIES.es.preferences.save,
+        ) as HTMLButtonElement
+      ).click();
+      opened.harness.fixture.detectChanges();
+
+      TestBed.resetTestingModule();
+      const second = provideFakeGoogle();
+      const { root } = await open('/es/cuenta', second.providers);
+      const again = Array.from(root.querySelectorAll('label')).find(
+        (l) => l.textContent?.trim() === DICTIONARIES.es.preferences.template.header,
+      ) as HTMLLabelElement;
+      expect((again.control as HTMLInputElement).value).toBe('Mi encabezado');
+    });
+  });
 });

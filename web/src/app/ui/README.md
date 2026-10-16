@@ -63,6 +63,27 @@ A labelled multi-line field.
 - `label` (required), `placeholder`, `rows` (default 6), `hint` (linked with `aria-describedby`)
 - Two-way value: `[(value)]`, or `[value]` with `(valueChange)`
 
+### `UiInput` · `<ui-input>`
+
+A labelled single-line field, for text or for a color.
+
+- `label` (required); `labelHidden` keeps it for screen readers but does not show it
+- `type`: `text` (default) or `color` (a native color picker whose value is `#rrggbb`)
+- `maxLength`, `placeholder`, `hint` (linked with `aria-describedby`)
+- Two-way value: `[(value)]`
+- Call `focus()` and `select()` from outside through a `viewChild`
+
+```html
+<ui-input [label]="t().header" [maxLength]="200" [(value)]="header" />
+```
+
+### `UiSelect` · `<ui-select>`
+
+A labelled native drop-down list.
+
+- `label` (required); `options` (required): `{ value, label }[]`
+- Two-way value: `[(value)]`; the value is always a string, so use `''` for "none"
+
 ### `UiCard` · `<ui-card>`
 
 A bordered surface.
@@ -114,8 +135,6 @@ Do these by extending the catalog, not by copying:
 
 - A link that looks like a button: the landing call to action is an `<a>` with button classes
   (`pages/landing/landing.ts`). If a second one is needed, add a link mode to `UiButton`.
-- A single-line text field: the name editor in `pages/tool/preview-step.ts` uses a styled
-  `<input>`. Extract a component when a second one appears.
 - Not built yet: modal, tabs, color picker, dark mode.
 
 ## Other reusable pieces
