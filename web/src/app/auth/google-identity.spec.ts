@@ -1,3 +1,4 @@
+import { PLATFORM_ID } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { GisClient } from './google-identity';
 
@@ -111,6 +112,27 @@ describe('GisClient', () => {
       failed(scripts()[0]);
       await expect(done).rejects.toThrow();
       await expect(client.disableAutoSelect()).resolves.toBeUndefined();
+    });
+  });
+
+  describe('on the server, while prerendering', () => {
+    beforeEach(() => {
+      TestBed.configureTestingModule({ providers: [{ provide: PLATFORM_ID, useValue: 'server' }] });
+    });
+
+    it('adds no script and draws nothing', async () => {
+      const google = installGoogle();
+      const { done } = draw(TestBed.inject(GisClient));
+      await expect(done).resolves.toBeUndefined();
+      expect(scripts()).toHaveLength(0);
+      expect(google.initialize).not.toHaveBeenCalled();
+      expect(google.renderButton).not.toHaveBeenCalled();
+    });
+
+    it('has nothing to disable', async () => {
+      const google = installGoogle();
+      await expect(TestBed.inject(GisClient).disableAutoSelect()).resolves.toBeUndefined();
+      expect(google.disableAutoSelect).not.toHaveBeenCalled();
     });
   });
 });

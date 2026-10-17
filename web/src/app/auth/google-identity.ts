@@ -1,5 +1,5 @@
-import { DOCUMENT } from '@angular/common';
-import { inject, Injectable, InjectionToken } from '@angular/core';
+import { DOCUMENT, isPlatformBrowser } from '@angular/common';
+import { inject, Injectable, InjectionToken, PLATFORM_ID } from '@angular/core';
 
 // What the app needs from Google Identity Services. Everything else in the app talks to
 // this interface, so tests use a fake and a server-side check can replace it later.
@@ -29,6 +29,7 @@ const GIS_SCRIPT = 'https://accounts.google.com/gsi/client';
 @Injectable({ providedIn: 'root' })
 export class GisClient implements GoogleIdentity {
   private readonly document = inject(DOCUMENT);
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   private loading: Promise<GoogleAccountsId> | null = null;
   private started = false;
   private latestCallback: ((credential: string) => void) | null = null;
@@ -37,6 +38,9 @@ export class GisClient implements GoogleIdentity {
     host: HTMLElement,
     options: { clientId: string; locale: string; onCredential: (credential: string) => void },
   ): Promise<void> {
+    // Prerendering runs on a server, where there is no browser to load Google into. Without
+    // this the script tag would be written into the static HTML and loaded twice.
+    if (!this.isBrowser) return;
     const google = await this.load();
     this.latestCallback = options.onCredential;
     // Google warns when it is started twice, so it starts once and the callback

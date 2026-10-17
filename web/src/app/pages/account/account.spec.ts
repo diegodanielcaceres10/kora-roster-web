@@ -1,6 +1,13 @@
+import { PLATFORM_ID } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { GOOGLE_IDENTITY } from '../../auth/google-identity';
-import { FakeGoogleIdentity, makeCredential, provideFakeGoogle } from '../../auth/testing';
+import { GOOGLE_CLIENT_ID } from '../../auth/config';
+import {
+  FakeGoogleIdentity,
+  makeCredential,
+  provideFakeGoogle,
+  TEST_CLIENT_ID,
+} from '../../auth/testing';
 import { DICTIONARIES } from '../../i18n/dictionaries';
 import { I18n } from '../../i18n/i18n';
 import { Account } from './account';
@@ -170,6 +177,36 @@ describe('Account page', () => {
       localStorage.setItem(SESSION_KEY, JSON.stringify(SAVED));
       const { el } = await setup();
       expect(el.querySelector('app-preferences-editor')).not.toBeNull();
+    });
+  });
+
+  describe('the Google script, with the real client', () => {
+    const scripts = () => document.head.querySelectorAll('script[src*="accounts.google.com"]');
+
+    async function createOn(platform: 'server' | 'browser') {
+      TestBed.configureTestingModule({
+        providers: [
+          { provide: GOOGLE_CLIENT_ID, useValue: TEST_CLIENT_ID },
+          { provide: PLATFORM_ID, useValue: platform },
+        ],
+      });
+      TestBed.inject(I18n).setLang('es');
+      const fixture = TestBed.createComponent(Account);
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+    }
+
+    afterEach(() => scripts().forEach((script) => script.remove()));
+
+    it('is not written into the page while prerendering, so it ships in no static HTML', async () => {
+      await createOn('server');
+      expect(scripts()).toHaveLength(0);
+    });
+
+    it('is added once in the browser', async () => {
+      await createOn('browser');
+      expect(scripts()).toHaveLength(1);
     });
   });
 });
