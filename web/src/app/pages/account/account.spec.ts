@@ -209,4 +209,20 @@ describe('Account page', () => {
       expect(scripts()).toHaveLength(1);
     });
   });
+
+  describe('the Premium card', () => {
+    it('is not shown while signed out', async () => {
+      const { el } = await setup();
+      expect(el.querySelector('app-premium-card')).toBeNull();
+    });
+
+    it('is shown to somebody who is signed in, above the preferences', async () => {
+      localStorage.setItem(SESSION_KEY, JSON.stringify(SAVED));
+      const { el } = await setup();
+      const card = el.querySelector('app-premium-card') as HTMLElement;
+      const editor = el.querySelector('app-preferences-editor') as HTMLElement;
+      expect(card).not.toBeNull();
+      expect(card.compareDocumentPosition(editor) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    });
+  });
 });

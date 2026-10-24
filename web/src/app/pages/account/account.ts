@@ -15,11 +15,12 @@ import { I18n } from '../../i18n/i18n';
 import { PageMeta } from '../../i18n/page-meta';
 import { UiButton } from '../../ui';
 import { PreferencesEditor } from './preferences-editor';
+import { PremiumCard } from './premium-card';
 
 @Component({
   selector: 'app-account',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [UiButton, UserAvatar, PreferencesEditor],
+  imports: [UiButton, UserAvatar, PreferencesEditor, PremiumCard],
   template: `
     <section class="mx-auto max-w-3xl space-y-6 p-4">
       <h1>{{ t().title }}</h1>
@@ -41,6 +42,7 @@ import { PreferencesEditor } from './preferences-editor';
           </dl>
         </div>
         <ui-button variant="outline" (click)="signOut()">{{ t().signOut }}</ui-button>
+        <app-premium-card />
         <app-preferences-editor />
       } @else {
         <p>{{ t().signInPrompt }}</p>

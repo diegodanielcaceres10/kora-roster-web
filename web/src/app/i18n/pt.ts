@@ -32,6 +32,20 @@ export const pt: Dictionary = {
     nameLabel: 'Nome',
     emailLabel: 'E-mail',
   },
+  locks: {
+    signInLink: 'Entrar',
+    premiumLabel: 'Premium',
+    premiumSoon: 'Disponível com o Premium, em breve.',
+  },
+  premiumCard: {
+    title: 'Premium',
+    intro: 'O que vem com o Premium:',
+    moreTeams: 'Mais times (5 e 6)',
+    logo: 'O logo da sua organização',
+    records: 'Registro de amistosos e jogadores',
+    attendance: 'Controle de presença',
+    signUps: 'Inscrições por link',
+  },
   preferences: {
     title: 'Preferências',
     description:

@@ -107,3 +107,116 @@ describe('UiSegmented', () => {
     expect(host.lang()).toBe('es');
   });
 });
+
+const LOCKABLE: SegmentedOption[] = [
+  { value: '2', label: '2' },
+  { value: '3', label: '3' },
+  { value: '4', label: '4', locked: 'sign-in' },
+  { value: '5', label: '5', locked: 'premium', lockedLabel: 'Premium' },
+];
+
+@Component({
+  imports: [UiSegmented],
+  template: `
+    <ui-segmented
+      label="Equipos"
+      [options]="options"
+      [(value)]="teams"
+      (lockedSelect)="touched.push($event.value)"
+    />
+  `,
+})
+class LockedHost {
+  readonly options = LOCKABLE;
+  readonly teams = signal('2');
+  readonly touched: string[] = [];
+}
+
+function setupLocked() {
+  const fixture = TestBed.createComponent(LockedHost);
+  fixture.detectChanges();
+  const host = fixture.componentInstance;
+  const el = fixture.nativeElement as HTMLElement;
+  const radios = () => Array.from(el.querySelectorAll('[role="radio"]')) as HTMLButtonElement[];
+  const press = (index: number, key: string) => {
+    const event = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true });
+    radios()[index].dispatchEvent(event);
+    fixture.detectChanges();
+  };
+  const click = (index: number) => {
+    radios()[index].click();
+    fixture.detectChanges();
+  };
+  return { fixture, host, radios, press, click };
+}
+
+describe('UiSegmented with locked options', () => {
+  it('draws a lock on every locked option, and the lock label only where there is one', () => {
+    const { radios } = setupLocked();
+    const locks = radios().map((r) => r.querySelector('i.fa-lock') !== null);
+    expect(locks).toEqual([false, false, true, true]);
+    expect(radios()[2].textContent?.replace(/\s+/g, ' ').trim()).toBe('4');
+    expect(radios()[3].textContent).toContain('Premium');
+  });
+
+  it('marks the locked options as not available for assistive technology', () => {
+    const { radios } = setupLocked();
+    expect(radios().map((r) => r.getAttribute('aria-disabled'))).toEqual([
+      null,
+      null,
+      'true',
+      'true',
+    ]);
+  });
+
+  it('tells the owner when a locked option is touched, and keeps the value', () => {
+    const { host, click } = setupLocked();
+    click(3);
+    click(2);
+    expect(host.touched).toEqual(['5', '4']);
+    expect(host.teams()).toBe('2');
+  });
+
+  it('still selects the open options without bothering the owner about locks', () => {
+    const { host, click } = setupLocked();
+    click(1);
+    expect(host.teams()).toBe('3');
+    expect(host.touched).toEqual([]);
+  });
+
+  it('never shows a locked option as selected, even when the value points at it', () => {
+    const { fixture, host, radios } = setupLocked();
+    host.teams.set('4');
+    fixture.detectChanges();
+    expect(radios().map((r) => r.getAttribute('aria-checked'))).toEqual([
+      'false',
+      'false',
+      'false',
+      'false',
+    ]);
+    expect(radios().map((r) => r.tabIndex)).toEqual([0, -1, -1, -1]);
+  });
+
+  it('lets the arrow keys reach a locked option without selecting it', () => {
+    const { host, radios, press, click } = setupLocked();
+    click(1);
+    press(1, 'ArrowRight');
+    expect(document.activeElement).toBe(radios()[2]);
+    expect(host.teams()).toBe('3');
+    expect(host.touched).toEqual([]);
+  });
+
+  it('wraps from a locked option to the first one, which it selects', () => {
+    const { host, radios, press } = setupLocked();
+    press(3, 'ArrowRight');
+    expect(host.teams()).toBe('2');
+    expect(document.activeElement).toBe(radios()[0]);
+  });
+
+  it('moves focus to the last option with End, even if it is locked, without selecting it', () => {
+    const { host, radios, press } = setupLocked();
+    press(0, 'End');
+    expect(document.activeElement).toBe(radios()[3]);
+    expect(host.teams()).toBe('2');
+  });
+});

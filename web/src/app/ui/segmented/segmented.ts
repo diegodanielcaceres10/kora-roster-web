@@ -5,12 +5,17 @@ import {
   ElementRef,
   input,
   model,
+  output,
   viewChildren,
 } from '@angular/core';
 
 export interface SegmentedOption {
   value: string;
   label: string;
+  // Why the option is closed. A locked option cannot be chosen, but it can be touched.
+  locked?: 'sign-in' | 'premium';
+  // Short text shown next to the lock, for example "Premium".
+  lockedLabel?: string;
 }
 
 const OPTION_BASE =
@@ -18,6 +23,7 @@ const OPTION_BASE =
   'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary';
 const SELECTED = 'bg-secondary text-white';
 const UNSELECTED = 'bg-transparent text-secondary hover:bg-secondary/10';
+const LOCKED = 'bg-transparent text-secondary/70 hover:bg-secondary/10';
 
 @Component({
   selector: 'ui-segmented',
@@ -34,13 +40,20 @@ const UNSELECTED = 'bg-transparent text-secondary hover:bg-secondary/10';
           #option
           type="button"
           role="radio"
-          [attr.aria-checked]="option.value === value()"
+          [attr.aria-checked]="isSelected(option)"
+          [attr.aria-disabled]="option.locked ? 'true' : null"
           [tabindex]="i === tabbableIndex() ? 0 : -1"
-          [class]="optionClass(option.value)"
-          (click)="select(i)"
+          [class]="optionClass(option)"
+          (click)="activate(i)"
           (keydown)="onKeydown($event, i)"
         >
           {{ option.label }}
+          @if (option.locked) {
+            <i class="fa-solid fa-lock ml-1 text-xs" aria-hidden="true"></i>
+            @if (option.lockedLabel) {
+              <span class="ml-1 text-xs font-bold uppercase">{{ option.lockedLabel }}</span>
+            }
+          }
         </button>
       }
     </div>
@@ -50,20 +63,29 @@ export class UiSegmented {
   readonly options = input.required<SegmentedOption[]>();
   readonly label = input.required<string>();
   readonly value = model('');
+  // Emits the option when somebody touches one that is locked; the value does not change.
+  readonly lockedSelect = output<SegmentedOption>();
 
   private readonly optionEls = viewChildren<ElementRef<HTMLButtonElement>>('option');
 
   protected readonly tabbableIndex = computed(() => {
-    const selected = this.options().findIndex((o) => o.value === this.value());
+    const selected = this.options().findIndex((o) => !o.locked && o.value === this.value());
     return selected < 0 ? 0 : selected;
   });
 
-  protected optionClass(optionValue: string): string {
-    return `${OPTION_BASE} ${optionValue === this.value() ? SELECTED : UNSELECTED}`;
+  protected isSelected(option: SegmentedOption): boolean {
+    return !option.locked && option.value === this.value();
   }
 
-  protected select(index: number): void {
-    this.value.set(this.options()[index].value);
+  protected optionClass(option: SegmentedOption): string {
+    const state = option.locked ? LOCKED : this.isSelected(option) ? SELECTED : UNSELECTED;
+    return `${OPTION_BASE} ${state}`;
+  }
+
+  protected activate(index: number): void {
+    const option = this.options()[index];
+    if (option.locked) this.lockedSelect.emit(option);
+    else this.value.set(option.value);
   }
 
   protected onKeydown(event: KeyboardEvent, index: number): void {
@@ -88,7 +110,10 @@ export class UiSegmented {
         return;
     }
     event.preventDefault();
-    this.select(target);
+    // The keys reach every option, so a locked one can be found and read; only the open
+    // ones are also selected.
+    const option = this.options()[target];
+    if (!option.locked) this.value.set(option.value);
     this.optionEls()[target].nativeElement.focus();
   }
 }

@@ -120,6 +120,10 @@ A radio group shown as segments, for choosing one of a few options (the language
 - Two-way value: `[(value)]`
 - Arrow keys move and select, with wrap-around; Home and End jump; only the selected option is
   reachable with Tab
+- An option can be locked: `locked: 'sign-in' | 'premium'`, plus an optional `lockedLabel` such as
+  "Premium". It shows a lock, reads as `aria-disabled`, never becomes the value, and touching it
+  emits `(lockedSelect)` with the option so the screen can explain why (see `LockNotice`). The
+  arrow keys still reach it without selecting it.
 
 ### `ToastService` and `UiToastHost` · `<ui-toast-host>`
 
@@ -141,6 +145,10 @@ Do these by extending the catalog, not by copying:
 
 Not components, but just as easy to duplicate by accident:
 
+- `plans/`: `Entitlements` is the one place that knows what each plan can do (`plan()`,
+  `maxTeams()`, `teamsLock(count)`, `storyImageLock()`; a lock is `'sign-in'`, `'premium'` or
+  `null`). Never compare plans in a screen. `LockNotice` shows why a locked control is closed,
+  with a link to sign in when an account is what is missing.
 - `core/`: `parsePastedNames` (cleans a pasted list), `drawTeams` and `checkPlayerCount`
   (2 teams, 10 to 22 players, even), `formatTeamsForWhatsApp` and `DEFAULT_TEAM_ICONS`.
 - `i18n/`: the `I18n` service (`lang()`, `t()`), the dictionaries (`en.ts` defines the type,
