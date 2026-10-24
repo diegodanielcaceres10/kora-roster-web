@@ -1,6 +1,8 @@
 import { TestBed } from '@angular/core/testing';
 import { DICTIONARIES } from '../../i18n/dictionaries';
 import { I18n } from '../../i18n/i18n';
+import { Preferences } from '../../preferences/preferences';
+import { saveSession, TEST_PREFERENCES } from '../../preferences/testing';
 import { AmistosoStore } from '../../state/amistoso.store';
 import { PreviewStep } from './preview-step';
 
@@ -8,7 +10,8 @@ const T = DICTIONARIES.es.tool;
 const list = (count: number) =>
   Array.from({ length: count }, (_, i) => `Player ${i + 1}`).join('\n');
 
-function setup(text: string) {
+function setup(text: string, preferences?: Preferences) {
+  if (preferences) saveSession(preferences);
   TestBed.inject(I18n).setLang('es');
   const store = TestBed.inject(AmistosoStore);
   store.setRawText(text);
@@ -48,6 +51,7 @@ function setup(text: string) {
 
 describe('PreviewStep', () => {
   afterEach(() => {
+    localStorage.clear();
     document.documentElement.lang = 'en';
   });
 
@@ -189,6 +193,42 @@ describe('PreviewStep', () => {
       click(byLabel(T.preview.edit('Diego')));
       click(byLabel(T.preview.edit('Mati')));
       expect(el.querySelectorAll('input')).toHaveLength(1);
+    });
+  });
+
+  describe('the team size the person usually plays', () => {
+    const notice = (el: HTMLElement) => el.textContent as string;
+
+    it('tells them when the list is not that size', () => {
+      const { el } = setup(list(12), TEST_PREFERENCES);
+      expect(notice(el)).toContain(T.preview.sizeNotice(7, 12));
+    });
+
+    it('says nothing when the list is exactly that size', () => {
+      const { el } = setup(list(14), TEST_PREFERENCES);
+      expect(notice(el)).not.toContain(T.preview.sizeNotice(7, 14));
+      expect(notice(el)).not.toContain('Sueles jugar');
+    });
+
+    it('says nothing when the person allows any size', () => {
+      const { el } = setup(list(12), { ...TEST_PREFERENCES, playersPerTeam: null });
+      expect(notice(el)).not.toContain('Sueles jugar');
+    });
+
+    it('says nothing to somebody who is not signed in', () => {
+      const { el } = setup(list(12));
+      expect(notice(el)).not.toContain('Sueles jugar');
+    });
+
+    it('does not stop them from drawing a list that is valid', () => {
+      const { byText } = setup(list(12), TEST_PREFERENCES);
+      expect(byText(T.preview.draw).disabled).toBe(false);
+    });
+
+    it('appears next to the problem when the list is not valid either', () => {
+      const { el } = setup(list(11), TEST_PREFERENCES);
+      expect(notice(el)).toContain(T.preview.status.odd(11));
+      expect(notice(el)).toContain(T.preview.sizeNotice(7, 11));
     });
   });
 });

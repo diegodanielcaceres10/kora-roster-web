@@ -153,6 +153,10 @@ Not components, but just as easy to duplicate by accident:
 - `environments/` (next to `app/`): the settings that change per environment, `googleClientId` and
   `siteUrl`, in `environment.ts` (production) and `environment.development.ts` (local). They
   are public values, never secrets. `provideEnvironment` hands them to the app.
+- `preferences/`: `PreferencesService` (`active()` for the person who is signed in, `save()`),
+  `sanitizePreferences` and `DEFAULT_PREFERENCES`. The quick match reads them through
+  `AmistosoStore` (`teamIcons`, `whatsappText`, `sizeMismatch`): use those instead of asking the
+  service again.
 - `state/`: `AmistosoStore`, the NgRx Signals store of the quick match flow.
 - `layout/shell.ts`: the header (logo, account link or photo, language selector) and footer
   shared by every language route.

@@ -4,6 +4,7 @@ import { checkPlayerCount, drawTeams } from '../core/draw-teams';
 import { DEFAULT_TEAM_ICONS, formatTeamsForWhatsApp } from '../core/format-teams';
 import { parsePastedNames } from '../core/parse-players';
 import { I18n } from '../i18n/i18n';
+import { PreferencesService } from '../preferences/preferences-service';
 
 export interface Player {
   id: string;
@@ -37,22 +38,38 @@ export const AmistosoStore = signalStore(
   withState(initialState),
   withComputed(({ players, teams }) => {
     const i18n = inject(I18n);
+    const preferences = inject(PreferencesService);
     const playerCount = computed(() => players().length);
     const countError = computed(() => checkPlayerCount(playerCount()));
+    // The icons of the person who is signed in, or the default circles for everybody else.
+    const teamIcons = computed(
+      () => preferences.active()?.teams.map((team) => team.icon) ?? DEFAULT_TEAM_ICONS,
+    );
 
     return {
       playerCount,
       countError,
+      teamIcons,
       canDraw: computed(() => countError() === null),
+      // Set when the person usually plays a team size and this list is not twice that.
+      // It is only a notice: it never stops the draw.
+      sizeMismatch: computed(() => {
+        const perTeam = preferences.active()?.playersPerTeam;
+        const count = playerCount();
+        return perTeam && count !== perTeam * 2 ? { perTeam, count } : null;
+      }),
       whatsappText: computed(() => {
         const current = teams();
         if (!current) return '';
         const { teamTitle } = i18n.t().tool;
-        const styles = current.map((_, i) => ({
-          icon: DEFAULT_TEAM_ICONS[i],
-          title: teamTitle(i + 1),
-        }));
-        return formatTeamsForWhatsApp(current, styles);
+        const icons = teamIcons();
+        const styles = current.map((_, i) => ({ icon: icons[i], title: teamTitle(i + 1) }));
+        const prefs = preferences.active();
+        return formatTeamsForWhatsApp(
+          current,
+          styles,
+          prefs ? { header: prefs.header, footer: prefs.footer, numbering: prefs.numbering } : {},
+        );
       }),
     };
   }),

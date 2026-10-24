@@ -126,6 +126,8 @@ export const es: Dictionary = {
       remove: (name) => `Quitar a ${name}`,
       markGoalkeeper: (name) => `Marcar a ${name} como arquero`,
       unmarkGoalkeeper: (name) => `Quitar a ${name} como arquero`,
+      sizeNotice: (perTeam, count) =>
+        `Sueles jugar ${perTeam} contra ${perTeam}, pero esta lista tiene ${count === 1 ? '1 jugador' : `${count} jugadores`}.`,
     },
     result: {
       title: 'Equipos',

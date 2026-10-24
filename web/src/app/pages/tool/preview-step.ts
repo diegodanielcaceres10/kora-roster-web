@@ -24,6 +24,9 @@ import { UiBadge, UiButton, UiIconButton, UiInput, UiListRow } from '../../ui';
       <div>
         <p class="font-semibold">{{ t().preview.count(store.playerCount()) }}</p>
         <p role="status" [class]="statusClass()">{{ status() }}</p>
+        @if (notice(); as message) {
+          <p class="text-sm text-secondary/80">{{ message }}</p>
+        }
       </div>
 
       <div role="list" class="space-y-1">
@@ -111,6 +114,11 @@ export class PreviewStep {
       default:
         return status.ok;
     }
+  });
+
+  protected readonly notice = computed(() => {
+    const mismatch = this.store.sizeMismatch();
+    return mismatch ? this.t().preview.sizeNotice(mismatch.perTeam, mismatch.count) : null;
   });
 
   protected readonly statusClass = computed(() =>

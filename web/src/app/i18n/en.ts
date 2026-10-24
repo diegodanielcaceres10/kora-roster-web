@@ -121,6 +121,8 @@ export const en = {
       remove: (name: string) => `Remove ${name}`,
       markGoalkeeper: (name: string) => `Mark ${name} as goalkeeper`,
       unmarkGoalkeeper: (name: string) => `Unmark ${name} as goalkeeper`,
+      sizeNotice: (perTeam: number, count: number) =>
+        `You usually play ${perTeam} vs ${perTeam}, but this list has ${count === 1 ? '1 player' : `${count} players`}.`,
     },
     result: {
       title: 'Teams',

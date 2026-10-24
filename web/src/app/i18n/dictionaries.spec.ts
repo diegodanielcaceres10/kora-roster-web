@@ -104,4 +104,16 @@ describe('dictionaries', () => {
       expect(teams.colorLabel(title)).toBe(color);
     });
   });
+
+  describe('the notice about the usual team size', () => {
+    it.each([
+      ['en', 'You usually play 7 vs 7, but this list has 12 players.', '1 player.'],
+      ['es', 'Sueles jugar 7 contra 7, pero esta lista tiene 12 jugadores.', '1 jugador.'],
+      ['pt', 'Você costuma jogar 7 contra 7, mas esta lista tem 12 jogadores.', '1 jogador.'],
+    ] as const)('says what is usual and what the list has in %s', (lang, text, one) => {
+      const { sizeNotice } = DICTIONARIES[lang].tool.preview;
+      expect(sizeNotice(7, 12)).toBe(text);
+      expect(sizeNotice(7, 1).endsWith(one)).toBe(true);
+    });
+  });
 });

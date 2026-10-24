@@ -1,6 +1,10 @@
 import { TestBed } from '@angular/core/testing';
+import { Auth } from '../auth/auth';
 import { drawTeams } from '../core/draw-teams';
+import { DEFAULT_TEAM_ICONS } from '../core/format-teams';
 import { I18n } from '../i18n/i18n';
+import { PreferencesService } from '../preferences/preferences-service';
+import { saveSession, TEST_PREFERENCES } from '../preferences/testing';
 import { AmistosoStore } from './amistoso.store';
 
 const list = (count: number) =>
@@ -247,6 +251,96 @@ describe('AmistosoStore', () => {
       expect(store.players()).toEqual([]);
       expect(store.teams()).toBeNull();
       expect(store.whatsappText()).toBe('');
+    });
+  });
+
+  describe('with the preferences of the person who is signed in', () => {
+    beforeEach(() => localStorage.clear());
+    afterEach(() => localStorage.clear());
+
+    // preferences: undefined = signed in with nothing saved, null = nobody signed in.
+    function drawn(preferences?: typeof TEST_PREFERENCES | null) {
+      if (preferences !== null) saveSession(preferences);
+      const ctx = inPreview('Diego 🧤\nMati 🧤\n' + list(10));
+      ctx.store.draw(seeded(3));
+      return ctx;
+    }
+
+    it('uses the icons of the person, and the default circles for everybody else', () => {
+      expect(drawn(TEST_PREFERENCES).store.teamIcons()).toEqual(['🟢', '🟡']);
+      TestBed.resetTestingModule();
+      localStorage.clear();
+      expect(drawn(null).store.teamIcons()).toEqual(DEFAULT_TEAM_ICONS);
+    });
+
+    it('writes the message with their header, icons, numbering and footer', () => {
+      const { store } = drawn(TEST_PREFERENCES);
+      const text = store.whatsappText();
+      expect(text.startsWith('⚽ Amistoso\n\n🟢 Team 1\n1) ')).toBe(true);
+      expect(text).toContain('\n\n🟡 Team 2\n1) ');
+      expect(text.endsWith('\n\nConfirmen')).toBe(true);
+      expect(text.match(/🧤/g)).toHaveLength(2);
+    });
+
+    it('keeps the titles of the teams in the language of the page', () => {
+      const { store, i18n } = drawn(TEST_PREFERENCES);
+      i18n.setLang('es');
+      expect(store.whatsappText()).toContain('🟢 Equipo 1\n');
+      expect(store.whatsappText()).toContain('🟡 Equipo 2\n');
+    });
+
+    it('looks like before for someone who is signed in but saved nothing', () => {
+      const { store } = drawn(undefined);
+      expect(store.whatsappText().startsWith('🔴 Team 1\n1. ')).toBe(true);
+      expect(store.whatsappText()).toContain('\n\n🔵 Team 2\n1. ');
+    });
+
+    it('looks like before for somebody who is not signed in', () => {
+      const { store } = drawn(null);
+      expect(store.whatsappText().startsWith('🔴 Team 1\n1. ')).toBe(true);
+      expect(store.whatsappText()).not.toContain('Confirmen');
+    });
+
+    it('uses new preferences as soon as they are saved', () => {
+      const { store } = drawn(undefined);
+      TestBed.inject(PreferencesService).save(TEST_PREFERENCES);
+      expect(store.whatsappText().startsWith('⚽ Amistoso\n\n🟢 Team 1')).toBe(true);
+    });
+
+    it('goes back to the default look when the person signs out', async () => {
+      const { store } = drawn(TEST_PREFERENCES);
+      await TestBed.inject(Auth).signOut();
+      expect(store.whatsappText().startsWith('🔴 Team 1\n1. ')).toBe(true);
+      expect(store.teamIcons()).toEqual(DEFAULT_TEAM_ICONS);
+    });
+
+    describe('the team size the person usually plays', () => {
+      it.each([
+        [14, null],
+        [12, { perTeam: 7, count: 12 }],
+        [10, { perTeam: 7, count: 10 }],
+        [22, { perTeam: 7, count: 22 }],
+      ])('with %i players the mismatch is %j', (count, expected) => {
+        saveSession(TEST_PREFERENCES);
+        const { store } = inPreview(list(count));
+        expect(store.sizeMismatch()).toEqual(expected);
+      });
+
+      it('is not a mismatch when the person allows any size', () => {
+        saveSession({ ...TEST_PREFERENCES, playersPerTeam: null });
+        expect(inPreview(list(12)).store.sizeMismatch()).toBeNull();
+      });
+
+      it('is not a mismatch for somebody who is not signed in', () => {
+        expect(inPreview(list(12)).store.sizeMismatch()).toBeNull();
+      });
+
+      it('does not stop the draw, which only depends on the 10 to 22 even rule', () => {
+        saveSession(TEST_PREFERENCES);
+        const { store } = inPreview(list(12));
+        expect(store.sizeMismatch()).not.toBeNull();
+        expect(store.canDraw()).toBe(true);
+      });
     });
   });
 });

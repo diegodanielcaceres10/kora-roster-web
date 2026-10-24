@@ -2,6 +2,8 @@ import { TestBed } from '@angular/core/testing';
 import { drawTeams } from '../../core/draw-teams';
 import { DICTIONARIES } from '../../i18n/dictionaries';
 import { I18n } from '../../i18n/i18n';
+import { Preferences } from '../../preferences/preferences';
+import { saveSession, TEST_PREFERENCES } from '../../preferences/testing';
 import { AmistosoStore } from '../../state/amistoso.store';
 import { ToastService } from '../../ui';
 import { ResultStep } from './result-step';
@@ -10,7 +12,8 @@ const T = DICTIONARIES.es.tool;
 const list = (count: number) =>
   Array.from({ length: count }, (_, i) => `Player ${i + 1}`).join('\n');
 
-function setup() {
+function setup(preferences?: Preferences) {
+  if (preferences) saveSession(preferences);
   TestBed.inject(I18n).setLang('es');
   const store = TestBed.inject(AmistosoStore);
   store.setRawText('Diego 🧤\nMati 🧤\n' + list(10));
@@ -36,6 +39,7 @@ function setClipboard(writeText?: (text: string) => Promise<void>) {
 describe('ResultStep', () => {
   afterEach(() => {
     Reflect.deleteProperty(navigator, 'clipboard');
+    localStorage.clear();
     vi.restoreAllMocks();
     TestBed.inject(ToastService).dismiss();
     document.documentElement.lang = 'en';
@@ -119,5 +123,40 @@ describe('ResultStep', () => {
     expect(store.step()).toBe('paste');
     expect(store.players()).toEqual([]);
     expect(store.teams()).toBeNull();
+  });
+
+  describe('with the preferences of the person', () => {
+    it('titles the cards with their icons', () => {
+      const { el } = setup(TEST_PREFERENCES);
+      const titles = Array.from(el.querySelectorAll('ui-card h3')).map((h) =>
+        h.textContent?.trim(),
+      );
+      expect(titles).toEqual([`🟢 ${T.teamTitle(1)}`, `🟡 ${T.teamTitle(2)}`]);
+    });
+
+    it('shows the message with their header, numbering and footer', () => {
+      const { el, store } = setup(TEST_PREFERENCES);
+      const text = el.querySelector('pre')?.textContent as string;
+      expect(text).toBe(store.whatsappText());
+      expect(text.startsWith('⚽ Amistoso\n\n🟢')).toBe(true);
+      expect(text).toContain('\n1) ');
+      expect(text.endsWith('\n\nConfirmen')).toBe(true);
+    });
+
+    it('keeps the cards numbered whatever numbering the message uses', () => {
+      const { el } = setup({ ...TEST_PREFERENCES, numbering: 'none' });
+      const first = el.querySelector('ui-card li')?.textContent?.replace(/\s+/g, ' ').trim();
+      expect(first).toMatch(/^1\./);
+    });
+
+    it('copies the message as they set it up', async () => {
+      const writeText = vi.fn().mockResolvedValue(undefined);
+      setClipboard(writeText);
+      const { byText, toast } = setup(TEST_PREFERENCES);
+      byText(T.result.copy).click();
+      await vi.waitFor(() => expect(toast.message()).toBe(T.result.copied));
+      expect(writeText.mock.calls[0][0]).toContain('⚽ Amistoso');
+      expect(writeText.mock.calls[0][0]).toContain('Confirmen');
+    });
   });
 });

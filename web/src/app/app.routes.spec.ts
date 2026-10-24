@@ -6,6 +6,7 @@ import { routes } from './app.routes';
 import { makeCredential, provideFakeGoogle } from './auth/testing';
 import { DICTIONARIES } from './i18n/dictionaries';
 import { I18n } from './i18n/i18n';
+import { saveSession, TEST_PREFERENCES } from './preferences/testing';
 import { AmistosoStore } from './state/amistoso.store';
 
 async function open(url: string, providers: Provider[] = []) {
@@ -263,6 +264,52 @@ describe('app routes', () => {
         (l) => l.textContent?.trim() === DICTIONARIES.es.preferences.template.header,
       ) as HTMLLabelElement;
       expect((again.control as HTMLInputElement).value).toBe('Mi encabezado');
+    });
+  });
+
+  describe('the tool with the preferences of the person', () => {
+    afterEach(() => localStorage.clear());
+
+    it('warns about the team size, and then draws with their icons and message', async () => {
+      saveSession(TEST_PREFERENCES);
+      const { harness, root } = await open('/es/amistoso');
+      const T = DICTIONARIES.es.tool;
+
+      const field = root.querySelector('textarea') as HTMLTextAreaElement;
+      field.value = Array.from({ length: 12 }, (_, i) => `Player ${i + 1}`).join('\n');
+      field.dispatchEvent(new Event('input'));
+      harness.fixture.detectChanges();
+      (root.querySelector('ui-button button') as HTMLButtonElement).click();
+      harness.fixture.detectChanges();
+      expect(root.textContent).toContain(T.preview.sizeNotice(7, 12));
+
+      const draw = Array.from(root.querySelectorAll('ui-button button')).find(
+        (b) => b.textContent?.trim() === T.preview.draw,
+      ) as HTMLButtonElement;
+      draw.click();
+      harness.fixture.detectChanges();
+      const message = root.querySelector('pre')?.textContent as string;
+      expect(message.startsWith('⚽ Amistoso\n\n🟢 Equipo 1')).toBe(true);
+      expect(message).toContain('🟡 Equipo 2');
+    });
+
+    it('is the plain tool for somebody who is not signed in', async () => {
+      const { harness, root } = await open('/es/amistoso');
+      const T = DICTIONARIES.es.tool;
+      const field = root.querySelector('textarea') as HTMLTextAreaElement;
+      field.value = Array.from({ length: 12 }, (_, i) => `Player ${i + 1}`).join('\n');
+      field.dispatchEvent(new Event('input'));
+      harness.fixture.detectChanges();
+      (root.querySelector('ui-button button') as HTMLButtonElement).click();
+      harness.fixture.detectChanges();
+      expect(root.textContent).not.toContain('Sueles jugar');
+      (
+        Array.from(root.querySelectorAll('ui-button button')).find(
+          (b) => b.textContent?.trim() === T.preview.draw,
+        ) as HTMLButtonElement
+      ).click();
+      harness.fixture.detectChanges();
+      expect(root.querySelector('pre')?.textContent).toContain('🔴 Equipo 1\n1. ');
     });
   });
 });

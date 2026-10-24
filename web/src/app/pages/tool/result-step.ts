@@ -1,5 +1,4 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
-import { DEFAULT_TEAM_ICONS } from '../../core/format-teams';
 import { I18n } from '../../i18n/i18n';
 import { AmistosoStore } from '../../state/amistoso.store';
 import { ToastService, UiButton, UiCard } from '../../ui';
@@ -15,7 +14,7 @@ import { ToastService, UiButton, UiCard } from '../../ui';
       <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
         @for (team of teams(); track $index; let i = $index) {
           <ui-card>
-            <h3 card-header>{{ icons[i] }} {{ t().teamTitle(i + 1) }}</h3>
+            <h3 card-header>{{ store.teamIcons()[i] }} {{ t().teamTitle(i + 1) }}</h3>
             <ol class="space-y-1">
               @for (player of team; track player.id; let n = $index) {
                 <li class="flex items-center gap-2">
@@ -58,7 +57,6 @@ export class ResultStep {
   private readonly i18n = inject(I18n);
   private readonly toast = inject(ToastService);
 
-  protected readonly icons = DEFAULT_TEAM_ICONS;
   protected readonly t = computed(() => this.i18n.t().tool);
   protected readonly teams = computed(() => this.store.teams() ?? []);
 

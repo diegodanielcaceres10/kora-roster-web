@@ -125,6 +125,8 @@ export const pt: Dictionary = {
       remove: (name) => `Remover ${name}`,
       markGoalkeeper: (name) => `Marcar ${name} como goleiro`,
       unmarkGoalkeeper: (name) => `Desmarcar ${name} como goleiro`,
+      sizeNotice: (perTeam, count) =>
+        `Você costuma jogar ${perTeam} contra ${perTeam}, mas esta lista tem ${count === 1 ? '1 jogador' : `${count} jogadores`}.`,
     },
     result: {
       title: 'Times',
