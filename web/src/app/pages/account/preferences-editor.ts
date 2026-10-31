@@ -1,11 +1,10 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { MAX_TEAM_SIZE, MIN_TEAM_SIZE } from '../../core/draw-teams';
 import { formatTeamsForWhatsApp, Numbering } from '../../core/format-teams';
 import { I18n } from '../../i18n/i18n';
 import {
   DEFAULT_PREFERENCES,
   HEADER_MAX,
-  MAX_TEAM_SIZE,
-  MIN_TEAM_SIZE,
   Preferences,
   TEAM_ICONS,
 } from '../../preferences/preferences';

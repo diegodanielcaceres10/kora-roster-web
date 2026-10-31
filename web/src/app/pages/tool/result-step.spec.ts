@@ -159,4 +159,47 @@ describe('ResultStep', () => {
       expect(writeText.mock.calls[0][0]).toContain('Confirmen');
     });
   });
+
+  describe('with 3 and 4 teams', () => {
+    function setupMany(teams: number, players: number) {
+      saveSession();
+      TestBed.inject(I18n).setLang('es');
+      const store = TestBed.inject(AmistosoStore);
+      store.setRawText(list(players));
+      store.continueToPreview();
+      store.setTeamCount(teams);
+      store.draw(() => 0.3);
+      const fixture = TestBed.createComponent(ResultStep);
+      fixture.detectChanges();
+      return { el: fixture.nativeElement as HTMLElement, store };
+    }
+    const grid = (el: HTMLElement) => el.querySelector('div.grid') as HTMLElement;
+
+    it.each([
+      [3, 18],
+      [4, 20],
+    ])('shows a card per team, with its own icon and title, for %i teams', (teams, players) => {
+      const { el } = setupMany(teams, players);
+      const titles = Array.from(el.querySelectorAll('ui-card h3')).map((h) =>
+        h.textContent?.trim(),
+      );
+      expect(titles).toEqual(
+        ['🔴', '🔵', '🟢', '🟡'].slice(0, teams).map((icon, i) => `${icon} ${T.teamTitle(i + 1)}`),
+      );
+    });
+
+    it('puts 3 teams in three columns on wide screens, and 2 or 4 in two', () => {
+      expect(grid(setupMany(3, 18).el).className).toContain('lg:grid-cols-3');
+      TestBed.resetTestingModule();
+      expect(grid(setupMany(4, 20).el).className).not.toContain('lg:grid-cols-3');
+      TestBed.resetTestingModule();
+      expect(grid(setup().el).className).not.toContain('lg:grid-cols-3');
+    });
+
+    it('writes every team in the text for WhatsApp', () => {
+      const { el } = setupMany(4, 20);
+      const text = el.querySelector('pre')?.textContent as string;
+      for (let i = 1; i <= 4; i++) expect(text).toContain(T.teamTitle(i));
+    });
+  });
 });

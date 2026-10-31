@@ -150,7 +150,8 @@ Not components, but just as easy to duplicate by accident:
   `null`). Never compare plans in a screen. `LockNotice` shows why a locked control is closed,
   with a link to sign in when an account is what is missing.
 - `core/`: `parsePastedNames` (cleans a pasted list), `drawTeams` and `checkPlayerCount`
-  (2 teams, 10 to 22 players, even), `formatTeamsForWhatsApp` and `DEFAULT_TEAM_ICONS`.
+  (2 to 4 teams in use, 5 to 11 players on each, all the same size; `playerRange(teams)` gives the
+  limits), `formatTeamsForWhatsApp` and `DEFAULT_TEAM_ICONS`.
 - `i18n/`: the `I18n` service (`lang()`, `t()`), the dictionaries (`en.ts` defines the type,
   `es.ts` and `pt.ts` must match), `PageMeta` (title, description, canonical and hreflang),
   `SITE_URL`, `LanguageSelector` and `switchLanguageUrl`.
@@ -165,6 +166,6 @@ Not components, but just as easy to duplicate by accident:
   `sanitizePreferences` and `DEFAULT_PREFERENCES`. The quick match reads them through
   `AmistosoStore` (`teamIcons`, `whatsappText`, `sizeMismatch`): use those instead of asking the
   service again.
-- `state/`: `AmistosoStore`, the NgRx Signals store of the quick match flow.
+- `state/`: `AmistosoStore`, the NgRx Signals store of the quick match flow. `teamCount()` is the number of teams in use, never above what the plan allows; change it with `setTeamCount()`.
 - `layout/shell.ts`: the header (logo, account link or photo, language selector) and footer
   shared by every language route.

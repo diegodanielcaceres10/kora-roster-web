@@ -281,7 +281,7 @@ describe('app routes', () => {
       harness.fixture.detectChanges();
       (root.querySelector('ui-button button') as HTMLButtonElement).click();
       harness.fixture.detectChanges();
-      expect(root.textContent).toContain(T.preview.sizeNotice(7, 12));
+      expect(root.textContent).toContain(T.preview.sizeNotice(7, 2, 12));
 
       const draw = Array.from(root.querySelectorAll('ui-button button')).find(
         (b) => b.textContent?.trim() === T.preview.draw,
@@ -310,6 +310,50 @@ describe('app routes', () => {
       ).click();
       harness.fixture.detectChanges();
       expect(root.querySelector('pre')?.textContent).toContain('🔴 Equipo 1\n1. ');
+    });
+  });
+
+  describe('the number of teams in the tool', () => {
+    afterEach(() => localStorage.clear());
+
+    const teamRadio = (root: HTMLElement, label: string) =>
+      Array.from(
+        root.querySelectorAll(`[role="radiogroup"][aria-label="Equipos"] [role="radio"]`),
+      ).find((r) => r.textContent?.trim().startsWith(label)) as HTMLButtonElement;
+
+    async function pasted(count: number) {
+      const opened = await open('/es/amistoso');
+      const field = opened.root.querySelector('textarea') as HTMLTextAreaElement;
+      field.value = Array.from({ length: count }, (_, i) => `Player ${i + 1}`).join('\n');
+      field.dispatchEvent(new Event('input'));
+      opened.harness.fixture.detectChanges();
+      (opened.root.querySelector('ui-button button') as HTMLButtonElement).click();
+      opened.harness.fixture.detectChanges();
+      return opened;
+    }
+
+    it('explains a locked option and offers to sign in, without an account', async () => {
+      const { harness, root } = await pasted(18);
+      teamRadio(root, '3').click();
+      harness.fixture.detectChanges();
+      expect(root.textContent).toContain(DICTIONARIES.es.tool.preview.teamsSignIn);
+      expect(teamRadio(root, '2').getAttribute('aria-checked')).toBe('true');
+      expect(root.querySelector('app-lock-notice a[href="/es/cuenta"]')).not.toBeNull();
+    });
+
+    it('lets a signed in person draw 4 teams and shows them all', async () => {
+      saveSession();
+      const { harness, root } = await pasted(20);
+      teamRadio(root, '4').click();
+      harness.fixture.detectChanges();
+      (
+        Array.from(root.querySelectorAll('ui-button button')).find(
+          (b) => b.textContent?.trim() === DICTIONARIES.es.tool.preview.draw,
+        ) as HTMLButtonElement
+      ).click();
+      harness.fixture.detectChanges();
+      expect(root.querySelectorAll('ui-card')).toHaveLength(4);
+      expect(root.querySelector('pre')?.textContent).toContain('Equipo 4');
     });
   });
 });

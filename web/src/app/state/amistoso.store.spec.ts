@@ -156,7 +156,7 @@ describe('AmistosoStore', () => {
     it.each([
       [9, 'too-few', false],
       [10, null, true],
-      [11, 'odd', false],
+      [11, 'uneven', false],
       [12, null, true],
       [22, null, true],
       [23, 'too-many', false],
@@ -267,7 +267,7 @@ describe('AmistosoStore', () => {
     }
 
     it('uses the icons of the person, and the default circles for everybody else', () => {
-      expect(drawn(TEST_PREFERENCES).store.teamIcons()).toEqual(['🟢', '🟡']);
+      expect(drawn(TEST_PREFERENCES).store.teamIcons().slice(0, 2)).toEqual(['🟢', '🟡']);
       TestBed.resetTestingModule();
       localStorage.clear();
       expect(drawn(null).store.teamIcons()).toEqual(DEFAULT_TEAM_ICONS);
@@ -317,9 +317,9 @@ describe('AmistosoStore', () => {
     describe('the team size the person usually plays', () => {
       it.each([
         [14, null],
-        [12, { perTeam: 7, count: 12 }],
-        [10, { perTeam: 7, count: 10 }],
-        [22, { perTeam: 7, count: 22 }],
+        [12, { perTeam: 7, teams: 2, count: 12 }],
+        [10, { perTeam: 7, teams: 2, count: 10 }],
+        [22, { perTeam: 7, teams: 2, count: 22 }],
       ])('with %i players the mismatch is %j', (count, expected) => {
         saveSession(TEST_PREFERENCES);
         const { store } = inPreview(list(count));
@@ -341,6 +341,119 @@ describe('AmistosoStore', () => {
         expect(store.sizeMismatch()).not.toBeNull();
         expect(store.canDraw()).toBe(true);
       });
+    });
+  });
+
+  describe('the number of teams', () => {
+    beforeEach(() => localStorage.clear());
+    afterEach(() => localStorage.clear());
+
+    it('starts at 2', () => {
+      expect(setup().store.teamCount()).toBe(2);
+    });
+
+    it('keeps somebody who is not signed in at 2 teams', () => {
+      const { store } = setup();
+      store.setTeamCount(3);
+      store.setTeamCount(4);
+      expect(store.teamCount()).toBe(2);
+    });
+
+    it.each([3, 4])('lets a signed in person choose %i teams', (count) => {
+      saveSession();
+      const { store } = setup();
+      store.setTeamCount(count);
+      expect(store.teamCount()).toBe(count);
+    });
+
+    it.each([5, 6])('does not let a free account choose %i teams, which is Premium', (count) => {
+      saveSession();
+      const { store } = setup();
+      store.setTeamCount(count);
+      expect(store.teamCount()).toBe(2);
+    });
+
+    it.each([0, 1, 7, 2.5, NaN, -3])('ignores %s as a number of teams', (count) => {
+      saveSession();
+      const { store } = setup();
+      store.setTeamCount(4);
+      store.setTeamCount(count);
+      expect(store.teamCount()).toBe(4);
+    });
+
+    it('goes back to what the plan allows when the person signs out', async () => {
+      saveSession();
+      const { store } = setup();
+      store.setTeamCount(4);
+      await TestBed.inject(Auth).signOut();
+      expect(store.teamCount()).toBe(2);
+    });
+
+    it('checks the player count for the chosen number of teams', () => {
+      saveSession();
+      const { store } = inPreview(list(14));
+      expect(store.countError()).toBeNull();
+      store.setTeamCount(3);
+      expect(store.countError()).toBe('too-few');
+      expect(store.canDraw()).toBe(false);
+      store.setTeamCount(2);
+      expect(store.canDraw()).toBe(true);
+    });
+
+    it.each([
+      [3, 18],
+      [4, 20],
+    ])('draws %i teams of equal size', (teams, players) => {
+      saveSession();
+      const { store } = inPreview(list(players));
+      store.setTeamCount(teams);
+      store.draw(seeded(1));
+      expect(store.teams()).toHaveLength(teams);
+      expect(store.teams()?.map((team) => team.length)).toEqual(Array(teams).fill(players / teams));
+    });
+
+    it('does not draw a list that does not fit the chosen number of teams', () => {
+      saveSession();
+      const { store } = inPreview(list(14));
+      store.setTeamCount(3);
+      store.draw(seeded(1));
+      expect(store.step()).toBe('preview');
+      expect(store.teams()).toBeNull();
+    });
+
+    it('goes back to 2 teams with "start over"', () => {
+      saveSession();
+      const { store } = inPreview(list(20));
+      store.setTeamCount(4);
+      store.reset();
+      expect(store.teamCount()).toBe(2);
+    });
+
+    it('writes every team in the message with its own icon and title', () => {
+      saveSession();
+      const { store } = inPreview(list(20));
+      store.setTeamCount(4);
+      store.draw(seeded(2));
+      const text = store.whatsappText();
+      ['🔴', '🔵', '🟢', '🟡'].forEach((icon, i) => {
+        expect(text).toContain(`${icon} Team ${i + 1}\n`);
+      });
+    });
+
+    it('never repeats an icon, even when the preferences only set two', () => {
+      saveSession(TEST_PREFERENCES);
+      const icons = setup().store.teamIcons();
+      expect(icons.slice(0, 2)).toEqual(['🟢', '🟡']);
+      expect(icons).toHaveLength(6);
+      expect(new Set(icons).size).toBe(6);
+    });
+
+    it('compares the size the person usually plays with the number of teams in use', () => {
+      saveSession({ ...TEST_PREFERENCES, playersPerTeam: 5 });
+      const { store } = inPreview(list(20));
+      expect(store.sizeMismatch()).toEqual({ perTeam: 5, teams: 2, count: 20 });
+      store.setTeamCount(4);
+      expect(store.sizeMismatch()).toBeNull();
     });
   });
 });

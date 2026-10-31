@@ -117,15 +117,18 @@ export const en = {
       count: (n: number) => (n === 1 ? '1 player' : `${n} players`),
       status: {
         ok: 'Ready to draw',
-        tooFew: (missing: number) =>
+        tooFew: (missing: number, min: number) =>
           missing === 1
-            ? '1 more player needed to reach 10.'
-            : `${missing} more players needed to reach 10.`,
-        tooMany: (extra: number) =>
+            ? `1 more player needed to reach ${min}.`
+            : `${missing} more players needed to reach ${min}.`,
+        tooMany: (extra: number, max: number) =>
           extra === 1
-            ? '1 player too many: the maximum is 22.'
-            : `${extra} players too many: the maximum is 22.`,
-        odd: (count: number) => `${count} players: the number has to be even.`,
+            ? `1 player too many: the maximum is ${max}.`
+            : `${extra} players too many: the maximum is ${max}.`,
+        uneven: (count: number, teams: number) =>
+          teams === 2
+            ? `${count} players: the number has to be even.`
+            : `${count} players: with ${teams} teams the number has to be a multiple of ${teams}.`,
       },
       back: 'Back',
       draw: 'Draw teams',
@@ -135,8 +138,13 @@ export const en = {
       remove: (name: string) => `Remove ${name}`,
       markGoalkeeper: (name: string) => `Mark ${name} as goalkeeper`,
       unmarkGoalkeeper: (name: string) => `Unmark ${name} as goalkeeper`,
-      sizeNotice: (perTeam: number, count: number) =>
-        `You usually play ${perTeam} vs ${perTeam}, but this list has ${count === 1 ? '1 player' : `${count} players`}.`,
+      sizeNotice: (perTeam: number, teams: number, count: number) =>
+        teams === 2
+          ? `You usually play ${perTeam} vs ${perTeam}, but this list has ${count === 1 ? '1 player' : `${count} players`}.`
+          : `You usually play with ${perTeam} per team: ${teams} teams need ${perTeam * teams} players, but this list has ${count}.`,
+      teamsLabel: 'Teams',
+      teamsSignIn: 'Sign in to use 3 and 4 teams.',
+      teamsPremium: '5 and 6 teams come with Premium, coming soon.',
     },
     result: {
       title: 'Teams',

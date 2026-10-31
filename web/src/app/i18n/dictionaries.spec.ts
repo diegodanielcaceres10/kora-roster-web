@@ -51,8 +51,8 @@ describe('dictionaries', () => {
       ['pt', 'Falta 1 jogador para chegar a 10.', 'Faltam 3 jogadores para chegar a 10.'],
     ] as const)('says how many players are missing in %s', (lang, one, many) => {
       const { tooFew } = DICTIONARIES[lang].tool.preview.status;
-      expect(tooFew(1)).toBe(one);
-      expect(tooFew(3)).toBe(many);
+      expect(tooFew(1, 10)).toBe(one);
+      expect(tooFew(3, 10)).toBe(many);
     });
 
     it.each([
@@ -61,8 +61,8 @@ describe('dictionaries', () => {
       ['pt', 'Sobra 1 jogador: o máximo é 22.', 'Sobram 2 jogadores: o máximo é 22.'],
     ] as const)('says how many players are too many in %s', (lang, one, many) => {
       const { tooMany } = DICTIONARIES[lang].tool.preview.status;
-      expect(tooMany(1)).toBe(one);
-      expect(tooMany(2)).toBe(many);
+      expect(tooMany(1, 22)).toBe(one);
+      expect(tooMany(2, 22)).toBe(many);
     });
 
     it.each([
@@ -70,7 +70,7 @@ describe('dictionaries', () => {
       ['es', 'Son 11 jugadores y tiene que ser un número par.'],
       ['pt', 'São 11 jogadores e o número precisa ser par.'],
     ] as const)('explains an odd count in %s', (lang, text) => {
-      expect(DICTIONARIES[lang].tool.preview.status.odd(11)).toBe(text);
+      expect(DICTIONARIES[lang].tool.preview.status.uneven(11, 2)).toBe(text);
     });
 
     it.each([
@@ -112,8 +112,42 @@ describe('dictionaries', () => {
       ['pt', 'Você costuma jogar 7 contra 7, mas esta lista tem 12 jogadores.', '1 jogador.'],
     ] as const)('says what is usual and what the list has in %s', (lang, text, one) => {
       const { sizeNotice } = DICTIONARIES[lang].tool.preview;
-      expect(sizeNotice(7, 12)).toBe(text);
-      expect(sizeNotice(7, 1).endsWith(one)).toBe(true);
+      expect(sizeNotice(7, 2, 12)).toBe(text);
+      expect(sizeNotice(7, 2, 1).endsWith(one)).toBe(true);
+    });
+  });
+
+  describe('the texts that depend on the number of teams', () => {
+    it.each([
+      ['en', '1 more player needed to reach 15.', '2 players too many: the maximum is 33.'],
+      ['es', 'Falta 1 jugador para llegar a 15.', 'Sobran 2 jugadores: el máximo es 33.'],
+      ['pt', 'Falta 1 jogador para chegar a 15.', 'Sobram 2 jogadores: o máximo é 33.'],
+    ] as const)('names the limits of 3 teams in %s', (lang, few, many) => {
+      const { status } = DICTIONARIES[lang].tool.preview;
+      expect(status.tooFew(1, 15)).toBe(few);
+      expect(status.tooMany(2, 33)).toBe(many);
+    });
+
+    it.each([
+      ['en', '16 players: with 3 teams the number has to be a multiple of 3.'],
+      ['es', 'Son 16 jugadores y con 3 equipos tiene que ser múltiplo de 3.'],
+      ['pt', 'São 16 jogadores e com 3 times o número precisa ser múltiplo de 3.'],
+    ] as const)('explains an uneven count with 3 teams in %s', (lang, text) => {
+      expect(DICTIONARIES[lang].tool.preview.status.uneven(16, 3)).toBe(text);
+    });
+
+    it.each([
+      ['en', 'You usually play with 7 per team: 3 teams need 21 players, but this list has 12.'],
+      [
+        'es',
+        'Sueles jugar con 7 por equipo: 3 equipos necesitan 21 jugadores, pero esta lista tiene 12.',
+      ],
+      [
+        'pt',
+        'Você costuma jogar com 7 por time: 3 times precisam de 21 jogadores, mas esta lista tem 12.',
+      ],
+    ] as const)('compares the usual size with more than 2 teams in %s', (lang, text) => {
+      expect(DICTIONARIES[lang].tool.preview.sizeNotice(7, 3, 12)).toBe(text);
     });
   });
 });

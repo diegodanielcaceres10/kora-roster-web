@@ -122,15 +122,18 @@ export const es: Dictionary = {
       count: (n) => (n === 1 ? '1 jugador' : `${n} jugadores`),
       status: {
         ok: 'Listo para sortear',
-        tooFew: (missing) =>
+        tooFew: (missing, min) =>
           missing === 1
-            ? 'Falta 1 jugador para llegar a 10.'
-            : `Faltan ${missing} jugadores para llegar a 10.`,
-        tooMany: (extra) =>
+            ? `Falta 1 jugador para llegar a ${min}.`
+            : `Faltan ${missing} jugadores para llegar a ${min}.`,
+        tooMany: (extra, max) =>
           extra === 1
-            ? 'Sobra 1 jugador: el máximo es 22.'
-            : `Sobran ${extra} jugadores: el máximo es 22.`,
-        odd: (count) => `Son ${count} jugadores y tiene que ser un número par.`,
+            ? `Sobra 1 jugador: el máximo es ${max}.`
+            : `Sobran ${extra} jugadores: el máximo es ${max}.`,
+        uneven: (count, teams) =>
+          teams === 2
+            ? `Son ${count} jugadores y tiene que ser un número par.`
+            : `Son ${count} jugadores y con ${teams} equipos tiene que ser múltiplo de ${teams}.`,
       },
       back: 'Volver',
       draw: 'Sortear',
@@ -140,8 +143,13 @@ export const es: Dictionary = {
       remove: (name) => `Quitar a ${name}`,
       markGoalkeeper: (name) => `Marcar a ${name} como arquero`,
       unmarkGoalkeeper: (name) => `Quitar a ${name} como arquero`,
-      sizeNotice: (perTeam, count) =>
-        `Sueles jugar ${perTeam} contra ${perTeam}, pero esta lista tiene ${count === 1 ? '1 jugador' : `${count} jugadores`}.`,
+      sizeNotice: (perTeam, teams, count) =>
+        teams === 2
+          ? `Sueles jugar ${perTeam} contra ${perTeam}, pero esta lista tiene ${count === 1 ? '1 jugador' : `${count} jugadores`}.`
+          : `Sueles jugar con ${perTeam} por equipo: ${teams} equipos necesitan ${perTeam * teams} jugadores, pero esta lista tiene ${count}.`,
+      teamsLabel: 'Equipos',
+      teamsSignIn: 'Inicia sesión para usar 3 y 4 equipos.',
+      teamsPremium: '5 y 6 equipos llegan con Premium, próximamente.',
     },
     result: {
       title: 'Equipos',

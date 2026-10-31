@@ -11,7 +11,7 @@ import { ToastService, UiButton, UiCard } from '../../ui';
     <section class="space-y-4">
       <h2>{{ t().result.title }}</h2>
 
-      <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+      <div [class]="gridClass()">
         @for (team of teams(); track $index; let i = $index) {
           <ui-card>
             <h3 card-header>{{ store.teamIcons()[i] }} {{ t().teamTitle(i + 1) }}</h3>
@@ -59,6 +59,11 @@ export class ResultStep {
 
   protected readonly t = computed(() => this.i18n.t().tool);
   protected readonly teams = computed(() => this.store.teams() ?? []);
+  protected readonly gridClass = computed(() =>
+    this.teams().length === 3
+      ? 'grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3'
+      : 'grid grid-cols-1 gap-3 sm:grid-cols-2',
+  );
 
   protected async copy(): Promise<void> {
     const { copied, copyFailed } = this.t().result;

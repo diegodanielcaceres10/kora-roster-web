@@ -4,6 +4,7 @@ import { checkPlayerCount, drawTeams } from '../core/draw-teams';
 import { DEFAULT_TEAM_ICONS, formatTeamsForWhatsApp } from '../core/format-teams';
 import { parsePastedNames } from '../core/parse-players';
 import { I18n } from '../i18n/i18n';
+import { Entitlements } from '../plans/entitlements';
 import { PreferencesService } from '../preferences/preferences-service';
 
 export interface Player {
@@ -14,12 +15,17 @@ export interface Player {
 
 export type Step = 'paste' | 'preview' | 'result';
 
+const MIN_TEAMS = 2;
+const MAX_TEAMS = 6;
+
 interface AmistosoState {
   rawText: string;
   // The text the current list was read from, so going back and forward keeps the edits.
   parsedText: string | null;
   players: Player[];
-  teams: [Player[], Player[]] | null;
+  teams: Player[][] | null;
+  // What the person picked in the selector, or null while they have not picked anything.
+  teamCountChoice: number | null;
   step: Step;
   nextId: number;
 }
@@ -29,6 +35,7 @@ const initialState: AmistosoState = {
   parsedText: null,
   players: [],
   teams: null,
+  teamCountChoice: null,
   step: 'paste',
   nextId: 1,
 };
@@ -36,27 +43,37 @@ const initialState: AmistosoState = {
 export const AmistosoStore = signalStore(
   { providedIn: 'root' },
   withState(initialState),
-  withComputed(({ players, teams }) => {
+  withComputed(({ players, teams, teamCountChoice }) => {
     const i18n = inject(I18n);
     const preferences = inject(PreferencesService);
-    const playerCount = computed(() => players().length);
-    const countError = computed(() => checkPlayerCount(playerCount()));
-    // The icons of the person who is signed in, or the default circles for everybody else.
-    const teamIcons = computed(
-      () => preferences.active()?.teams.map((team) => team.icon) ?? DEFAULT_TEAM_ICONS,
+    const entitlements = inject(Entitlements);
+
+    // Never more teams than the plan allows, so signing out brings it back to 2.
+    const teamCount = computed(() =>
+      Math.max(MIN_TEAMS, Math.min(teamCountChoice() ?? MIN_TEAMS, entitlements.maxTeams())),
     );
+    const playerCount = computed(() => players().length);
+    const countError = computed(() => checkPlayerCount(playerCount(), teamCount()));
+    // The icons of the person who is signed in, completed with the default circles that
+    // they did not use, so no two teams ever share an icon.
+    const teamIcons = computed(() => {
+      const chosen = preferences.active()?.teams.map((team) => team.icon) ?? [];
+      return [...chosen, ...DEFAULT_TEAM_ICONS.filter((icon) => !chosen.includes(icon))];
+    });
 
     return {
+      teamCount,
       playerCount,
       countError,
       teamIcons,
       canDraw: computed(() => countError() === null),
-      // Set when the person usually plays a team size and this list is not twice that.
-      // It is only a notice: it never stops the draw.
+      // Set when the person usually plays a team size and this list is not that many
+      // players for the teams in use. It is only a notice: it never stops the draw.
       sizeMismatch: computed(() => {
         const perTeam = preferences.active()?.playersPerTeam;
+        const teams = teamCount();
         const count = playerCount();
-        return perTeam && count !== perTeam * 2 ? { perTeam, count } : null;
+        return perTeam && count !== perTeam * teams ? { perTeam, teams, count } : null;
       }),
       whatsappText: computed(() => {
         const current = teams();
@@ -73,58 +90,68 @@ export const AmistosoStore = signalStore(
       }),
     };
   }),
-  withMethods((store) => ({
-    setRawText(rawText: string): void {
-      patchState(store, { rawText });
-    },
+  withMethods((store) => {
+    const entitlements = inject(Entitlements);
 
-    continueToPreview(): void {
-      const text = store.rawText();
-      if (text === store.parsedText() && store.players().length > 0) {
-        patchState(store, { step: 'preview', teams: null });
-        return;
-      }
-      const parsed = parsePastedNames(text);
-      if (parsed.length === 0) return;
-      const first = store.nextId();
-      patchState(store, {
-        players: parsed.map((player, i) => ({ id: `p${first + i}`, ...player })),
-        parsedText: text,
-        nextId: first + parsed.length,
-        teams: null,
-        step: 'preview',
-      });
-    },
+    return {
+      setRawText(rawText: string): void {
+        patchState(store, { rawText });
+      },
 
-    back(): void {
-      patchState(store, { step: 'paste' });
-    },
+      setTeamCount(count: number): void {
+        const valid = Number.isInteger(count) && count >= MIN_TEAMS && count <= MAX_TEAMS;
+        if (!valid || entitlements.teamsLock(count) !== null) return;
+        patchState(store, { teamCountChoice: count });
+      },
 
-    renamePlayer(id: string, name: string): void {
-      const trimmed = name.trim();
-      if (!trimmed) return;
-      patchState(store, ({ players }) => ({
-        players: players.map((p) => (p.id === id ? { ...p, name: trimmed } : p)),
-      }));
-    },
+      continueToPreview(): void {
+        const text = store.rawText();
+        if (text === store.parsedText() && store.players().length > 0) {
+          patchState(store, { step: 'preview', teams: null });
+          return;
+        }
+        const parsed = parsePastedNames(text);
+        if (parsed.length === 0) return;
+        const first = store.nextId();
+        patchState(store, {
+          players: parsed.map((player, i) => ({ id: `p${first + i}`, ...player })),
+          parsedText: text,
+          nextId: first + parsed.length,
+          teams: null,
+          step: 'preview',
+        });
+      },
 
-    removePlayer(id: string): void {
-      patchState(store, ({ players }) => ({ players: players.filter((p) => p.id !== id) }));
-    },
+      back(): void {
+        patchState(store, { step: 'paste' });
+      },
 
-    toggleGoalkeeper(id: string): void {
-      patchState(store, ({ players }) => ({
-        players: players.map((p) => (p.id === id ? { ...p, isGoalkeeper: !p.isGoalkeeper } : p)),
-      }));
-    },
+      renamePlayer(id: string, name: string): void {
+        const trimmed = name.trim();
+        if (!trimmed) return;
+        patchState(store, ({ players }) => ({
+          players: players.map((p) => (p.id === id ? { ...p, name: trimmed } : p)),
+        }));
+      },
 
-    draw(random: () => number = Math.random): void {
-      const result = drawTeams(store.players(), random);
-      if (result.ok) patchState(store, { teams: result.teams, step: 'result' });
-    },
+      removePlayer(id: string): void {
+        patchState(store, ({ players }) => ({ players: players.filter((p) => p.id !== id) }));
+      },
 
-    reset(): void {
-      patchState(store, initialState);
-    },
-  })),
+      toggleGoalkeeper(id: string): void {
+        patchState(store, ({ players }) => ({
+          players: players.map((p) => (p.id === id ? { ...p, isGoalkeeper: !p.isGoalkeeper } : p)),
+        }));
+      },
+
+      draw(random: () => number = Math.random): void {
+        const result = drawTeams(store.players(), random, store.teamCount());
+        if (result.ok) patchState(store, { teams: result.teams, step: 'result' });
+      },
+
+      reset(): void {
+        patchState(store, initialState);
+      },
+    };
+  }),
 );

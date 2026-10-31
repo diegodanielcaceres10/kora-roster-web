@@ -1,4 +1,11 @@
-import { checkPlayerCount, drawTeams, DrawResult } from './draw-teams';
+import {
+  checkPlayerCount,
+  drawTeams,
+  DrawResult,
+  MAX_TEAM_SIZE,
+  MIN_TEAM_SIZE,
+  playerRange,
+} from './draw-teams';
 
 interface Player {
   name: string;
@@ -24,7 +31,7 @@ function squad(total: number, keepers = 0): Player[] {
   }));
 }
 
-function teamsOf(result: DrawResult<Player>): [Player[], Player[]] {
+function teamsOf(result: DrawResult<Player>): Player[][] {
   if (!result.ok) throw new Error(`expected a draw, got ${result.error}`);
   return result.teams;
 }
@@ -44,7 +51,7 @@ describe('drawTeams', () => {
     });
 
     it.each([11, 13, 15, 21])('rejects %i players because the number is odd', (count) => {
-      expect(drawTeams(squad(count))).toEqual({ ok: false, error: 'odd', count });
+      expect(drawTeams(squad(count))).toEqual({ ok: false, error: 'uneven', count });
     });
 
     it.each(TOTALS)('accepts %i players and splits them in two equal teams', (count) => {
@@ -157,9 +164,9 @@ describe('checkPlayerCount', () => {
     [9, 'too-few'],
     [23, 'too-many'],
     [24, 'too-many'],
-    [11, 'odd'],
-    [13, 'odd'],
-    [21, 'odd'],
+    [11, 'uneven'],
+    [13, 'uneven'],
+    [21, 'uneven'],
   ])('reports %i players as %s', (count, error) => {
     expect(checkPlayerCount(count)).toBe(error);
   });
@@ -175,5 +182,166 @@ describe('checkPlayerCount', () => {
       expect(result.ok, `count ${count}`).toBe(error === null);
       if (!result.ok) expect(result.error, `count ${count}`).toBe(error);
     }
+  });
+});
+
+describe('playerRange', () => {
+  it('is from 5 to 11 players for every team', () => {
+    expect([MIN_TEAM_SIZE, MAX_TEAM_SIZE]).toEqual([5, 11]);
+  });
+
+  it.each([
+    [2, 10, 22],
+    [3, 15, 33],
+    [4, 20, 44],
+    [6, 30, 66],
+  ])('allows %i teams from %i to %i players', (teams, min, max) => {
+    expect(playerRange(teams)).toEqual({ min, max });
+  });
+});
+
+describe('with 3 and 4 teams', () => {
+  const COUNTS = [0, 5, 10, 12, 14, 15, 16, 17, 18, 20, 21, 22, 24, 30, 33, 34, 35, 40, 44, 45, 46];
+
+  it.each([
+    [3, 12, 'too-few'],
+    [3, 14, 'too-few'],
+    [3, 16, 'uneven'],
+    [3, 17, 'uneven'],
+    [3, 34, 'too-many'],
+    [3, 35, 'too-many'],
+    [4, 16, 'too-few'],
+    [4, 19, 'too-few'],
+    [4, 21, 'uneven'],
+    [4, 22, 'uneven'],
+    [4, 45, 'too-many'],
+    [4, 48, 'too-many'],
+  ])('with %i teams, %i players are %s', (teams, count, error) => {
+    expect(checkPlayerCount(count, teams)).toBe(error);
+    expect(drawTeams(squad(count), seeded(1), teams)).toEqual({ ok: false, error, count });
+  });
+
+  it.each([
+    [3, 15],
+    [3, 18],
+    [3, 33],
+    [4, 20],
+    [4, 24],
+    [4, 44],
+  ])('with %i teams, %i players are accepted', (teams, count) => {
+    expect(checkPlayerCount(count, teams)).toBeNull();
+  });
+
+  it('checks the range before the divisibility, as with 2 teams', () => {
+    expect(checkPlayerCount(13, 3)).toBe('too-few');
+    expect(checkPlayerCount(45, 4)).toBe('too-many');
+  });
+
+  it('agrees with drawTeams for every count and every number of teams', () => {
+    for (const teams of [2, 3, 4]) {
+      for (let count = 0; count <= 50; count++) {
+        const error = checkPlayerCount(count, teams);
+        const result = drawTeams(squad(count), seeded(1), teams);
+        expect(result.ok, `${teams} teams, ${count} players`).toBe(error === null);
+        if (!result.ok) expect(result.error, `${teams} teams, ${count} players`).toBe(error);
+      }
+    }
+    expect(COUNTS.length).toBeGreaterThan(0);
+  });
+
+  it.each([
+    [3, 15],
+    [3, 33],
+    [4, 20],
+    [4, 44],
+  ])('splits %i teams of %i players into teams of the same size', (teams, count) => {
+    const result = teamsOf(drawTeams(squad(count), seeded(count), teams));
+    expect(result).toHaveLength(teams);
+    expect(result.map((team) => team.length)).toEqual(Array(teams).fill(count / teams));
+  });
+
+  it('places every player in exactly one team', () => {
+    for (const seed of SEEDS) {
+      const teams = 3 + (seed % 2);
+      const count = teams * (5 + (seed % 7));
+      const players = squad(count, seed % 9);
+      const placed = teamsOf(drawTeams(players, seeded(seed), teams))
+        .flat()
+        .map((p) => p.name)
+        .sort();
+      expect(placed, `seed ${seed}`).toEqual(players.map((p) => p.name).sort());
+    }
+  });
+
+  it('never gives one team more than one goalkeeper above another', () => {
+    for (const seed of SEEDS) {
+      const teams = 3 + (seed % 2);
+      const keepers = seed % 9;
+      const result = teamsOf(drawTeams(squad(teams * 6, keepers), seeded(seed), teams));
+      const counts = result.map(keepersIn);
+      expect(Math.max(...counts) - Math.min(...counts), `seed ${seed}`).toBeLessThanOrEqual(1);
+      expect(
+        counts.reduce((a, b) => a + b, 0),
+        `seed ${seed}`,
+      ).toBe(keepers);
+    }
+  });
+
+  it('gives each team one goalkeeper when there are as many as teams', () => {
+    for (const seed of SEEDS.slice(0, 50)) {
+      const result = teamsOf(drawTeams(squad(20, 4), seeded(seed), 4));
+      expect(result.map(keepersIn), `seed ${seed}`).toEqual([1, 1, 1, 1]);
+    }
+  });
+
+  it('chooses at random which teams get the extra goalkeeper', () => {
+    const gotTwo = new Set<number>();
+    for (const seed of SEEDS) {
+      teamsOf(drawTeams(squad(18, 4), seeded(seed), 3)).forEach((team, i) => {
+        if (keepersIn(team) === 2) gotTwo.add(i);
+      });
+    }
+    expect([...gotTwo].sort()).toEqual([0, 1, 2]);
+  });
+
+  it('lists the goalkeepers first inside each team', () => {
+    for (const seed of SEEDS.slice(0, 50)) {
+      for (const team of teamsOf(drawTeams(squad(24, 5), seeded(seed), 4))) {
+        const flags = team.map((p) => p.isGoalkeeper);
+        expect(flags, `seed ${seed}`).toEqual([...flags].sort((x, y) => Number(y) - Number(x)));
+      }
+    }
+  });
+
+  it.each([
+    [3, 15],
+    [3, 14],
+    [4, 20],
+    [4, 19],
+  ])(
+    'still builds full teams when %i teams have %i of their players as goalkeepers',
+    (teams, keepers) => {
+      const count = teams * 5;
+      for (const seed of SEEDS.slice(0, 30)) {
+        const result = teamsOf(drawTeams(squad(count, keepers), seeded(seed), teams));
+        expect(
+          result.map((team) => team.length),
+          `seed ${seed}`,
+        ).toEqual(Array(teams).fill(5));
+      }
+    },
+  );
+
+  it('is repeatable and leaves the list it receives alone', () => {
+    const players = squad(20, 3);
+    const before = players.map((p) => p.name);
+    expect(drawTeams(players, seeded(9), 4)).toEqual(drawTeams(players, seeded(9), 4));
+    expect(players.map((p) => p.name)).toEqual(before);
+  });
+
+  it('draws 2 teams when the number of teams is left out', () => {
+    const players = squad(12, 2);
+    expect(drawTeams(players, seeded(5))).toEqual(drawTeams(players, seeded(5), 2));
+    expect(teamsOf(drawTeams(players, seeded(5)))).toHaveLength(2);
   });
 });

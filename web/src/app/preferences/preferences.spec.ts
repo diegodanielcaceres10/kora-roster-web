@@ -1,12 +1,6 @@
+import { MAX_TEAM_SIZE, MIN_TEAM_SIZE } from '../core/draw-teams';
 import { DEFAULT_TEAM_ICONS } from '../core/format-teams';
-import {
-  DEFAULT_PREFERENCES,
-  HEADER_MAX,
-  MAX_TEAM_SIZE,
-  MIN_TEAM_SIZE,
-  sanitizePreferences,
-  TEAM_ICONS,
-} from './preferences';
+import { DEFAULT_PREFERENCES, HEADER_MAX, sanitizePreferences, TEAM_ICONS } from './preferences';
 
 const teams = (first: unknown, second: unknown) => ({ teams: [first, second] });
 

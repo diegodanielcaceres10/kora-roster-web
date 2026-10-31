@@ -1,3 +1,4 @@
+import { MAX_TEAM_SIZE, MIN_TEAM_SIZE } from '../core/draw-teams';
 import { DEFAULT_TEAM_ICONS, Numbering } from '../core/format-teams';
 
 export interface TeamPreference {
@@ -15,8 +16,6 @@ export interface Preferences {
 }
 
 export const TEAM_ICONS = DEFAULT_TEAM_ICONS;
-export const MIN_TEAM_SIZE = 5;
-export const MAX_TEAM_SIZE = 11;
 export const HEADER_MAX = 200;
 
 export const DEFAULT_PREFERENCES: Preferences = {

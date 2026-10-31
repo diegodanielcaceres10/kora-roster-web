@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 import { DICTIONARIES } from '../../i18n/dictionaries';
 import { I18n } from '../../i18n/i18n';
 import { Preferences } from '../../preferences/preferences';
@@ -11,6 +12,7 @@ const list = (count: number) =>
   Array.from({ length: count }, (_, i) => `Player ${i + 1}`).join('\n');
 
 function setup(text: string, preferences?: Preferences) {
+  TestBed.configureTestingModule({ providers: [provideRouter([])] });
   if (preferences) saveSession(preferences);
   TestBed.inject(I18n).setLang('es');
   const store = TestBed.inject(AmistosoStore);
@@ -76,23 +78,23 @@ describe('PreviewStep', () => {
     it('shows the count and that the list is ready', () => {
       const { el } = setup(list(12));
       expect(el.textContent).toContain(T.preview.count(12));
-      expect(el.querySelector('[role="status"]')?.textContent).toContain(T.preview.status.ok);
+      expect(el.querySelector('p[role="status"]')?.textContent).toContain(T.preview.status.ok);
     });
 
     it.each([
-      [9, T.preview.status.tooFew(1)],
-      [11, T.preview.status.odd(11)],
-      [23, T.preview.status.tooMany(1)],
+      [9, T.preview.status.tooFew(1, 10)],
+      [11, T.preview.status.uneven(11, 2)],
+      [23, T.preview.status.tooMany(1, 22)],
     ])('explains what is wrong with %i players', (count, message) => {
       const { el } = setup(list(count));
-      expect(el.querySelector('[role="status"]')?.textContent).toContain(message);
+      expect(el.querySelector('p[role="status"]')?.textContent).toContain(message);
     });
 
     it('updates when a player is removed', () => {
       const { el, rows, byLabel, click } = setup(list(11));
       click(byLabel(T.preview.remove('Player 3')));
       expect(rows()).toHaveLength(10);
-      expect(el.querySelector('[role="status"]')?.textContent).toContain(T.preview.status.ok);
+      expect(el.querySelector('p[role="status"]')?.textContent).toContain(T.preview.status.ok);
     });
   });
 
@@ -201,12 +203,12 @@ describe('PreviewStep', () => {
 
     it('tells them when the list is not that size', () => {
       const { el } = setup(list(12), TEST_PREFERENCES);
-      expect(notice(el)).toContain(T.preview.sizeNotice(7, 12));
+      expect(notice(el)).toContain(T.preview.sizeNotice(7, 2, 12));
     });
 
     it('says nothing when the list is exactly that size', () => {
       const { el } = setup(list(14), TEST_PREFERENCES);
-      expect(notice(el)).not.toContain(T.preview.sizeNotice(7, 14));
+      expect(notice(el)).not.toContain(T.preview.sizeNotice(7, 2, 14));
       expect(notice(el)).not.toContain('Sueles jugar');
     });
 
@@ -227,8 +229,139 @@ describe('PreviewStep', () => {
 
     it('appears next to the problem when the list is not valid either', () => {
       const { el } = setup(list(11), TEST_PREFERENCES);
-      expect(notice(el)).toContain(T.preview.status.odd(11));
-      expect(notice(el)).toContain(T.preview.sizeNotice(7, 11));
+      expect(notice(el)).toContain(T.preview.status.uneven(11, 2));
+      expect(notice(el)).toContain(T.preview.sizeNotice(7, 2, 11));
+    });
+  });
+
+  describe('the number of teams', () => {
+    const radios = (el: HTMLElement) =>
+      Array.from(
+        el.querySelectorAll(
+          `[role="radiogroup"][aria-label="${T.preview.teamsLabel}"] [role="radio"]`,
+        ),
+      ) as HTMLButtonElement[];
+    const checked = (el: HTMLElement) =>
+      radios(el)
+        .find((r) => r.getAttribute('aria-checked') === 'true')
+        ?.textContent?.trim();
+    const countStatus = (el: HTMLElement) => el.querySelector('p[role="status"]')?.textContent;
+    const notice = (el: HTMLElement) =>
+      el.querySelector('app-lock-notice [role="status"]')?.textContent?.replace(/\s+/g, ' ').trim();
+    const locks = DICTIONARIES.es.locks;
+
+    it('offers 2 to 6 teams, with 2 chosen', () => {
+      const { el } = setup(list(12));
+      expect(radios(el).map((r) => r.textContent?.trim().charAt(0))).toEqual([
+        '2',
+        '3',
+        '4',
+        '5',
+        '6',
+      ]);
+      expect(checked(el)).toBe('2');
+    });
+
+    it('locks 3 and 4 for sign in, and 5 and 6 for Premium, without an account', () => {
+      const { el } = setup(list(12));
+      expect(radios(el).map((r) => r.getAttribute('aria-disabled'))).toEqual([
+        null,
+        'true',
+        'true',
+        'true',
+        'true',
+      ]);
+      expect(radios(el).map((r) => r.textContent?.includes(locks.premiumLabel))).toEqual([
+        false,
+        false,
+        false,
+        true,
+        true,
+      ]);
+    });
+
+    it('opens 3 and 4 with an account, and keeps 5 and 6 for Premium', () => {
+      saveSession();
+      const { el } = setup(list(12));
+      expect(radios(el).map((r) => r.getAttribute('aria-disabled'))).toEqual([
+        null,
+        null,
+        null,
+        'true',
+        'true',
+      ]);
+    });
+
+    it('says nothing about locks until one is touched', () => {
+      const { el } = setup(list(12));
+      expect(notice(el) ?? '').toBe('');
+    });
+
+    it('explains a locked 3 and offers to sign in, keeping the teams as they were', () => {
+      const { el, store, click } = setup(list(12));
+      click(radios(el)[1]);
+      expect(notice(el)).toContain(T.preview.teamsSignIn);
+      expect(el.querySelector('app-lock-notice a')?.getAttribute('href')).toBe('/es/cuenta');
+      expect(checked(el)).toBe('2');
+      expect(store.teamCount()).toBe(2);
+    });
+
+    it('explains a locked 5 as Premium, with nothing to sign in to', () => {
+      saveSession();
+      const { el, click } = setup(list(12));
+      click(radios(el)[3]);
+      expect(notice(el)).toContain(T.preview.teamsPremium);
+      expect(el.querySelector('app-lock-notice a')).toBeNull();
+    });
+
+    it('stops explaining as soon as a number of teams is chosen', () => {
+      saveSession();
+      const { el, click } = setup(list(18));
+      click(radios(el)[3]);
+      expect(notice(el)).toContain(T.preview.teamsPremium);
+      click(radios(el)[1]);
+      expect(notice(el) ?? '').toBe('');
+      expect(checked(el)).toBe('3');
+    });
+
+    it('recalculates the status for the chosen number of teams', () => {
+      saveSession();
+      const { el, click } = setup(list(16));
+      expect(countStatus(el)).toContain(T.preview.status.ok);
+      click(radios(el)[1]);
+      expect(countStatus(el)).toContain(T.preview.status.uneven(16, 3));
+    });
+
+    it.each([
+      [18, 3],
+      [20, 4],
+      [18, 2],
+    ])('with %i players and %i teams the list is ready', (players, teamIndex) => {
+      saveSession();
+      const { el, click } = setup(list(players));
+      click(radios(el)[teamIndex - 2]);
+      expect(countStatus(el)).toContain(T.preview.status.ok);
+    });
+
+    it('says how many players are missing for the chosen number of teams', () => {
+      saveSession();
+      const { el, click } = setup(list(18));
+      click(radios(el)[2]);
+      expect(countStatus(el)).toContain(T.preview.status.tooFew(2, 20));
+    });
+
+    it('draws as many teams as were chosen', () => {
+      saveSession();
+      const { el, store, click, byText } = setup(list(18));
+      click(radios(el)[1]);
+      click(byText(T.preview.draw));
+      expect(store.teams()).toHaveLength(3);
+    });
+
+    it('still draws 2 teams for somebody who is not signed in', () => {
+      const { store, click, byText } = setup(list(18));
+      click(byText(T.preview.draw));
+      expect(store.teams()).toHaveLength(2);
     });
   });
 });

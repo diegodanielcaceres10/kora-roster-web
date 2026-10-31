@@ -121,15 +121,18 @@ export const pt: Dictionary = {
       count: (n) => (n === 1 ? '1 jogador' : `${n} jogadores`),
       status: {
         ok: 'Pronto para sortear',
-        tooFew: (missing) =>
+        tooFew: (missing, min) =>
           missing === 1
-            ? 'Falta 1 jogador para chegar a 10.'
-            : `Faltam ${missing} jogadores para chegar a 10.`,
-        tooMany: (extra) =>
+            ? `Falta 1 jogador para chegar a ${min}.`
+            : `Faltam ${missing} jogadores para chegar a ${min}.`,
+        tooMany: (extra, max) =>
           extra === 1
-            ? 'Sobra 1 jogador: o máximo é 22.'
-            : `Sobram ${extra} jogadores: o máximo é 22.`,
-        odd: (count) => `São ${count} jogadores e o número precisa ser par.`,
+            ? `Sobra 1 jogador: o máximo é ${max}.`
+            : `Sobram ${extra} jogadores: o máximo é ${max}.`,
+        uneven: (count, teams) =>
+          teams === 2
+            ? `São ${count} jogadores e o número precisa ser par.`
+            : `São ${count} jogadores e com ${teams} times o número precisa ser múltiplo de ${teams}.`,
       },
       back: 'Voltar',
       draw: 'Sortear',
@@ -139,8 +142,13 @@ export const pt: Dictionary = {
       remove: (name) => `Remover ${name}`,
       markGoalkeeper: (name) => `Marcar ${name} como goleiro`,
       unmarkGoalkeeper: (name) => `Desmarcar ${name} como goleiro`,
-      sizeNotice: (perTeam, count) =>
-        `Você costuma jogar ${perTeam} contra ${perTeam}, mas esta lista tem ${count === 1 ? '1 jogador' : `${count} jogadores`}.`,
+      sizeNotice: (perTeam, teams, count) =>
+        teams === 2
+          ? `Você costuma jogar ${perTeam} contra ${perTeam}, mas esta lista tem ${count === 1 ? '1 jogador' : `${count} jogadores`}.`
+          : `Você costuma jogar com ${perTeam} por time: ${teams} times precisam de ${perTeam * teams} jogadores, mas esta lista tem ${count}.`,
+      teamsLabel: 'Times',
+      teamsSignIn: 'Entre para usar 3 e 4 times.',
+      teamsPremium: '5 e 6 times chegam com o Premium, em breve.',
     },
     result: {
       title: 'Times',

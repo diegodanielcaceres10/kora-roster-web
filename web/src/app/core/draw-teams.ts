@@ -1,16 +1,22 @@
-export const MIN_PLAYERS = 10;
-export const MAX_PLAYERS = 22;
+export const MIN_TEAM_SIZE = 5;
+export const MAX_TEAM_SIZE = 11;
 
-export type DrawError = 'too-few' | 'too-many' | 'odd';
+export type DrawError = 'too-few' | 'too-many' | 'uneven';
 
 export type DrawResult<T> =
-  { ok: true; teams: [T[], T[]] } | { ok: false; error: DrawError; count: number };
+  { ok: true; teams: T[][] } | { ok: false; error: DrawError; count: number };
 
-// The range is checked before the parity, so 9 players are "too few", not "odd".
-export function checkPlayerCount(count: number): DrawError | null {
-  if (count < MIN_PLAYERS) return 'too-few';
-  if (count > MAX_PLAYERS) return 'too-many';
-  if (count % 2 !== 0) return 'odd';
+// How many players a number of teams can have: from 5 to 11 on each team.
+export function playerRange(teams: number): { min: number; max: number } {
+  return { min: MIN_TEAM_SIZE * teams, max: MAX_TEAM_SIZE * teams };
+}
+
+// The range is checked before the divisibility, so 9 players are "too few", not "uneven".
+export function checkPlayerCount(count: number, teams = 2): DrawError | null {
+  const { min, max } = playerRange(teams);
+  if (count < min) return 'too-few';
+  if (count > max) return 'too-many';
+  if (count % teams !== 0) return 'uneven';
   return null;
 }
 
@@ -27,9 +33,10 @@ function shuffled<T>(items: readonly T[], random: () => number): T[] {
 export function drawTeams<T extends { isGoalkeeper: boolean }>(
   players: readonly T[],
   random: () => number = Math.random,
+  teamCount = 2,
 ): DrawResult<T> {
   const count = players.length;
-  const error = checkPlayerCount(count);
+  const error = checkPlayerCount(count, teamCount);
   if (error) return { ok: false, error, count };
 
   const keepers = shuffled(
@@ -41,14 +48,19 @@ export function drawTeams<T extends { isGoalkeeper: boolean }>(
     random,
   );
 
-  // Keepers are dealt one by one, so the teams never differ by more than one.
-  const teams: [T[], T[]] = [[], []];
-  const firstTeam = random() < 0.5 ? 0 : 1;
-  keepers.forEach((keeper, i) => teams[(firstTeam + i) % 2].push(keeper));
+  // Keepers are dealt one by one, starting from a random team, so no team has more than
+  // one above another.
+  const teams: T[][] = Array.from({ length: teamCount }, () => []);
+  const firstTeam = Math.floor(random() * teamCount);
+  keepers.forEach((keeper, i) => teams[(firstTeam + i) % teamCount].push(keeper));
 
-  const missingInFirst = count / 2 - teams[0].length;
-  teams[0].push(...fieldPlayers.slice(0, missingInFirst));
-  teams[1].push(...fieldPlayers.slice(missingInFirst));
+  const size = count / teamCount;
+  let next = 0;
+  for (const team of teams) {
+    const missing = size - team.length;
+    team.push(...fieldPlayers.slice(next, next + missing));
+    next += missing;
+  }
 
   return { ok: true, teams };
 }
