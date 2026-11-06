@@ -4,6 +4,7 @@ import { DICTIONARIES } from '../../i18n/dictionaries';
 import { I18n } from '../../i18n/i18n';
 import { DEFAULT_PREFERENCES, Preferences } from '../../preferences/preferences';
 import { PreferencesService } from '../../preferences/preferences-service';
+import { TEST_PREFERENCES } from '../../preferences/testing';
 import { ToastService } from '../../ui';
 import { PreferencesEditor } from './preferences-editor';
 
@@ -17,21 +18,12 @@ const USER = {
 };
 const KEY = `kora:prefs:${USER.id}`;
 
-const mine: Preferences = {
-  playersPerTeam: 7,
-  teams: [
-    { icon: '🟢', color: '#00ff00' },
-    { icon: '🟡', color: '#ffff00' },
-  ],
-  header: '⚽ Amistoso',
-  footer: 'Confirmen',
-  numbering: 'paren',
-};
+const mine = TEST_PREFERENCES;
 
 function setup(saved?: Preferences) {
   TestBed.configureTestingModule({ providers: provideFakeGoogle().providers });
   localStorage.setItem('kora:session', JSON.stringify(USER));
-  if (saved) localStorage.setItem(KEY, JSON.stringify({ version: 1, preferences: saved }));
+  if (saved) localStorage.setItem(KEY, JSON.stringify({ version: 2, preferences: saved }));
   TestBed.inject(I18n).setLang('es');
 
   const fixture = TestBed.createComponent(PreferencesEditor);
@@ -235,7 +227,7 @@ describe('PreferencesEditor', () => {
 
       expect(service.active()).toEqual(mine);
       expect(JSON.parse(localStorage.getItem(KEY) as string)).toEqual({
-        version: 1,
+        version: 2,
         preferences: mine,
       });
       expect(toast.message()).toBe(P.saved);
@@ -275,6 +267,141 @@ describe('PreferencesEditor', () => {
       button(P.restore).click();
       button(P.save).click();
       expect(service.active()).toEqual(DEFAULT_PREFERENCES);
+    });
+  });
+
+  describe('the number of teams', () => {
+    const group = P.teamCount.label;
+    const choose = (ctx: ReturnType<typeof setup>, count: number) => {
+      ctx
+        .radios(group)
+        .find((r) => r.textContent?.trim().startsWith(String(count)))
+        ?.click();
+      ctx.fixture.detectChanges();
+    };
+    const checkedCount = (ctx: ReturnType<typeof setup>) =>
+      ctx
+        .radios(group)
+        .find((r) => r.getAttribute('aria-checked') === 'true')
+        ?.textContent?.trim();
+    const fieldsets = (ctx: ReturnType<typeof setup>) => ctx.el.querySelectorAll('fieldset').length;
+    const notice = (ctx: ReturnType<typeof setup>) =>
+      ctx.el
+        .querySelector('app-lock-notice [role="status"]')
+        ?.textContent?.replace(/\s+/g, ' ')
+        .trim() ?? '';
+
+    it('offers 2 to 6 teams, with 2 chosen by default', () => {
+      const ctx = setup();
+      expect(ctx.radios(group).map((r) => r.textContent?.trim().charAt(0))).toEqual([
+        '2',
+        '3',
+        '4',
+        '5',
+        '6',
+      ]);
+      expect(checkedCount(ctx)).toBe('2');
+    });
+
+    it('opens 2, 3 and 4, and keeps 5 and 6 for Premium', () => {
+      const ctx = setup();
+      expect(ctx.radios(group).map((r) => r.getAttribute('aria-disabled'))).toEqual([
+        null,
+        null,
+        null,
+        'true',
+        'true',
+      ]);
+      expect(ctx.radios(group).map((r) => r.textContent?.includes(T.locks.premiumLabel))).toEqual([
+        false,
+        false,
+        false,
+        true,
+        true,
+      ]);
+    });
+
+    it('shows the icon and the color only of the teams in use', () => {
+      const ctx = setup();
+      expect(fieldsets(ctx)).toBe(2);
+      choose(ctx, 4);
+      expect(fieldsets(ctx)).toBe(4);
+      choose(ctx, 3);
+      expect(fieldsets(ctx)).toBe(3);
+    });
+
+    it('shows the number of teams that was saved', () => {
+      const ctx = setup({ ...mine, teamCount: 3 });
+      expect(checkedCount(ctx)).toBe('3');
+      expect(fieldsets(ctx)).toBe(3);
+    });
+
+    it('shows a preview with as many teams as were chosen', () => {
+      const ctx = setup();
+      choose(ctx, 4);
+      for (const [i, icon] of ['🔴', '🔵', '🟢', '🟡'].entries()) {
+        expect(ctx.preview()).toContain(`${icon} ${T.tool.teamTitle(i + 1)}`);
+      }
+      expect(ctx.preview()).not.toContain(T.tool.teamTitle(5));
+    });
+
+    it('explains a locked 5 as Premium, and keeps the number of teams', () => {
+      const ctx = setup();
+      choose(ctx, 5);
+      expect(notice(ctx)).toContain(T.tool.preview.teamsPremium);
+      expect(checkedCount(ctx)).toBe('2');
+    });
+
+    it('stops explaining as soon as a number of teams is chosen', () => {
+      const ctx = setup();
+      choose(ctx, 6);
+      choose(ctx, 3);
+      expect(notice(ctx)).toBe('');
+    });
+
+    it('saves the number of teams together with everything else', () => {
+      const ctx = setup();
+      choose(ctx, 4);
+      ctx.button(P.save).click();
+      expect(ctx.service.active()?.teamCount).toBe(4);
+      expect(JSON.parse(localStorage.getItem(KEY) as string).preferences.teamCount).toBe(4);
+    });
+
+    it('keeps the color of a team that is not shown while the number goes down and up', () => {
+      const ctx = setup();
+      choose(ctx, 4);
+      ctx.typeInto(ctx.colorLabel(4), '#123456');
+      choose(ctx, 2);
+      choose(ctx, 4);
+      expect((ctx.field(ctx.colorLabel(4)) as HTMLInputElement).value).toBe('#123456');
+    });
+
+    it('swaps icons with a team that is not shown, so the six circles stay different', () => {
+      const ctx = setup();
+      ctx.pick(ctx.iconGroup(1), '🟠');
+      expect(ctx.checkedIcon(ctx.iconGroup(1))).toBe('🟠');
+      ctx.button(P.save).click();
+      const icons = ctx.service.active()?.teams.map((team) => team.icon) ?? [];
+      expect(icons[0]).toBe('🟠');
+      expect(icons[5]).toBe('🔴');
+      expect(new Set(icons).size).toBe(6);
+    });
+
+    it('gives its old icon to a team that is not shown yet when its icon is taken, before saving', () => {
+      const ctx = setup();
+      // Team 3 is hidden and has 🟢: taking it for team 1 must hand team 1's old icon to team 3.
+      ctx.pick(ctx.iconGroup(1), '🟢');
+      choose(ctx, 3);
+      expect(ctx.checkedIcon(ctx.iconGroup(1))).toBe('🟢');
+      expect(ctx.checkedIcon(ctx.iconGroup(3))).toBe('🔴');
+    });
+
+    it('goes back to 2 teams when the defaults are restored', () => {
+      const ctx = setup({ ...mine, teamCount: 4 });
+      ctx.button(P.restore).click();
+      ctx.fixture.detectChanges();
+      expect(checkedCount(ctx)).toBe('2');
+      expect(fieldsets(ctx)).toBe(2);
     });
   });
 });

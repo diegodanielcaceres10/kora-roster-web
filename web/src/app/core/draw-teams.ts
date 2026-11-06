@@ -1,5 +1,7 @@
 export const MIN_TEAM_SIZE = 5;
 export const MAX_TEAM_SIZE = 11;
+export const MIN_TEAMS = 2;
+export const MAX_TEAMS = 6;
 
 export type DrawError = 'too-few' | 'too-many' | 'uneven';
 

@@ -440,20 +440,94 @@ describe('AmistosoStore', () => {
       });
     });
 
-    it('never repeats an icon, even when the preferences only set two', () => {
-      saveSession(TEST_PREFERENCES);
-      const icons = setup().store.teamIcons();
-      expect(icons.slice(0, 2)).toEqual(['🟢', '🟡']);
-      expect(icons).toHaveLength(6);
-      expect(new Set(icons).size).toBe(6);
-    });
-
     it('compares the size the person usually plays with the number of teams in use', () => {
       saveSession({ ...TEST_PREFERENCES, playersPerTeam: 5 });
       const { store } = inPreview(list(20));
       expect(store.sizeMismatch()).toEqual({ perTeam: 5, teams: 2, count: 20 });
       store.setTeamCount(4);
       expect(store.sizeMismatch()).toBeNull();
+    });
+  });
+
+  describe('the number of teams the person prefers', () => {
+    beforeEach(() => localStorage.clear());
+    afterEach(() => localStorage.clear());
+
+    it('starts at the number of teams in their preferences', () => {
+      saveSession({ ...TEST_PREFERENCES, teamCount: 4 });
+      expect(setup().store.teamCount()).toBe(4);
+    });
+
+    it('keeps what they pick in the selector over their preference, until they start over', () => {
+      saveSession({ ...TEST_PREFERENCES, teamCount: 4 });
+      const { store } = setup();
+      store.setTeamCount(3);
+      expect(store.teamCount()).toBe(3);
+      store.reset();
+      expect(store.teamCount()).toBe(4);
+    });
+
+    it('never goes above what the plan allows, whatever was saved', () => {
+      saveSession({ ...TEST_PREFERENCES, teamCount: 5 });
+      expect(setup().store.teamCount()).toBe(4);
+    });
+
+    it('is 2 for somebody who is not signed in, even if preferences are saved in the browser', () => {
+      localStorage.setItem(
+        'kora:prefs:1122334455',
+        JSON.stringify({ version: 2, preferences: { ...TEST_PREFERENCES, teamCount: 4 } }),
+      );
+      expect(setup().store.teamCount()).toBe(2);
+    });
+
+    it('follows new preferences while the person has picked nothing', () => {
+      saveSession(TEST_PREFERENCES);
+      const { store } = setup();
+      TestBed.inject(PreferencesService).save({ ...TEST_PREFERENCES, teamCount: 3 });
+      expect(store.teamCount()).toBe(3);
+    });
+
+    it('does not follow new preferences once the person picked a number in the selector', () => {
+      saveSession(TEST_PREFERENCES);
+      const { store } = setup();
+      store.setTeamCount(4);
+      TestBed.inject(PreferencesService).save({ ...TEST_PREFERENCES, teamCount: 3 });
+      expect(store.teamCount()).toBe(4);
+    });
+
+    it('checks the size they usually play against the teams they prefer', () => {
+      saveSession({ ...TEST_PREFERENCES, teamCount: 4, playersPerTeam: 5 });
+      const { store } = inPreview(list(20));
+      expect(store.sizeMismatch()).toBeNull();
+      expect(store.countError()).toBeNull();
+    });
+  });
+
+  describe('the colors of the teams', () => {
+    beforeEach(() => localStorage.clear());
+    afterEach(() => localStorage.clear());
+
+    const DEFAULTS = ['#e53935', '#1e88e5', '#43a047', '#fdd835', '#8e24aa', '#fb8c00'];
+
+    it('are the default ones for somebody who is not signed in', () => {
+      expect(setup().store.teamColors()).toEqual(DEFAULTS);
+    });
+
+    it('are the default ones for somebody signed in who saved nothing', () => {
+      saveSession();
+      expect(setup().store.teamColors()).toEqual(DEFAULTS);
+    });
+
+    it('are the ones the person chose, team by team', () => {
+      saveSession(TEST_PREFERENCES);
+      expect(setup().store.teamColors()).toEqual(TEST_PREFERENCES.teams.map((team) => team.color));
+    });
+
+    it('go back to the default ones when the person signs out', async () => {
+      saveSession(TEST_PREFERENCES);
+      const { store } = setup();
+      await TestBed.inject(Auth).signOut();
+      expect(store.teamColors()).toEqual(DEFAULTS);
     });
   });
 });

@@ -52,6 +52,7 @@ export const es: Dictionary = {
     description:
       'Se guardan en este dispositivo y se usan cuando armas equipos con la sesión iniciada.',
     playersPerTeam: { label: 'Jugadores por equipo', any: 'Cualquiera' },
+    teamCount: { label: 'Cantidad de equipos' },
     teams: {
       iconLabel: (team) => `${team}: ícono`,
       colorLabel: (team) => `${team}: color`,

@@ -341,6 +341,19 @@ describe('app routes', () => {
       expect(root.querySelector('app-lock-notice a[href="/es/cuenta"]')).not.toBeNull();
     });
 
+    it('starts at the number of teams the person prefers, and draws that many', async () => {
+      saveSession({ ...TEST_PREFERENCES, teamCount: 4 });
+      const { harness, root } = await pasted(20);
+      expect(teamRadio(root, '4').getAttribute('aria-checked')).toBe('true');
+      (
+        Array.from(root.querySelectorAll('ui-button button')).find(
+          (b) => b.textContent?.trim() === DICTIONARIES.es.tool.preview.draw,
+        ) as HTMLButtonElement
+      ).click();
+      harness.fixture.detectChanges();
+      expect(root.querySelectorAll('ui-card')).toHaveLength(4);
+    });
+
     it('lets a signed in person draw 4 teams and shows them all', async () => {
       saveSession();
       const { harness, root } = await pasted(20);

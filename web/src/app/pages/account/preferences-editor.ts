@@ -1,7 +1,9 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
-import { MAX_TEAM_SIZE, MIN_TEAM_SIZE } from '../../core/draw-teams';
+import { MAX_TEAM_SIZE, MAX_TEAMS, MIN_TEAM_SIZE, MIN_TEAMS } from '../../core/draw-teams';
 import { formatTeamsForWhatsApp, Numbering } from '../../core/format-teams';
 import { I18n } from '../../i18n/i18n';
+import { Entitlements, LockReason } from '../../plans/entitlements';
+import { LockNotice } from '../../plans/lock-notice';
 import {
   DEFAULT_PREFERENCES,
   HEADER_MAX,
@@ -9,32 +11,39 @@ import {
   TEAM_ICONS,
 } from '../../preferences/preferences';
 import { PreferencesService } from '../../preferences/preferences-service';
-import { SelectOption, ToastService, UiButton, UiInput, UiSegmented, UiSelect } from '../../ui';
+import {
+  SegmentedOption,
+  SelectOption,
+  ToastService,
+  UiButton,
+  UiInput,
+  UiSegmented,
+  UiSelect,
+} from '../../ui';
 
-const SAMPLE_TEAMS = [
-  [
-    { name: 'Diego', isGoalkeeper: true },
-    { name: 'Mati', isGoalkeeper: false },
-    { name: 'Nico', isGoalkeeper: false },
-  ],
-  [
-    { name: 'Fede', isGoalkeeper: true },
-    { name: 'Lucho', isGoalkeeper: false },
-    { name: 'Santi', isGoalkeeper: false },
-  ],
+const SAMPLE_NAMES = [
+  ['Diego', 'Mati', 'Nico'],
+  ['Fede', 'Lucho', 'Santi'],
+  ['Gonza', 'Tomi', 'Ale'],
+  ['Joaco', 'Bruno', 'Axel'],
+  ['Lauti', 'Thiago', 'Ian'],
+  ['Maxi', 'Tano', 'Facu'],
 ];
+const SAMPLE_TEAMS = SAMPLE_NAMES.map((names) =>
+  names.map((name, i) => ({ name, isGoalkeeper: i === 0 })),
+);
 
 const NUMBERINGS: readonly Numbering[] = ['dot', 'paren', 'dash', 'none'];
 
 const copyOf = (preferences: Preferences): Preferences => ({
   ...preferences,
-  teams: [{ ...preferences.teams[0] }, { ...preferences.teams[1] }],
+  teams: preferences.teams.map((team) => ({ ...team })),
 });
 
 @Component({
   selector: 'app-preferences-editor',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [UiButton, UiInput, UiSegmented, UiSelect],
+  imports: [LockNotice, UiButton, UiInput, UiSegmented, UiSelect],
   template: `
     <section class="space-y-6">
       <div class="space-y-1">
@@ -49,7 +58,18 @@ const copyOf = (preferences: Preferences): Preferences => ({
         (valueChange)="setSize($event)"
       />
 
-      @for (team of draft().teams; track $index; let i = $index) {
+      <div class="space-y-2">
+        <ui-segmented
+          [label]="t().teamCount.label"
+          [options]="teamCountOptions()"
+          [value]="teamCountValue()"
+          (valueChange)="setTeamCount($event)"
+          (lockedSelect)="touchLocked($event)"
+        />
+        <app-lock-notice [reason]="lock()?.reason ?? null" [message]="lock()?.message ?? null" />
+      </div>
+
+      @for (team of visibleTeams(); track $index; let i = $index) {
         <fieldset class="space-y-3 rounded-xl border border-secondary/15 p-4">
           <legend class="px-1 font-semibold">{{ teamTitle(i) }}</legend>
           <ui-segmented
@@ -106,6 +126,7 @@ export class PreferencesEditor {
   private readonly i18n = inject(I18n);
   private readonly preferences = inject(PreferencesService);
   private readonly toast = inject(ToastService);
+  private readonly entitlements = inject(Entitlements);
 
   protected readonly t = computed(() => this.i18n.t().preferences);
   protected readonly textMax = HEADER_MAX;
@@ -118,6 +139,7 @@ export class PreferencesEditor {
   protected readonly draft = signal<Preferences>(
     copyOf(this.preferences.active() ?? DEFAULT_PREFERENCES),
   );
+  protected readonly lock = signal<{ reason: LockReason; message: string } | null>(null);
 
   protected readonly sizeOptions = computed<SelectOption[]>(() => [
     { value: '', label: this.t().playersPerTeam.any },
@@ -127,6 +149,23 @@ export class PreferencesEditor {
     })),
   ]);
   protected readonly sizeValue = computed(() => this.draft().playersPerTeam?.toString() ?? '');
+
+  protected readonly teamCountOptions = computed<SegmentedOption[]>(() =>
+    Array.from({ length: MAX_TEAMS - MIN_TEAMS + 1 }, (_, i) => MIN_TEAMS + i).map((count) => {
+      const locked = this.entitlements.teamsLock(count);
+      const option: SegmentedOption = { value: String(count), label: String(count) };
+      if (locked) {
+        option.locked = locked;
+        if (locked === 'premium') option.lockedLabel = this.i18n.t().locks.premiumLabel;
+      }
+      return option;
+    }),
+  );
+  protected readonly teamCountValue = computed(() => String(this.draft().teamCount));
+  // Only the teams in use are shown; the others stay saved, out of sight.
+  protected readonly visibleTeams = computed(() =>
+    this.draft().teams.slice(0, this.draft().teamCount),
+  );
 
   protected readonly numberingOptions = computed<SelectOption[]>(() => {
     const { template } = this.t();
@@ -139,9 +178,15 @@ export class PreferencesEditor {
   });
 
   protected readonly previewText = computed(() => {
-    const { teams, header, footer, numbering } = this.draft();
-    const styles = teams.map((team, i) => ({ icon: team.icon, title: this.teamTitle(i) }));
-    return formatTeamsForWhatsApp(SAMPLE_TEAMS, styles, { header, footer, numbering });
+    const { teams, teamCount, header, footer, numbering } = this.draft();
+    const styles = teams
+      .slice(0, teamCount)
+      .map((team, i) => ({ icon: team.icon, title: this.teamTitle(i) }));
+    return formatTeamsForWhatsApp(SAMPLE_TEAMS.slice(0, teamCount), styles, {
+      header,
+      footer,
+      numbering,
+    });
   });
 
   protected teamTitle(index: number): string {
@@ -152,12 +197,29 @@ export class PreferencesEditor {
     this.draft.update((d) => ({ ...d, playersPerTeam: value === '' ? null : Number(value) }));
   }
 
-  // Choosing the icon of the other team swaps the two, so they are never the same.
+  protected setTeamCount(value: string): void {
+    this.lock.set(null);
+    const teamCount = Number(value);
+    this.draft.update((d) => ({ ...d, teamCount }));
+  }
+
+  protected touchLocked(option: SegmentedOption): void {
+    if (!option.locked) return;
+    // The same sentences the tool shows under its own selector of teams.
+    const { teamsSignIn, teamsPremium } = this.i18n.t().tool.preview;
+    this.lock.set({
+      reason: option.locked,
+      message: option.locked === 'sign-in' ? teamsSignIn : teamsPremium,
+    });
+  }
+
+  // Choosing an icon that another team has, shown or not, swaps the two: the six circles
+  // are always all different.
   protected setIcon(index: number, icon: string): void {
     this.draft.update((d) => {
       const next = copyOf(d);
-      const other = index === 0 ? 1 : 0;
-      if (next.teams[other].icon === icon) next.teams[other].icon = next.teams[index].icon;
+      const other = next.teams.findIndex((team, i) => i !== index && team.icon === icon);
+      if (other >= 0) next.teams[other].icon = next.teams[index].icon;
       next.teams[index].icon = icon;
       return next;
     });

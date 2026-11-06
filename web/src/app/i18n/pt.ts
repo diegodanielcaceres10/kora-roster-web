@@ -51,6 +51,7 @@ export const pt: Dictionary = {
     description:
       'Ficam salvas neste dispositivo e são usadas quando você monta times com a sessão iniciada.',
     playersPerTeam: { label: 'Jogadores por time', any: 'Qualquer' },
+    teamCount: { label: 'Quantidade de times' },
     teams: {
       iconLabel: (team) => `${team}: ícone`,
       colorLabel: (team) => `${team}: cor`,

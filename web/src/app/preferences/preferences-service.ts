@@ -6,7 +6,9 @@ import { browserStorage } from '../auth/storage';
 import { Preferences, sanitizePreferences } from './preferences';
 
 const KEY_PREFIX = 'kora:prefs:';
-const VERSION = 1;
+// Version 1 held two teams and no number of teams; reading it completes the missing parts.
+const READABLE_VERSIONS: readonly unknown[] = [1, 2];
+const VERSION = 2;
 
 // The preferences of whoever is signed in, kept in the browser under their Google id.
 // Without a session there are none: the app behaves as it does for any visitor.
@@ -43,7 +45,7 @@ export class PreferencesService {
       if (
         typeof saved === 'object' &&
         saved !== null &&
-        (saved as { version?: unknown }).version === VERSION
+        READABLE_VERSIONS.includes((saved as { version?: unknown }).version)
       ) {
         return sanitizePreferences((saved as { preferences?: unknown }).preferences);
       }

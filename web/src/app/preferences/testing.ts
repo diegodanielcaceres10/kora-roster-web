@@ -11,9 +11,14 @@ export const TEST_ACCOUNT = {
 
 export const TEST_PREFERENCES: Preferences = {
   playersPerTeam: 7,
+  teamCount: 2,
   teams: [
     { icon: '🟢', color: '#00ff00' },
     { icon: '🟡', color: '#ffff00' },
+    { icon: '🔴', color: '#43a047' },
+    { icon: '🔵', color: '#fdd835' },
+    { icon: '🟣', color: '#8e24aa' },
+    { icon: '🟠', color: '#fb8c00' },
   ],
   header: '⚽ Amistoso',
   footer: 'Confirmen',
@@ -25,7 +30,7 @@ export function saveSession(preferences?: Preferences): void {
   if (preferences) {
     localStorage.setItem(
       `kora:prefs:${TEST_ACCOUNT.id}`,
-      JSON.stringify({ version: 1, preferences }),
+      JSON.stringify({ version: 2, preferences }),
     );
   }
 }

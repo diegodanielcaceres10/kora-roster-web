@@ -47,6 +47,7 @@ export const en = {
     title: 'Preferences',
     description: 'They are saved on this device and used when you build teams while signed in.',
     playersPerTeam: { label: 'Players per team', any: 'Any' },
+    teamCount: { label: 'Number of teams' },
     teams: {
       iconLabel: (team: string) => `${team}: icon`,
       colorLabel: (team: string) => `${team}: color`,

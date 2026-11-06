@@ -3,24 +3,16 @@ import { Auth } from '../auth/auth';
 import { makeCredential, provideFakeGoogle } from '../auth/testing';
 import { DEFAULT_PREFERENCES, Preferences } from './preferences';
 import { PreferencesService } from './preferences-service';
+import { TEST_PREFERENCES } from './testing';
 
 const KEY = (id: string) => `kora:prefs:${id}`;
 const ME = '1122334455';
 const OTHER = '9988776655';
 
-const mine: Preferences = {
-  playersPerTeam: 7,
-  teams: [
-    { icon: '🟢', color: '#00ff00' },
-    { icon: '🟡', color: '#ffff00' },
-  ],
-  header: '⚽ Amistoso',
-  footer: 'Confirmen',
-  numbering: 'paren',
-};
+const mine = TEST_PREFERENCES;
 const theirs: Preferences = { ...DEFAULT_PREFERENCES, header: 'Otro', numbering: 'dash' };
 
-const stored = (preferences: unknown, version: unknown = 1) =>
+const stored = (preferences: unknown, version: unknown = 2) =>
   JSON.stringify({ version, preferences });
 
 async function setup() {
@@ -99,7 +91,7 @@ describe('PreferencesService', () => {
       ['text that is not JSON', 'not json'],
       ['JSON of another kind', '[]'],
       ['nothing', 'null'],
-      ['a version it does not know', stored(mine, 2)],
+      ['a version it does not know', stored(mine, 3)],
       ['no version', JSON.stringify({ preferences: mine })],
     ])('uses the defaults for %s', async (_label, saved) => {
       localStorage.setItem(KEY(ME), saved);
@@ -125,7 +117,7 @@ describe('PreferencesService', () => {
       service.save(mine);
       expect(service.active()).toEqual(mine);
       expect(JSON.parse(localStorage.getItem(KEY(ME)) as string)).toEqual({
-        version: 1,
+        version: 2,
         preferences: mine,
       });
     });
@@ -171,6 +163,42 @@ describe('PreferencesService', () => {
       TestBed.resetTestingModule();
       const second = await setup();
       expect(second.service.active()).toEqual(mine);
+    });
+  });
+
+  describe('what an earlier version saved', () => {
+    const earlier = {
+      playersPerTeam: 7,
+      teams: [
+        { icon: '🟢', color: '#00ff00' },
+        { icon: '🟡', color: '#ffff00' },
+      ],
+      header: '⚽ Amistoso',
+      footer: 'Confirmen',
+      numbering: 'paren',
+    };
+
+    it('is read with its two teams and completed with the four that were missing', async () => {
+      localStorage.setItem(KEY(ME), stored(earlier, 1));
+      const { service, signIn } = await setup();
+      signIn();
+      expect(service.active()).toEqual(TEST_PREFERENCES);
+    });
+
+    it('is written back in the new version once something is saved', async () => {
+      localStorage.setItem(KEY(ME), stored(earlier, 1));
+      const { service, signIn } = await setup();
+      signIn();
+      service.save({ ...service.active()!, teamCount: 4 });
+      expect(JSON.parse(localStorage.getItem(KEY(ME)) as string).version).toBe(2);
+      expect(service.active()?.teamCount).toBe(4);
+    });
+
+    it('keeps every icon different after completing it', async () => {
+      localStorage.setItem(KEY(ME), stored(earlier, 1));
+      const { service, signIn } = await setup();
+      signIn();
+      expect(new Set(service.active()?.teams.map((team) => team.icon)).size).toBe(6);
     });
   });
 });
