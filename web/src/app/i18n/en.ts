@@ -155,6 +155,10 @@ export const en = {
       copyFailed: 'Could not copy. Select the text and copy it by hand.',
       redraw: 'Draw again',
       startOver: 'Start over',
+      swapHint:
+        'Tap a player, then a player from another team, to swap them. You can also drag them.',
+      selected: (name: string) => `Selected: ${name}. Tap a player from another team.`,
+      swapped: (a: string, b: string) => `${a} and ${b} swapped.`,
     },
   },
 };

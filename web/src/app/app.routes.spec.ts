@@ -354,6 +354,30 @@ describe('app routes', () => {
       expect(root.querySelectorAll('ui-card')).toHaveLength(4);
     });
 
+    it('lets somebody swap two players of different teams by tapping them', async () => {
+      const { harness, root } = await pasted(12);
+      (
+        Array.from(root.querySelectorAll('ui-button button')).find(
+          (b) => b.textContent?.trim() === DICTIONARIES.es.tool.preview.draw,
+        ) as HTMLButtonElement
+      ).click();
+      harness.fixture.detectChanges();
+      const cards = Array.from(root.querySelectorAll('ui-card'));
+      const first = cards[0].querySelector('li button') as HTMLButtonElement;
+      const second = cards[1].querySelector('li button') as HTMLButtonElement;
+      const [nameA, nameB] = [first.textContent, second.textContent];
+      first.click();
+      harness.fixture.detectChanges();
+      second.click();
+      harness.fixture.detectChanges();
+      const after = Array.from(root.querySelectorAll('ui-card'));
+      expect(after[0].querySelector('li button')?.textContent).toBe(nameB);
+      expect(after[1].querySelector('li button')?.textContent).toBe(nameA);
+      expect(root.querySelector('pre')?.textContent).toContain(
+        nameB?.replace(/^\s*1\.\s*/, '').trim(),
+      );
+    });
+
     it('lets a signed in person draw 4 teams and shows them all', async () => {
       saveSession();
       const { harness, root } = await pasted(20);

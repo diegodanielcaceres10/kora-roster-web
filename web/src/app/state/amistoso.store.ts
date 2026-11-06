@@ -28,6 +28,12 @@ interface AmistosoState {
   nextId: number;
 }
 
+// Goalkeepers go first in a team, and everybody else keeps their order.
+const keepersFirst = (team: Player[]): Player[] => [
+  ...team.filter((p) => p.isGoalkeeper),
+  ...team.filter((p) => !p.isGoalkeeper),
+];
+
 const initialState: AmistosoState = {
   rawText: '',
   parsedText: null,
@@ -155,6 +161,25 @@ export const AmistosoStore = signalStore(
       draw(random: () => number = Math.random): void {
         const result = drawTeams(store.players(), random, store.teamCount());
         if (result.ok) patchState(store, { teams: result.teams, step: 'result' });
+      },
+
+      // Two players of different teams change places: the one who comes takes the place of
+      // the one who goes, so every team keeps its size. Anything else is ignored.
+      swapPlayers(idA: string, idB: string): void {
+        const teams = store.teams();
+        if (!teams) return;
+        const teamA = teams.findIndex((team) => team.some((p) => p.id === idA));
+        const teamB = teams.findIndex((team) => team.some((p) => p.id === idB));
+        if (teamA < 0 || teamB < 0 || teamA === teamB) return;
+        const a = teams[teamA].find((p) => p.id === idA) as Player;
+        const b = teams[teamB].find((p) => p.id === idB) as Player;
+        const replace = (team: Player[], out: Player, into: Player) =>
+          keepersFirst(team.map((p) => (p.id === out.id ? into : p)));
+        patchState(store, {
+          teams: teams.map((team, i) =>
+            i === teamA ? replace(team, a, b) : i === teamB ? replace(team, b, a) : team,
+          ),
+        });
       },
 
       reset(): void {

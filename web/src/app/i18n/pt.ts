@@ -159,6 +159,10 @@ export const pt: Dictionary = {
       copyFailed: 'Não foi possível copiar. Selecione o texto e copie manualmente.',
       redraw: 'Sortear de novo',
       startOver: 'Começar de novo',
+      swapHint:
+        'Toque em um jogador e depois em um de outro time para trocá-los. Você também pode arrastá-los.',
+      selected: (name) => `Selecionado: ${name}. Toque em um jogador de outro time.`,
+      swapped: (a, b) => `${a} e ${b} trocados.`,
     },
   },
 };

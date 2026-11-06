@@ -167,6 +167,6 @@ Not components, but just as easy to duplicate by accident:
   icon and a color for each of the six possible teams. The quick match reads them through
   `AmistosoStore` (`teamIcons`, `whatsappText`, `sizeMismatch`): use those instead of asking the
   service again.
-- `state/`: `AmistosoStore`, the NgRx Signals store of the quick match flow. `teamCount()` is the number of teams in use, never above what the plan allows; change it with `setTeamCount()`.
+- `state/`: `AmistosoStore`, the NgRx Signals store of the quick match flow. `teamCount()` is the number of teams in use, never above what the plan allows; change it with `setTeamCount()`. `swapPlayers(idA, idB)` swaps two players of different teams.
 - `layout/shell.ts`: the header (logo, account link or photo, language selector) and footer
   shared by every language route.

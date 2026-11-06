@@ -5,7 +5,7 @@ import { DEFAULT_TEAM_ICONS } from '../core/format-teams';
 import { I18n } from '../i18n/i18n';
 import { PreferencesService } from '../preferences/preferences-service';
 import { saveSession, TEST_PREFERENCES } from '../preferences/testing';
-import { AmistosoStore } from './amistoso.store';
+import { AmistosoStore, Player } from './amistoso.store';
 
 const list = (count: number) =>
   Array.from({ length: count }, (_, i) => `Player ${i + 1}`).join('\n');
@@ -528,6 +528,154 @@ describe('AmistosoStore', () => {
       const { store } = setup();
       await TestBed.inject(Auth).signOut();
       expect(store.teamColors()).toEqual(DEFAULTS);
+    });
+  });
+
+  describe('swapping two players', () => {
+    beforeEach(() => localStorage.clear());
+    afterEach(() => localStorage.clear());
+
+    // teams: undefined = 2 teams. More than 2 needs an account.
+    function drawn(teams?: number) {
+      if (teams && teams > 2) saveSession();
+      const players =
+        teams === 3
+          ? 'Diego 🧤\nMati 🧤\nFede 🧤\n' + list(15)
+          : teams === 4
+            ? 'Diego 🧤\nMati 🧤\nFede 🧤\n' + list(17)
+            : 'Diego 🧤\nMati 🧤\n' + list(10);
+      const ctx = inPreview(players);
+      if (teams) ctx.store.setTeamCount(teams);
+      ctx.store.draw(seeded(3));
+      return ctx;
+    }
+    const ownerOf = (teams: Player[][], id: string) =>
+      teams.findIndex((team) => team.some((p) => p.id === id));
+    const field = (team: Player[]) => team.find((p) => !p.isGoalkeeper) as Player;
+    // What a swap must give: the player who comes takes the place of the one who goes, and
+    // the goalkeepers stay first, keeping the order of everybody else.
+    const expectedTeam = (team: Player[], out: Player, into: Player) => {
+      const replaced = team.map((p) => (p.id === out.id ? into : p));
+      return [
+        ...replaced.filter((p) => p.isGoalkeeper),
+        ...replaced.filter((p) => !p.isGoalkeeper),
+      ];
+    };
+
+    it('moves each player to the team of the other, and changes nothing else', () => {
+      const { store } = drawn();
+      const before = store.teams() as Player[][];
+      const a = field(before[0]);
+      const b = field(before[1]);
+      store.swapPlayers(a.id, b.id);
+      const after = store.teams() as Player[][];
+      expect(ownerOf(after, a.id)).toBe(1);
+      expect(ownerOf(after, b.id)).toBe(0);
+      expect(after.map((team) => team.length)).toEqual(before.map((team) => team.length));
+      for (const player of before.flat().filter((p) => p.id !== a.id && p.id !== b.id)) {
+        expect(ownerOf(after, player.id), player.name).toBe(ownerOf(before, player.id));
+      }
+    });
+
+    it.each([3, 4])('works with %i teams, keeping every team the same size', (count) => {
+      const { store } = drawn(count);
+      const before = store.teams() as Player[][];
+      const a = field(before[0]);
+      const b = field(before[count - 1]);
+      store.swapPlayers(a.id, b.id);
+      const after = store.teams() as Player[][];
+      expect(ownerOf(after, a.id)).toBe(count - 1);
+      expect(ownerOf(after, b.id)).toBe(0);
+      expect(after.map((team) => team.length)).toEqual(before.map((team) => team.length));
+    });
+
+    it('puts the player who comes in the place of the one who goes, goalkeepers first', () => {
+      const { store } = drawn();
+      const [x, y] = store.teams() as Player[][];
+      // Every pair: goalkeeper with goalkeeper, with a field player, and field with field.
+      for (const a of x) {
+        for (const b of y) {
+          store.draw(seeded(3));
+          store.swapPlayers(a.id, b.id);
+          const [afterX, afterY] = store.teams() as Player[][];
+          expect(afterX, `${a.name} and ${b.name}`).toEqual(expectedTeam(x, a, b));
+          expect(afterY, `${a.name} and ${b.name}`).toEqual(expectedTeam(y, b, a));
+        }
+      }
+    });
+
+    it('leaves the goalkeepers at the start of both teams', () => {
+      const { store } = drawn();
+      const [x, y] = store.teams() as Player[][];
+      const keeper = x.find((p) => p.isGoalkeeper) as Player;
+      store.swapPlayers(keeper.id, field(y).id);
+      for (const team of store.teams() as Player[][]) {
+        const flags = team.map((p) => p.isGoalkeeper);
+        expect(flags).toEqual([...flags].sort((p, q) => Number(q) - Number(p)));
+      }
+    });
+
+    it('does nothing with two players of the same team', () => {
+      const { store } = drawn();
+      const before = store.teams();
+      const [x] = before as Player[][];
+      store.swapPlayers(x[0].id, x[1].id);
+      expect(store.teams()).toBe(before);
+    });
+
+    it('does nothing with the same player twice', () => {
+      const { store } = drawn();
+      const before = store.teams();
+      store.swapPlayers((before as Player[][])[0][0].id, (before as Player[][])[0][0].id);
+      expect(store.teams()).toBe(before);
+    });
+
+    it('does nothing when a player does not exist', () => {
+      const { store } = drawn();
+      const before = store.teams();
+      const known = (before as Player[][])[0][0].id;
+      store.swapPlayers(known, 'nobody');
+      store.swapPlayers('nobody', known);
+      store.swapPlayers('nobody', 'nobody-else');
+      expect(store.teams()).toBe(before);
+    });
+
+    it('does nothing before there are teams', () => {
+      const { store } = inPreview(list(12));
+      store.swapPlayers('p1', 'p2');
+      expect(store.teams()).toBeNull();
+      expect(store.step()).toBe('preview');
+    });
+
+    it('does not change the lists it had before', () => {
+      const { store } = drawn();
+      const before = store.teams() as Player[][];
+      const snapshot = before.map((team) => [...team]);
+      store.swapPlayers(field(before[0]).id, field(before[1]).id);
+      expect(before).toEqual(snapshot);
+    });
+
+    it('updates the text for WhatsApp, each name under its new team', () => {
+      const { store } = drawn();
+      const [x, y] = store.teams() as Player[][];
+      const a = field(x);
+      const b = field(y);
+      store.swapPlayers(a.id, b.id);
+      const [first, second] = store.whatsappText().split('\n\n');
+      expect(first).toContain(b.name);
+      expect(first).not.toContain(a.name);
+      expect(second).toContain(a.name);
+      expect(second).not.toContain(b.name);
+    });
+
+    it('is undone by drawing again, which starts from the same teams', () => {
+      const { store } = drawn();
+      const original = store.teams();
+      const [x, y] = original as Player[][];
+      store.swapPlayers(field(x).id, field(y).id);
+      expect(store.teams()).not.toEqual(original);
+      store.draw(seeded(3));
+      expect(store.teams()).toEqual(original);
     });
   });
 });

@@ -160,6 +160,10 @@ export const es: Dictionary = {
       copyFailed: 'No se pudo copiar. Selecciona el texto y cópialo a mano.',
       redraw: 'Volver a sortear',
       startOver: 'Empezar de nuevo',
+      swapHint:
+        'Tocá un jugador y después uno de otro equipo para intercambiarlos. También podés arrastrarlos.',
+      selected: (name) => `Seleccionado: ${name}. Tocá un jugador de otro equipo.`,
+      swapped: (a, b) => `${a} y ${b} intercambiados.`,
     },
   },
 };

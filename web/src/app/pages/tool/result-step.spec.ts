@@ -202,4 +202,224 @@ describe('ResultStep', () => {
       for (let i = 1; i <= 4; i++) expect(text).toContain(T.teamTitle(i));
     });
   });
+
+  describe('swapping players', () => {
+    type Ctx = ReturnType<typeof setup>;
+    const buttons = (el: HTMLElement) =>
+      Array.from(el.querySelectorAll('ui-card li button')) as HTMLButtonElement[];
+    const ids = (store: Ctx['store']) => (store.teams() ?? []).flat();
+    const buttonOf = (ctx: Ctx, id: string) =>
+      buttons(ctx.el)[ids(ctx.store).findIndex((p) => p.id === id)];
+    const pressed = (ctx: Ctx) =>
+      buttons(ctx.el).filter((b) => b.getAttribute('aria-pressed') === 'true');
+    const status = (ctx: Ctx) => ctx.el.querySelector('p[role="status"]')?.textContent?.trim();
+    const tap = (ctx: Ctx, id: string) => {
+      buttonOf(ctx, id).click();
+      ctx.fixture.detectChanges();
+    };
+    // Two players of the first team, and one of the second.
+    const trio = (ctx: Ctx) => {
+      const [x, y] = ctx.store.teams() as { id: string; name: string }[][];
+      return { a: x[0], c: x[1], b: y[0] };
+    };
+
+    it('shows how it works above the cards', () => {
+      const { el } = setup();
+      const hint = Array.from(el.querySelectorAll('p')).find((p) =>
+        p.textContent?.includes(T.result.swapHint),
+      ) as HTMLElement;
+      const grid = el.querySelector('div.grid') as HTMLElement;
+      expect(hint).toBeTruthy();
+      expect(hint.compareDocumentPosition(grid) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    });
+
+    it('makes every player a button that is not selected and can be dragged', () => {
+      const ctx = setup();
+      expect(buttons(ctx.el)).toHaveLength(12);
+      expect(buttons(ctx.el).map((b) => b.getAttribute('aria-pressed'))).toEqual(
+        Array(12).fill('false'),
+      );
+      expect(buttons(ctx.el).every((b) => b.getAttribute('draggable') === 'true')).toBe(true);
+    });
+
+    it('selects a player with a tap, and says so', () => {
+      const ctx = setup();
+      const { a } = trio(ctx);
+      tap(ctx, a.id);
+      expect(pressed(ctx)).toEqual([buttonOf(ctx, a.id)]);
+      expect(status(ctx)).toBe(T.result.selected(a.name));
+    });
+
+    it('deselects the player when they are tapped again', () => {
+      const ctx = setup();
+      const { a } = trio(ctx);
+      tap(ctx, a.id);
+      tap(ctx, a.id);
+      expect(pressed(ctx)).toEqual([]);
+      expect(status(ctx)).toBe('');
+    });
+
+    it('moves the selection when a player of the same team is tapped', () => {
+      const ctx = setup();
+      const { a, c } = trio(ctx);
+      const before = ctx.store.teams();
+      tap(ctx, a.id);
+      tap(ctx, c.id);
+      expect(pressed(ctx)).toEqual([buttonOf(ctx, c.id)]);
+      expect(status(ctx)).toBe(T.result.selected(c.name));
+      expect(ctx.store.teams()).toBe(before);
+    });
+
+    it('swaps two players of different teams, says so and clears the selection', () => {
+      const ctx = setup();
+      const { a, b } = trio(ctx);
+      tap(ctx, a.id);
+      tap(ctx, b.id);
+      const [x, y] = ctx.store.teams() as { id: string }[][];
+      expect(x.some((p) => p.id === b.id)).toBe(true);
+      expect(y.some((p) => p.id === a.id)).toBe(true);
+      expect(pressed(ctx)).toEqual([]);
+      expect(status(ctx)).toBe(T.result.swapped(a.name, b.name));
+      const cards = Array.from(ctx.el.querySelectorAll('ui-card'));
+      expect(cards[0].textContent).toContain(b.name);
+      expect(cards[1].textContent).toContain(a.name);
+    });
+
+    it('clears the selection with Escape', () => {
+      const ctx = setup();
+      const { a } = trio(ctx);
+      tap(ctx, a.id);
+      buttonOf(ctx, a.id).dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }),
+      );
+      ctx.fixture.detectChanges();
+      expect(pressed(ctx)).toEqual([]);
+    });
+
+    it('forgets the selection when the teams are drawn again', () => {
+      const ctx = setup();
+      const { a } = trio(ctx);
+      tap(ctx, a.id);
+      expect(status(ctx)).toBe(T.result.selected(a.name));
+      ctx.store.draw(() => 0.9);
+      ctx.fixture.detectChanges();
+      expect(pressed(ctx)).toEqual([]);
+      expect(status(ctx)).toBe('');
+    });
+
+    it('keeps the text for WhatsApp in step with what is on the cards', () => {
+      const ctx = setup();
+      const { a, b } = trio(ctx);
+      tap(ctx, a.id);
+      tap(ctx, b.id);
+      const text = ctx.el.querySelector('pre')?.textContent as string;
+      expect(text).toBe(ctx.store.whatsappText());
+      expect(text.split('\n\n')[0]).toContain(b.name);
+    });
+
+    it.each([
+      [3, 18],
+      [4, 20],
+    ])('works with %i teams', (teams, players) => {
+      saveSession();
+      TestBed.inject(I18n).setLang('es');
+      const store = TestBed.inject(AmistosoStore);
+      store.setRawText(list(players));
+      store.continueToPreview();
+      store.setTeamCount(teams);
+      store.draw(() => 0.3);
+      const fixture = TestBed.createComponent(ResultStep);
+      fixture.detectChanges();
+      const ctx = { fixture, el: fixture.nativeElement as HTMLElement, store } as Ctx;
+      const all = store.teams() as { id: string; name: string }[][];
+      const a = all[0][0];
+      const b = all[teams - 1][0];
+      tap(ctx, a.id);
+      tap(ctx, b.id);
+      const after = store.teams() as { id: string }[][];
+      expect(after[0].some((p) => p.id === b.id)).toBe(true);
+      expect(after[teams - 1].some((p) => p.id === a.id)).toBe(true);
+    });
+
+    describe('by dragging', () => {
+      const fire = (type: string, target: Element) => {
+        const event = new Event(type, { bubbles: true, cancelable: true });
+        Object.defineProperty(event, 'dataTransfer', {
+          value: { setData: vi.fn(), effectAllowed: '' },
+        });
+        target.dispatchEvent(event);
+        return event;
+      };
+
+      it('swaps a player dropped on a player of another team', () => {
+        const ctx = setup();
+        const { a, b } = trio(ctx);
+        fire('dragstart', buttonOf(ctx, a.id));
+        const over = fire('dragover', buttonOf(ctx, b.id));
+        expect(over.defaultPrevented).toBe(true);
+        fire('drop', buttonOf(ctx, b.id));
+        ctx.fixture.detectChanges();
+        const [x, y] = ctx.store.teams() as { id: string }[][];
+        expect(x.some((p) => p.id === b.id)).toBe(true);
+        expect(y.some((p) => p.id === a.id)).toBe(true);
+        expect(status(ctx)).toBe(T.result.swapped(a.name, b.name));
+      });
+
+      it('does not accept a drop on a player of the same team', () => {
+        const ctx = setup();
+        const { a, c } = trio(ctx);
+        const before = ctx.store.teams();
+        fire('dragstart', buttonOf(ctx, a.id));
+        const over = fire('dragover', buttonOf(ctx, c.id));
+        expect(over.defaultPrevented).toBe(false);
+        const dropped = fire('drop', buttonOf(ctx, c.id));
+        expect(dropped.defaultPrevented).toBe(false);
+        expect(ctx.store.teams()).toBe(before);
+        // Nothing happened, so nothing is announced either.
+        expect(status(ctx)).toBe('');
+      });
+
+      it('does nothing when something is dropped without a player being dragged', () => {
+        const ctx = setup();
+        const { b } = trio(ctx);
+        const before = ctx.store.teams();
+        const over = fire('dragover', buttonOf(ctx, b.id));
+        fire('drop', buttonOf(ctx, b.id));
+        expect(over.defaultPrevented).toBe(false);
+        expect(ctx.store.teams()).toBe(before);
+      });
+
+      it('forgets the player that was being dragged once the drag ends', () => {
+        const ctx = setup();
+        const { a, b } = trio(ctx);
+        const before = ctx.store.teams();
+        fire('dragstart', buttonOf(ctx, a.id));
+        fire('dragend', buttonOf(ctx, a.id));
+        fire('drop', buttonOf(ctx, b.id));
+        expect(ctx.store.teams()).toBe(before);
+      });
+
+      it('marks the player that would be swapped while the drag goes over, and unmarks it', () => {
+        const ctx = setup();
+        const { a, b } = trio(ctx);
+        fire('dragstart', buttonOf(ctx, a.id));
+        fire('dragover', buttonOf(ctx, b.id));
+        ctx.fixture.detectChanges();
+        expect(buttonOf(ctx, b.id).className).toContain('ring-primary');
+        fire('dragleave', buttonOf(ctx, b.id));
+        ctx.fixture.detectChanges();
+        expect(buttonOf(ctx, b.id).className).not.toContain('ring-primary');
+      });
+
+      it('clears a selection that was made by tapping when a swap is made by dragging', () => {
+        const ctx = setup();
+        const { a, c, b } = trio(ctx);
+        tap(ctx, c.id);
+        fire('dragstart', buttonOf(ctx, a.id));
+        fire('drop', buttonOf(ctx, b.id));
+        ctx.fixture.detectChanges();
+        expect(pressed(ctx)).toEqual([]);
+      });
+    });
+  });
 });

@@ -150,4 +150,35 @@ describe('dictionaries', () => {
       expect(DICTIONARIES[lang].tool.preview.sizeNotice(7, 3, 12)).toBe(text);
     });
   });
+
+  describe('the texts to swap players', () => {
+    it.each([
+      [
+        'en',
+        'Tap a player, then a player from another team, to swap them. You can also drag them.',
+        'Selected: Nico. Tap a player from another team.',
+        'Nico and Fede swapped.',
+      ],
+      [
+        'es',
+        'Tocá un jugador y después uno de otro equipo para intercambiarlos. También podés arrastrarlos.',
+        'Seleccionado: Nico. Tocá un jugador de otro equipo.',
+        'Nico y Fede intercambiados.',
+      ],
+      [
+        'pt',
+        'Toque em um jogador e depois em um de outro time para trocá-los. Você também pode arrastá-los.',
+        'Selecionado: Nico. Toque em um jogador de outro time.',
+        'Nico e Fede trocados.',
+      ],
+    ] as const)(
+      'say what to do, what was selected and what was swapped in %s',
+      (lang, hint, selected, swapped) => {
+        const { result } = DICTIONARIES[lang].tool;
+        expect(result.swapHint).toBe(hint);
+        expect(result.selected('Nico')).toBe(selected);
+        expect(result.swapped('Nico', 'Fede')).toBe(swapped);
+      },
+    );
+  });
 });
