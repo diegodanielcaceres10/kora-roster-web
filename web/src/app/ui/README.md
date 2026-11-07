@@ -149,6 +149,10 @@ Not components, but just as easy to duplicate by accident:
   `maxTeams()`, `teamsLock(count)`, `storyImageLock()`; a lock is `'sign-in'`, `'premium'` or
   `null`). Never compare plans in a screen. `LockNotice` shows why a locked control is closed,
   with a link to sign in when an account is what is missing.
+- `core/story-layout.ts`, `core/contrast.ts` and `image/`: the story image. `layoutStory` works out
+  where everything goes on a 1080 by 1920 page (pure, it needs no browser, and the text measure is
+  given to it); `readableTextColor` gives white or near black for a background; `createStoryBlob`
+  draws the layout on a canvas and gives back a PNG (`drawStory` and `canvasMeasure` are its parts).
 - `core/`: `parsePastedNames` (cleans a pasted list), `drawTeams` and `checkPlayerCount`
   (2 to 4 teams in use, 5 to 11 players on each, all the same size; `playerRange(teams)` gives the
   limits), `formatTeamsForWhatsApp` and `DEFAULT_TEAM_ICONS`.

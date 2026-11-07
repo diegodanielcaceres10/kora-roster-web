@@ -1,4 +1,4 @@
-import { DEFAULT_TEAM_ICONS, formatTeamsForWhatsApp } from './format-teams';
+import { DEFAULT_TEAM_ICONS, formatTeamsForWhatsApp, numberLabel } from './format-teams';
 
 const p = (name: string, isGoalkeeper = false) => ({ name, isGoalkeeper });
 
@@ -162,5 +162,16 @@ describe('DEFAULT_TEAM_ICONS', () => {
   it('has six different icons, one per team of the biggest plan', () => {
     expect(new Set(DEFAULT_TEAM_ICONS).size).toBe(6);
     expect(DEFAULT_TEAM_ICONS).toHaveLength(6);
+  });
+});
+
+describe('numberLabel', () => {
+  it.each([
+    ['dot', '3. '],
+    ['paren', '3) '],
+    ['dash', '3- '],
+    ['none', ''],
+  ] as const)('writes the %s style as "%s"', (numbering, label) => {
+    expect(numberLabel(3, numbering)).toBe(label);
   });
 });

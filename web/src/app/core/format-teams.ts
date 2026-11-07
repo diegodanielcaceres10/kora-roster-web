@@ -13,7 +13,7 @@ export interface FormatOptions {
 
 export const DEFAULT_TEAM_ICONS = ['🔴', '🔵', '🟢', '🟡', '🟣', '🟠'];
 
-const GLOVE = '🧤';
+export const GLOVE = '🧤';
 
 const NUMBER_FORMATS: Record<Numbering, (n: number) => string> = {
   dot: (n) => `${n}. `,
@@ -21,6 +21,11 @@ const NUMBER_FORMATS: Record<Numbering, (n: number) => string> = {
   dash: (n) => `${n}- `,
   none: () => '',
 };
+
+// The number in front of a player, with its separator, for the style the person chose.
+export function numberLabel(n: number, numbering: Numbering): string {
+  return NUMBER_FORMATS[numbering](n);
+}
 
 export function formatTeamsForWhatsApp(
   teams: readonly (readonly { name: string; isGoalkeeper: boolean }[])[],
