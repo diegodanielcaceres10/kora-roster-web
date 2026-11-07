@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@a
 import { I18n } from '../../i18n/i18n';
 import { AmistosoStore } from '../../state/amistoso.store';
 import { ToastService, UiButton, UiCard } from '../../ui';
+import { StoryImagePanel } from './story-image-panel';
 
 const ROW =
   'flex w-full items-center gap-2 rounded-md px-1 py-1 text-left transition ' +
@@ -14,7 +15,7 @@ const DRAGGING = 'opacity-50';
 @Component({
   selector: 'app-result-step',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [UiButton, UiCard],
+  imports: [StoryImagePanel, UiButton, UiCard],
   template: `
     <section class="space-y-4">
       <h2>{{ t().result.title }}</h2>
@@ -73,6 +74,8 @@ const DRAGGING = 'opacity-50';
         </ui-button>
         <ui-button variant="ghost" (click)="store.reset()">{{ t().result.startOver }}</ui-button>
       </div>
+
+      <app-story-image-panel />
     </section>
   `,
 })

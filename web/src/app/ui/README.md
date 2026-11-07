@@ -153,6 +153,9 @@ Not components, but just as easy to duplicate by accident:
   where everything goes on a 1080 by 1920 page (pure, it needs no browser, and the text measure is
   given to it); `readableTextColor` gives white or near black for a background; `createStoryBlob`
   draws the layout on a canvas and gives back a PNG (`drawStory` and `canvasMeasure` are its parts).
+  `STORY_BLOB` and `STORY_DELIVERY` (download and share) are tokens, so a screen or a test can replace
+  how the image is made and how it leaves the app. The story has no team icons: the color of the
+  block says which team it is.
 - `core/`: `parsePastedNames` (cleans a pasted list), `drawTeams` and `checkPlayerCount`
   (2 to 4 teams in use, 5 to 11 players on each, all the same size; `playerRange(teams)` gives the
   limits), `formatTeamsForWhatsApp` and `DEFAULT_TEAM_ICONS`.

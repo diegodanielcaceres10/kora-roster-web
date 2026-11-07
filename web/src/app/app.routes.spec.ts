@@ -378,6 +378,25 @@ describe('app routes', () => {
       );
     });
 
+    it('explains that the image needs an account, and offers to sign in', async () => {
+      const { harness, root } = await pasted(12);
+      (
+        Array.from(root.querySelectorAll('ui-button button')).find(
+          (b) => b.textContent?.trim() === DICTIONARIES.es.tool.preview.draw,
+        ) as HTMLButtonElement
+      ).click();
+      harness.fixture.detectChanges();
+      (
+        Array.from(root.querySelectorAll('ui-button button')).find(
+          (b) => b.textContent?.trim() === DICTIONARIES.es.tool.result.createImage,
+        ) as HTMLButtonElement
+      ).click();
+      harness.fixture.detectChanges();
+      expect(root.textContent).toContain(DICTIONARIES.es.tool.result.imageSignIn);
+      expect(root.querySelector('app-lock-notice a[href="/es/cuenta"]')).not.toBeNull();
+      expect(root.querySelector('app-story-image-panel img')).toBeNull();
+    });
+
     it('lets a signed in person draw 4 teams and shows them all', async () => {
       saveSession();
       const { harness, root } = await pasted(20);

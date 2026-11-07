@@ -155,6 +155,13 @@ describe('drawStory', () => {
     expect(STORY_FONT).toContain('Segoe UI Emoji');
     expect(STORY_FONT.endsWith('sans-serif')).toBe(true);
   });
+
+  it('has only names that every canvas accepts, because an invalid font is ignored without an error', () => {
+    // A name that starts with a hyphen, such as -apple-system, is rejected by some parsers and
+    // the text would then be drawn at 10px.
+    const names = STORY_FONT.split(',').map((name) => name.trim());
+    for (const name of names) expect(name.startsWith('-'), name).toBe(false);
+  });
 });
 
 describe('canvasMeasure', () => {
@@ -171,13 +178,11 @@ describe('createStoryBlob', () => {
   const story: StoryInput = {
     teams: [
       {
-        icon: '🔴',
         title: 'Team 1',
         color: '#e53935',
         players: [{ name: 'Diego', isGoalkeeper: true }],
       },
       {
-        icon: '🔵',
         title: 'Team 2',
         color: '#1e88e5',
         players: [{ name: 'Mati', isGoalkeeper: false }],
@@ -208,7 +213,7 @@ describe('createStoryBlob', () => {
     expect([raw.width, raw.height]).toEqual([1080, 1920]);
     expect(raw.getContext).toHaveBeenCalledWith('2d');
     expect(raw.toBlob).toHaveBeenCalledWith(expect.any(Function), 'image/png');
-    expect(texts.map((t) => t.text)).toContain('🔴 Team 1');
+    expect(texts.map((t) => t.text)).toContain('Team 1');
   });
 
   it('measures the text with the canvas that will draw it', async () => {

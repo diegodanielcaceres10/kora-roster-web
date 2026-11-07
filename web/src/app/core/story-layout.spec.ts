@@ -14,7 +14,6 @@ import {
 // A made-up font where every character is as wide as 55% of its size.
 const measure: Measure = (text, size) => text.length * size * 0.55;
 
-const ICONS = ['🔴', '🔵', '🟢', '🟡', '🟣', '🟠'];
 const COLORS = ['#e53935', '#1e88e5', '#43a047', '#fdd835', '#8e24aa', '#fb8c00'];
 const MARGIN = 48;
 
@@ -22,7 +21,6 @@ const players = (count: number, keepers = 0) =>
   Array.from({ length: count }, (_, i) => ({ name: `Player ${i + 1}`, isGoalkeeper: i < keepers }));
 
 const team = (index: number, count: number, keepers = 0): StoryTeam => ({
-  icon: ICONS[index],
   title: `Team ${index + 1}`,
   color: COLORS[index],
   players: players(count, keepers),
@@ -139,15 +137,15 @@ describe('layoutStory', () => {
   });
 
   describe('what is in each block', () => {
-    it('starts with the icon and the title, then lists the players in order', () => {
+    it('starts with the title, then lists the players in order', () => {
       const { blocks } = groups(layoutStory(input([team(0, 3, 1), team(1, 3)]), measure));
       expect(blocks[0].texts.map((t) => t.text)).toEqual([
-        '🔴 Team 1',
+        'Team 1',
         '1. Player 1 🧤',
         '2. Player 2',
         '3. Player 3',
       ]);
-      expect(blocks[1].texts[0].text).toBe('🔵 Team 2');
+      expect(blocks[1].texts[0].text).toBe('Team 2');
     });
 
     it('marks the goalkeepers with a glove and nobody else', () => {
@@ -300,6 +298,32 @@ describe('layoutStory', () => {
       expect(header.color).toBe('#ffffff');
       expect(header.size).toBe(64);
       expect(header.y).toBeLessThan(MARGIN + 100);
+    });
+
+    it('prefers one line a little smaller to a second line with a single word', () => {
+      const layout = layoutStory(
+        input(teams(2, 7), { header: 'Amistoso del jueves en la cancha' }),
+        measure,
+      );
+      const header = lines(layout).filter((t) => t.weight === 'bold');
+      expect(header).toHaveLength(1);
+      expect(header[0].size).toBeLessThan(64);
+      expect(header[0].size).toBeGreaterThanOrEqual(45);
+    });
+
+    it('goes to two lines, at the biggest size that fits, when one would be too small', () => {
+      const layout = layoutStory(
+        input(teams(2, 7), { header: 'palabra '.repeat(7).trim() }),
+        measure,
+      );
+      const header = lines(layout).filter((t) => t.weight === 'bold');
+      expect(header).toHaveLength(2);
+      expect(header[0].size).toBeGreaterThan(45);
+      for (const line of header) {
+        expect(measure(line.text, line.size, line.weight)).toBeLessThanOrEqual(
+          STORY_WIDTH - 2 * MARGIN,
+        );
+      }
     });
 
     it('puts the teams below the header and above the footer', () => {

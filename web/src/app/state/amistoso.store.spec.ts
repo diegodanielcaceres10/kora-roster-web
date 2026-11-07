@@ -678,4 +678,72 @@ describe('AmistosoStore', () => {
       expect(store.teams()).toEqual(original);
     });
   });
+
+  describe('what the story image is made from', () => {
+    beforeEach(() => localStorage.clear());
+    afterEach(() => localStorage.clear());
+
+    const DEFAULTS = ['#e53935', '#1e88e5', '#43a047', '#fdd835', '#8e24aa', '#fb8c00'];
+    const drawn = () => {
+      const ctx = inPreview('Diego 🧤\nMati 🧤\n' + list(10));
+      ctx.store.draw(seeded(3));
+      return ctx;
+    };
+
+    it('is nothing until the teams are drawn', () => {
+      expect(inPreview(list(12)).store.storyInput()).toBeNull();
+    });
+
+    it('gives each team its title, its color and its players, and nothing else about them', () => {
+      const { store } = drawn();
+      const input = store.storyInput();
+      const teams = store.teams() as Player[][];
+      expect(input?.teams.map((team) => team.title)).toEqual(['Team 1', 'Team 2']);
+      expect(input?.teams.map((team) => team.color)).toEqual(DEFAULTS.slice(0, 2));
+      expect(input?.teams[0].players).toEqual(
+        teams[0].map((p) => ({ name: p.name, isGoalkeeper: p.isGoalkeeper })),
+      );
+      expect(Object.keys(input?.teams[0] ?? {}).sort()).toEqual(['color', 'players', 'title']);
+    });
+
+    it('is plain for somebody who is not signed in: no header, no footer, dotted numbers', () => {
+      const input = drawn().store.storyInput();
+      expect([input?.header, input?.footer, input?.numbering]).toEqual(['', '', 'dot']);
+    });
+
+    it('uses the header, footer, numbering and colors of the person who is signed in', () => {
+      saveSession({ ...TEST_PREFERENCES, numbering: 'dash' });
+      const input = drawn().store.storyInput();
+      expect([input?.header, input?.footer, input?.numbering]).toEqual([
+        '⚽ Amistoso',
+        'Confirmen',
+        'dash',
+      ]);
+      expect(input?.teams.map((team) => team.color)).toEqual(['#00ff00', '#ffff00']);
+    });
+
+    it('has a block for each team in use, and the titles follow the language', () => {
+      saveSession();
+      const { store, i18n } = inPreview('Diego 🧤\nMati 🧤\nFede 🧤\n' + list(15));
+      store.setTeamCount(3);
+      store.draw(seeded(3));
+      i18n.setLang('es');
+      expect(store.storyInput()?.teams.map((team) => team.title)).toEqual([
+        'Equipo 1',
+        'Equipo 2',
+        'Equipo 3',
+      ]);
+    });
+
+    it('follows the players when two of them are swapped', () => {
+      const { store } = drawn();
+      const [x, y] = store.teams() as Player[][];
+      const a = x.find((p) => !p.isGoalkeeper) as Player;
+      const b = y.find((p) => !p.isGoalkeeper) as Player;
+      store.swapPlayers(a.id, b.id);
+      const names = store.storyInput()?.teams.map((team) => team.players.map((p) => p.name));
+      expect(names?.[0]).toContain(b.name);
+      expect(names?.[1]).toContain(a.name);
+    });
+  });
 });

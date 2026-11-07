@@ -1,3 +1,4 @@
+import { InjectionToken } from '@angular/core';
 import {
   FontWeight,
   layoutStory,
@@ -11,7 +12,7 @@ import {
 // System fonts, with the emoji fonts of each platform as a fallback for the team icons
 // and the goalkeeper glove.
 export const STORY_FONT =
-  'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, ' +
+  'system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, ' +
   '"Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif';
 
 const fontOf = (size: number, weight: FontWeight) => `${weight} ${size}px ${STORY_FONT}`;
@@ -74,3 +75,9 @@ export function createStoryBlob(
     ),
   );
 }
+
+// A token so that screens and tests can replace how the image is made.
+export const STORY_BLOB = new InjectionToken<(input: StoryInput) => Promise<Blob>>('STORY_BLOB', {
+  providedIn: 'root',
+  factory: () => (input) => createStoryBlob(input),
+});

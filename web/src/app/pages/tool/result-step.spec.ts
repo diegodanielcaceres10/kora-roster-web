@@ -422,4 +422,19 @@ describe('ResultStep', () => {
       });
     });
   });
+
+  describe('the story image', () => {
+    it('is offered below the buttons for the message', () => {
+      const { el } = setup();
+      const panel = el.querySelector('app-story-image-panel') as HTMLElement;
+      const buttons = Array.from(el.querySelectorAll('ui-button')).find((b) =>
+        b.textContent?.includes(T.result.copy),
+      ) as HTMLElement;
+      expect(panel).not.toBeNull();
+      expect(panel.textContent).toContain(T.result.createImage);
+      expect(
+        buttons.compareDocumentPosition(panel) & Node.DOCUMENT_POSITION_FOLLOWING,
+      ).toBeTruthy();
+    });
+  });
 });

@@ -3,6 +3,7 @@ import { patchState, signalStore, withComputed, withMethods, withState } from '@
 import { checkPlayerCount, drawTeams, MAX_TEAMS, MIN_TEAMS } from '../core/draw-teams';
 import { DEFAULT_TEAM_ICONS, formatTeamsForWhatsApp } from '../core/format-teams';
 import { parsePastedNames } from '../core/parse-players';
+import { StoryInput } from '../core/story-layout';
 import { I18n } from '../i18n/i18n';
 import { Entitlements } from '../plans/entitlements';
 import { DEFAULT_PREFERENCES } from '../preferences/preferences';
@@ -88,6 +89,24 @@ export const AmistosoStore = signalStore(
         const teams = teamCount();
         const count = playerCount();
         return perTeam && count !== perTeam * teams ? { perTeam, teams, count } : null;
+      }),
+      // What the story image is made from: only names, goalkeepers, titles and colors.
+      storyInput: computed((): StoryInput | null => {
+        const current = teams();
+        if (!current) return null;
+        const { teamTitle } = i18n.t().tool;
+        const colors = teamColors();
+        const prefs = preferences.active();
+        return {
+          teams: current.map((team, i) => ({
+            title: teamTitle(i + 1),
+            color: colors[i],
+            players: team.map((p) => ({ name: p.name, isGoalkeeper: p.isGoalkeeper })),
+          })),
+          header: prefs?.header ?? '',
+          footer: prefs?.footer ?? '',
+          numbering: prefs?.numbering ?? 'dot',
+        };
       }),
       whatsappText: computed(() => {
         const current = teams();

@@ -34,7 +34,6 @@ export interface StoryPlayer {
 }
 
 export interface StoryTeam {
-  icon: string;
   title: string;
   color: string;
   players: readonly StoryPlayer[];
@@ -112,8 +111,9 @@ function wrap(text: string, maxWidth: number, size: number, weight: FontWeight, 
   return lines;
 }
 
-// The biggest size, from max down to min, at which the text fits in that many lines. If
-// not even the smallest does, the last line ends with an ellipsis.
+// The biggest size at which the text fits, using as few lines as possible: one line may be
+// up to 30% smaller than the biggest size before a second line is used, so a lone word is
+// not left on its own. If not even the smallest size fits, the last line ends with an ellipsis.
 function fit(
   text: string,
   maxWidth: number,
@@ -121,10 +121,14 @@ function fit(
   weight: FontWeight,
   measure: Measure,
 ) {
-  for (let size = limits.max; size > limits.min; size -= 2) {
-    const lines = wrap(text, maxWidth, size, weight, measure);
-    if (lines.length <= limits.lines && lines.every((l) => measure(l, size, weight) <= maxWidth)) {
-      return { size, lines };
+  for (let count = 1; count <= limits.lines; count++) {
+    const floor =
+      count === limits.lines ? limits.min : Math.max(limits.min, Math.round(limits.max * 0.7));
+    for (let size = limits.max; size >= floor; size -= 2) {
+      const lines = wrap(text, maxWidth, size, weight, measure);
+      if (lines.length <= count && lines.every((l) => measure(l, size, weight) <= maxWidth)) {
+        return { size, lines };
+      }
     }
   }
   const size = limits.min;
@@ -229,7 +233,7 @@ export function layoutStory(input: StoryInput, measure: Measure): StoryLayout {
     });
 
     const title = fit(
-      `${team.icon} ${team.title}`,
+      team.title,
       textWidth,
       { ...TITLE, max: titleSize, lines: 1 },
       'bold',
