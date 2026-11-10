@@ -19,9 +19,13 @@ interface StepDef {
   template: `
     <section class="mx-auto max-w-5xl space-y-6 px-4 py-6 sm:py-8">
       <!-- Header with minimal sports utility identity -->
-      <div class="flex flex-col gap-3 border-b border-secondary/10 pb-5 sm:flex-row sm:items-end sm:justify-between">
+      <div
+        class="flex flex-col gap-3 border-b border-secondary/10 pb-5 sm:flex-row sm:items-end sm:justify-between"
+      >
         <div>
-          <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-secondary/60">
+          <div
+            class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-secondary/60"
+          >
             <span class="inline-block size-2 rounded-full bg-alternative"></span>
             <span>Matchday Tool</span>
             <span>•</span>
@@ -34,7 +38,9 @@ interface StepDef {
 
         <!-- Sporty Stepper Indicator -->
         <nav aria-label="Progreso del sorteo" class="w-full sm:w-auto">
-          <ol class="flex items-center gap-1 sm:gap-2 rounded-xl border border-secondary/15 bg-white p-1.5 shadow-xs">
+          <ol
+            class="flex items-center gap-1 sm:gap-2 rounded-xl border border-secondary/15 bg-white p-1.5 shadow-xs"
+          >
             @for (step of steps(); track step.key; let i = $index) {
               <li class="flex items-center">
                 <div
@@ -45,7 +51,10 @@ interface StepDef {
                   <span class="hidden md:inline">{{ step.label }}</span>
                 </div>
                 @if (i < steps().length - 1) {
-                  <i class="fa-solid fa-chevron-right mx-1 text-[10px] text-secondary/30" aria-hidden="true"></i>
+                  <i
+                    class="fa-solid fa-chevron-right mx-1 text-[10px] text-secondary/30"
+                    aria-hidden="true"
+                  ></i>
                 }
               </li>
             }

@@ -17,10 +17,18 @@ import { LanguageSelector } from '../i18n/language-selector';
           [routerLink]="['/', i18n.lang()]"
           class="group inline-flex items-center gap-2.5 font-bold tracking-tight text-secondary transition hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary"
         >
-          <img src="favicon.png" alt="" width="32" height="32" class="size-8 transition group-hover:scale-105" />
+          <img
+            src="favicon.png"
+            alt=""
+            width="32"
+            height="32"
+            class="size-8 transition group-hover:scale-105"
+          />
           <div class="flex items-baseline gap-1.5">
             <span class="text-xl font-black tracking-tight">Kora</span>
-            <span class="rounded bg-secondary/8 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-secondary/70">
+            <span
+              class="rounded bg-secondary/8 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-secondary/70"
+            >
               Roster
             </span>
           </div>
@@ -49,10 +57,16 @@ import { LanguageSelector } from '../i18n/language-selector';
       </div>
     </header>
     <main class="flex-1"><router-outlet /></main>
-    <footer class="border-t border-secondary/10 bg-white py-6 text-center text-xs text-secondary/60">
-      <div class="mx-auto flex max-w-6xl flex-col items-center justify-between gap-2 px-4 sm:flex-row">
-        <p class="font-medium">Kora Roster • Minimal Sports Utility</p>
-        <p class="text-[11px] text-secondary/50">Sorteador táctico de equipos para fútbol entre amigos</p>
+    <footer
+      class="border-t border-secondary/10 bg-white py-6 text-center text-xs text-secondary/60"
+    >
+      <div
+        class="mx-auto flex max-w-6xl flex-col items-center justify-between gap-2 px-4 sm:flex-row"
+      >
+        <p class="font-medium">Kora Roster</p>
+        <p class="text-[11px] text-secondary/50">
+          Sorteador táctico de equipos para fútbol entre amigos
+        </p>
       </div>
     </footer>
   `,

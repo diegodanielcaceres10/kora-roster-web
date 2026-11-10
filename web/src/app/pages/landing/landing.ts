@@ -10,10 +10,12 @@ import { UiCard } from '../../ui';
   imports: [RouterLink, UiCard],
   host: { class: 'block' },
   template: `
-    <!-- Minimal Sports Utility Hero Section -->
+    <!-- Hero Section -->
     <section class="border-b border-secondary/15 bg-secondary text-white relative overflow-hidden">
       <div class="mx-auto max-w-4xl space-y-6 px-4 py-16 sm:py-20 text-center">
-        <div class="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3.5 py-1 text-xs font-bold uppercase tracking-widest text-primary backdrop-blur-md">
+        <div
+          class="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3.5 py-1 text-xs font-bold uppercase tracking-widest text-primary backdrop-blur-md"
+        >
           <i class="fa-solid fa-bolt" aria-hidden="true"></i>
           <span>Utilidad deportiva de armado rápido</span>
         </div>
@@ -54,15 +56,20 @@ import { UiCard } from '../../ui';
     <!-- How it works (Tactical Step Process) -->
     <section class="mx-auto max-w-3xl space-y-6 px-4 pb-20">
       <div class="border-b border-secondary/10 pb-3">
-        <h2 class="text-xl sm:text-2xl font-black tracking-tight text-secondary">{{ t().steps.title }}</h2>
+        <h2 class="text-xl sm:text-2xl font-black tracking-tight text-secondary">
+          {{ t().steps.title }}
+        </h2>
       </div>
 
       <ol class="space-y-4">
         @for (step of steps(); track step.title; let i = $index) {
-          <li class="flex items-start gap-4 rounded-xl border border-secondary/10 bg-white p-4 sm:p-5 shadow-xs transition hover:border-secondary/20">
+          <li
+            class="flex items-start gap-4 rounded-xl border border-secondary/10 bg-white p-4 sm:p-5 shadow-xs transition hover:border-secondary/20"
+          >
             <span
               class="inline-flex size-9 shrink-0 items-center justify-center rounded-lg bg-secondary text-sm font-black text-primary shadow-xs"
-            >{{ i + 1 }}</span>
+              >{{ i + 1 }}</span
+            >
             <div class="space-y-1">
               <h3 class="text-base font-bold text-secondary">{{ step.title }}</h3>
               <p class="text-sm text-secondary/75 leading-relaxed">{{ step.text }}</p>
@@ -91,7 +98,11 @@ export class Landing {
   }
 
   protected benefitAccent(index: number): 'primary' | 'secondary' | 'alternative' {
-    const accents: ('primary' | 'secondary' | 'alternative')[] = ['primary', 'secondary', 'alternative'];
+    const accents: ('primary' | 'secondary' | 'alternative')[] = [
+      'primary',
+      'secondary',
+      'alternative',
+    ];
     return accents[index % accents.length];
   }
 }
