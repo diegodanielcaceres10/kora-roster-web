@@ -5,11 +5,11 @@ import { ToastService, UiButton, UiCard } from '../../ui';
 import { StoryImagePanel } from './story-image-panel';
 
 const ROW =
-  'flex w-full items-center gap-2 rounded-md px-1 py-1 text-left transition ' +
+  'flex w-full select-none items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm transition-all duration-150 ' +
   'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary';
-const IDLE = 'hover:bg-secondary/5';
-const SELECTED = 'bg-primary/40 font-semibold';
-const OVER = 'bg-secondary/5 ring-2 ring-primary';
+const IDLE = 'hover:bg-secondary/5 border border-transparent hover:border-secondary/10';
+const SELECTED = 'bg-primary/30 font-semibold ring-2 ring-primary';
+const OVER = 'bg-secondary/5 ring-2 ring-primary border-primary';
 const DRAGGING = 'opacity-50';
 
 @Component({
@@ -17,16 +17,31 @@ const DRAGGING = 'opacity-50';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [StoryImagePanel, UiButton, UiCard],
   template: `
-    <section class="space-y-4">
-      <h2>{{ t().result.title }}</h2>
-      <p class="text-sm text-secondary/80">{{ t().result.swapHint }}</p>
+    <section class="space-y-6">
+      <!-- Result Step Header & Swap Guidance -->
+      <div class="space-y-3">
+        <div class="flex flex-wrap items-center justify-between gap-3 border-b border-secondary/10 pb-3">
+          <h2>{{ t().result.title }}</h2>
+          <span class="rounded-full bg-alternative/15 px-3 py-1 text-xs font-bold uppercase tracking-wider text-alternative">
+            {{ teams().length }} equipos equilibrados
+          </span>
+        </div>
+
+        <div class="flex items-center gap-2.5 rounded-xl border border-secondary/12 bg-white p-3 text-xs text-secondary/80 shadow-xs">
+          <i class="fa-solid fa-arrows-rotate text-primary text-sm shrink-0" aria-hidden="true"></i>
+          <p class="text-sm text-secondary/80">{{ t().result.swapHint }}</p>
+        </div>
+      </div>
+
       <p role="status" class="sr-only">{{ announcement() }}</p>
 
+      <!-- Team Roster Lineup Cards Grid -->
       <div [class]="gridClass()">
         @for (team of teams(); track $index; let i = $index) {
-          <ui-card>
+          <ui-card [accent]="teamAccent(i)">
             <h3 card-header>{{ store.teamIcons()[i] }} {{ t().teamTitle(i + 1) }}</h3>
-            <ol class="space-y-1">
+
+            <ol class="space-y-1 pt-1">
               @for (player of team; track player.id; let n = $index) {
                 <li>
                   <button
@@ -42,8 +57,8 @@ const DRAGGING = 'opacity-50';
                     (drop)="drop($event, player.id)"
                     (dragend)="dragEnd()"
                   >
-                    <span class="w-6 text-right font-semibold">{{ n + 1 }}.</span>
-                    <span>{{ player.name }}</span>
+                    <span class="w-6 text-right font-bold text-secondary/50 tabular-nums">{{ n + 1 }}.</span>
+                    <span class="flex-1 font-medium text-secondary">{{ player.name }}</span>
                     @if (player.isGoalkeeper) {
                       <i class="fa-solid fa-mitten text-alternative" aria-hidden="true"></i>
                       <span class="sr-only">{{ t().preview.goalkeeper }}</span>
@@ -56,14 +71,22 @@ const DRAGGING = 'opacity-50';
         }
       </div>
 
-      <div class="space-y-2">
-        <h3>{{ t().result.whatsappTitle }}</h3>
-        <pre class="overflow-x-auto whitespace-pre-wrap rounded-lg bg-secondary/5 p-3 text-sm">{{
-          store.whatsappText()
-        }}</pre>
+      <!-- Tactical WhatsApp Text Panel -->
+      <div class="rounded-xl border border-secondary/12 bg-white p-4 sm:p-5 shadow-xs space-y-3">
+        <div class="flex items-center justify-between border-b border-secondary/10 pb-2.5">
+          <h3 class="text-sm font-bold uppercase tracking-wider text-secondary">
+            {{ t().result.whatsappTitle }}
+          </h3>
+          <span class="text-xs text-secondary/60">Formato listo para compartir</span>
+        </div>
+
+        <pre
+          class="overflow-x-auto whitespace-pre-wrap rounded-xl border border-secondary/15 bg-secondary/[0.04] p-4 text-xs sm:text-sm font-mono text-secondary leading-relaxed shadow-inner"
+        >{{ store.whatsappText() }}</pre>
       </div>
 
-      <div class="flex flex-wrap gap-3">
+      <!-- Quick Actions Bar -->
+      <div class="flex flex-wrap items-center gap-3 rounded-xl border border-secondary/10 bg-white p-4 shadow-xs">
         <ui-button size="lg" (click)="copy()">
           <i class="fa-solid fa-copy" aria-hidden="true"></i>
           {{ t().result.copy }}
@@ -72,9 +95,13 @@ const DRAGGING = 'opacity-50';
           <i class="fa-solid fa-shuffle" aria-hidden="true"></i>
           {{ t().result.redraw }}
         </ui-button>
-        <ui-button variant="ghost" (click)="store.reset()">{{ t().result.startOver }}</ui-button>
+        <ui-button variant="ghost" (click)="store.reset()">
+          <i class="fa-solid fa-rotate-left" aria-hidden="true"></i>
+          {{ t().result.startOver }}
+        </ui-button>
       </div>
 
+      <!-- Story Image Generator Panel -->
       <app-story-image-panel />
     </section>
   `,
@@ -88,16 +115,13 @@ export class ResultStep {
   protected readonly teams = computed(() => this.store.teams() ?? []);
   protected readonly gridClass = computed(() =>
     this.teams().length === 3
-      ? 'grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3'
-      : 'grid grid-cols-1 gap-3 sm:grid-cols-2',
+      ? 'grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3'
+      : 'grid grid-cols-1 gap-4 sm:grid-cols-2',
   );
 
-  // The selection belongs to the teams it was made on, so a new draw never keeps it.
   private readonly selection = signal<{ id: string; teams: unknown } | null>(null);
   private readonly draggingId = signal<string | null>(null);
   private readonly overId = signal<string | null>(null);
-  // The last thing said to assistive technology, kept only while the teams are the same
-  // ones it was said about, so a new draw never leaves an old message behind.
   private readonly note = signal<{ text: string; teams: unknown } | null>(null);
 
   protected readonly selected = computed(() => {
@@ -108,6 +132,15 @@ export class ResultStep {
     const note = this.note();
     return note && note.teams === this.store.teams() ? note.text : '';
   });
+
+  protected teamAccent(index: number): 'primary' | 'secondary' | 'alternative' | undefined {
+    const accents: ('primary' | 'secondary' | 'alternative')[] = [
+      'secondary',
+      'alternative',
+      'primary',
+    ];
+    return accents[index % accents.length];
+  }
 
   protected playerClass(id: string): string {
     const state =
@@ -121,7 +154,6 @@ export class ResultStep {
     return `${ROW} ${state}`;
   }
 
-  // Tap one player, then a player of another team, to swap them.
   protected tap(id: string): void {
     const current = this.selected();
     if (current === null) return this.select(id);
@@ -141,7 +173,6 @@ export class ResultStep {
     if (event.dataTransfer) event.dataTransfer.effectAllowed = 'move';
   }
 
-  // Only a player of another team accepts the drop.
   protected dragOver(event: DragEvent, id: string): void {
     if (!this.canDropOn(id)) return;
     event.preventDefault();

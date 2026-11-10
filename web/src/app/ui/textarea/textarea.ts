@@ -7,7 +7,7 @@ let nextId = 0;
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'block' },
   template: `
-    <label [attr.for]="fieldId" class="mb-1 block text-sm font-medium text-secondary">
+    <label [attr.for]="fieldId" class="mb-1.5 block text-xs font-bold uppercase tracking-wider text-secondary/80">
       {{ label() }}
     </label>
     <textarea
@@ -17,10 +17,10 @@ let nextId = 0;
       [attr.aria-describedby]="hint() ? hintId : null"
       [value]="value()"
       (input)="onInput($event)"
-      class="block w-full rounded-lg border border-secondary/30 bg-white p-3 text-base text-secondary placeholder:text-secondary/50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary"
+      class="block w-full rounded-lg border border-secondary/20 bg-white p-3.5 text-sm text-secondary placeholder:text-secondary/40 shadow-xs transition-colors focus-visible:border-secondary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary"
     ></textarea>
     @if (hint()) {
-      <p [id]="hintId" class="mt-1 text-sm text-secondary/70">{{ hint() }}</p>
+      <p [id]="hintId" class="mt-1.5 text-xs text-secondary/70">{{ hint() }}</p>
     }
   `,
 })

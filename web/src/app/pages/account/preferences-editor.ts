@@ -45,77 +45,94 @@ const copyOf = (preferences: Preferences): Preferences => ({
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [LockNotice, UiButton, UiInput, UiSegmented, UiSelect],
   template: `
-    <section class="space-y-6">
-      <div class="space-y-1">
+    <section class="space-y-6 rounded-xl border border-secondary/15 bg-white p-6 shadow-xs">
+      <div class="border-b border-secondary/10 pb-4">
         <h2>{{ t().title }}</h2>
-        <p class="text-secondary/80">{{ t().description }}</p>
+        <p class="mt-1 text-sm text-secondary/70">{{ t().description }}</p>
       </div>
 
-      <ui-select
-        [label]="t().playersPerTeam.label"
-        [options]="sizeOptions()"
-        [value]="sizeValue()"
-        (valueChange)="setSize($event)"
-      />
-
-      <div class="space-y-2">
-        <ui-segmented
-          [label]="t().teamCount.label"
-          [options]="teamCountOptions()"
-          [value]="teamCountValue()"
-          (valueChange)="setTeamCount($event)"
-          (lockedSelect)="touchLocked($event)"
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+        <ui-select
+          [label]="t().playersPerTeam.label"
+          [options]="sizeOptions()"
+          [value]="sizeValue()"
+          (valueChange)="setSize($event)"
         />
-        <app-lock-notice [reason]="lock()?.reason ?? null" [message]="lock()?.message ?? null" />
+
+        <div class="space-y-2">
+          <ui-segmented
+            [label]="t().teamCount.label"
+            [options]="teamCountOptions()"
+            [value]="teamCountValue()"
+            (valueChange)="setTeamCount($event)"
+            (lockedSelect)="touchLocked($event)"
+          />
+          <app-lock-notice [reason]="lock()?.reason ?? null" [message]="lock()?.message ?? null" />
+        </div>
       </div>
 
-      @for (team of visibleTeams(); track $index; let i = $index) {
-        <fieldset class="space-y-3 rounded-xl border border-secondary/15 p-4">
-          <legend class="px-1 font-semibold">{{ teamTitle(i) }}</legend>
-          <ui-segmented
-            [label]="t().teams.iconLabel(teamTitle(i))"
-            [options]="iconOptions"
-            [value]="team.icon"
-            (valueChange)="setIcon(i, $event)"
+      <div class="space-y-3">
+        <span class="block text-xs font-bold uppercase tracking-wider text-secondary/70">
+          Personalización de equipos
+        </span>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          @for (team of visibleTeams(); track $index; let i = $index) {
+            <fieldset class="space-y-3 rounded-xl border border-secondary/15 bg-secondary/[0.02] p-4 shadow-2xs">
+              <legend class="px-1 text-xs font-bold uppercase tracking-wider text-secondary">{{ teamTitle(i) }}</legend>
+              <ui-segmented
+                [label]="t().teams.iconLabel(teamTitle(i))"
+                [options]="iconOptions"
+                [value]="team.icon"
+                (valueChange)="setIcon(i, $event)"
+              />
+              <ui-input
+                type="color"
+                [label]="t().teams.colorLabel(teamTitle(i))"
+                [value]="team.color"
+                (valueChange)="setColor(i, $event)"
+              />
+            </fieldset>
+          }
+        </div>
+      </div>
+
+      <div class="space-y-4 border-t border-secondary/10 pt-4">
+        <span class="block text-xs font-bold uppercase tracking-wider text-secondary/70">
+          Plantilla para WhatsApp
+        </span>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <ui-input
+            [label]="t().template.header"
+            [placeholder]="t().template.headerPlaceholder"
+            [maxLength]="textMax"
+            [value]="draft().header"
+            (valueChange)="setHeader($event)"
           />
           <ui-input
-            type="color"
-            [label]="t().teams.colorLabel(teamTitle(i))"
-            [value]="team.color"
-            (valueChange)="setColor(i, $event)"
+            [label]="t().template.footer"
+            [placeholder]="t().template.footerPlaceholder"
+            [maxLength]="textMax"
+            [value]="draft().footer"
+            (valueChange)="setFooter($event)"
           />
-        </fieldset>
-      }
+        </div>
 
-      <ui-input
-        [label]="t().template.header"
-        [placeholder]="t().template.headerPlaceholder"
-        [maxLength]="textMax"
-        [value]="draft().header"
-        (valueChange)="setHeader($event)"
-      />
-      <ui-input
-        [label]="t().template.footer"
-        [placeholder]="t().template.footerPlaceholder"
-        [maxLength]="textMax"
-        [value]="draft().footer"
-        (valueChange)="setFooter($event)"
-      />
-      <ui-select
-        [label]="t().template.numbering"
-        [options]="numberingOptions()"
-        [value]="draft().numbering"
-        (valueChange)="setNumbering($event)"
-      />
+        <ui-select
+          [label]="t().template.numbering"
+          [options]="numberingOptions()"
+          [value]="draft().numbering"
+          (valueChange)="setNumbering($event)"
+        />
+      </div>
 
-      <div class="space-y-2">
-        <h3>{{ t().preview.title }}</h3>
-        <pre class="overflow-x-auto whitespace-pre-wrap rounded-lg bg-secondary/5 p-3 text-sm">{{
+      <div class="space-y-2 border-t border-secondary/10 pt-4">
+        <h3 class="text-sm font-bold uppercase tracking-wider text-secondary">{{ t().preview.title }}</h3>
+        <pre class="overflow-x-auto whitespace-pre-wrap rounded-xl border border-secondary/15 bg-secondary/[0.04] p-4 text-xs sm:text-sm font-mono text-secondary leading-relaxed shadow-inner">{{
           previewText()
         }}</pre>
       </div>
 
-      <div class="flex flex-wrap gap-3">
+      <div class="flex flex-wrap gap-3 pt-2">
         <ui-button size="lg" (click)="save()">{{ t().save }}</ui-button>
         <ui-button variant="outline" (click)="restore()">{{ t().restore }}</ui-button>
       </div>
@@ -135,7 +152,6 @@ export class PreferencesEditor {
     label: icon,
   }));
 
-  // The form is a draft: nothing reaches the saved preferences until Save is pressed.
   protected readonly draft = signal<Preferences>(
     copyOf(this.preferences.active() ?? DEFAULT_PREFERENCES),
   );
@@ -162,7 +178,6 @@ export class PreferencesEditor {
     }),
   );
   protected readonly teamCountValue = computed(() => String(this.draft().teamCount));
-  // Only the teams in use are shown; the others stay saved, out of sight.
   protected readonly visibleTeams = computed(() =>
     this.draft().teams.slice(0, this.draft().teamCount),
   );
@@ -205,7 +220,6 @@ export class PreferencesEditor {
 
   protected touchLocked(option: SegmentedOption): void {
     if (!option.locked) return;
-    // The same sentences the tool shows under its own selector of teams.
     const { teamsSignIn, teamsPremium } = this.i18n.t().tool.preview;
     this.lock.set({
       reason: option.locked,
@@ -213,8 +227,6 @@ export class PreferencesEditor {
     });
   }
 
-  // Choosing an icon that another team has, shown or not, swaps the two: the six circles
-  // are always all different.
   protected setIcon(index: number, icon: string): void {
     this.draft.update((d) => {
       const next = copyOf(d);
@@ -248,7 +260,6 @@ export class PreferencesEditor {
 
   protected save(): void {
     this.preferences.save(this.draft());
-    // Show what was really kept, in case something had to be cleaned.
     this.draft.set(copyOf(this.preferences.active() ?? DEFAULT_PREFERENCES));
     this.toast.show(this.t().saved);
   }

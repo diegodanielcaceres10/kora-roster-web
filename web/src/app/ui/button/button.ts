@@ -4,20 +4,24 @@ export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost';
 export type ButtonSize = 'md' | 'lg';
 
 const BASE =
-  'inline-flex w-full items-center justify-center gap-2 rounded-lg font-semibold ' +
-  'transition focus-visible:outline-2 focus-visible:outline-offset-2 ' +
-  'focus-visible:outline-secondary disabled:cursor-not-allowed disabled:opacity-50';
+  'inline-flex w-full select-none items-center justify-center gap-2 rounded-lg font-semibold tracking-tight ' +
+  'transition-all duration-150 ease-out active:scale-[0.98] ' +
+  'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary ' +
+  'disabled:cursor-not-allowed disabled:opacity-45 disabled:active:scale-100 disabled:shadow-none';
 
 const VARIANTS: Record<ButtonVariant, string> = {
-  primary: 'bg-primary text-secondary hover:brightness-95',
-  secondary: 'bg-secondary text-white hover:brightness-125',
-  outline: 'border-2 border-secondary bg-transparent text-secondary hover:bg-secondary/10',
+  primary:
+    'bg-primary text-secondary font-bold shadow-xs hover:brightness-95 hover:shadow-sm',
+  secondary:
+    'bg-secondary text-white font-semibold shadow-xs hover:bg-secondary/90 hover:shadow-sm',
+  outline:
+    'border-2 border-secondary/25 bg-transparent text-secondary hover:border-secondary hover:bg-secondary/5',
   ghost: 'bg-transparent text-secondary hover:bg-secondary/10',
 };
 
 const SIZES: Record<ButtonSize, string> = {
-  md: 'min-h-11 px-4 text-base',
-  lg: 'min-h-13 px-6 text-lg',
+  md: 'min-h-11 px-4 text-sm sm:text-base',
+  lg: 'min-h-13 px-6 text-base sm:text-lg',
 };
 
 @Component({

@@ -19,11 +19,11 @@ export interface SegmentedOption {
 }
 
 const OPTION_BASE =
-  'min-h-9 min-w-11 rounded-md px-3 text-sm font-semibold transition ' +
+  'min-h-9 min-w-11 select-none rounded-md px-3 text-sm font-bold tracking-tight transition-all duration-150 ease-out ' +
   'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary';
-const SELECTED = 'bg-secondary text-white';
-const UNSELECTED = 'bg-transparent text-secondary hover:bg-secondary/10';
-const LOCKED = 'bg-transparent text-secondary/70 hover:bg-secondary/10';
+const SELECTED = 'bg-secondary text-white shadow-xs';
+const UNSELECTED = 'bg-transparent text-secondary/80 hover:bg-secondary/10 hover:text-secondary';
+const LOCKED = 'bg-transparent text-secondary/60 hover:bg-secondary/10';
 
 @Component({
   selector: 'ui-segmented',
@@ -33,7 +33,7 @@ const LOCKED = 'bg-transparent text-secondary/70 hover:bg-secondary/10';
     <div
       role="radiogroup"
       [attr.aria-label]="label()"
-      class="inline-flex gap-1 rounded-lg border border-secondary/30 p-1"
+      class="inline-flex gap-1 rounded-lg border border-secondary/20 bg-secondary/[0.04] p-1 shadow-inner"
     >
       @for (option of options(); track option.value; let i = $index) {
         <button
@@ -110,10 +110,12 @@ export class UiSegmented {
         return;
     }
     event.preventDefault();
-    // The keys reach every option, so a locked one can be found and read; only the open
-    // ones are also selected.
+    this.focusOption(target);
     const option = this.options()[target];
     if (!option.locked) this.value.set(option.value);
-    this.optionEls()[target].nativeElement.focus();
+  }
+
+  private focusOption(index: number): void {
+    this.optionEls()[index]?.nativeElement.focus();
   }
 }

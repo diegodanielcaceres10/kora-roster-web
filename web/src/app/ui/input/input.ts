@@ -11,9 +11,9 @@ import {
 let nextId = 0;
 
 const TEXT_FIELD =
-  'block w-full rounded-lg border border-secondary/30 bg-white px-3 py-2 text-base text-secondary placeholder:text-secondary/50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary';
+  'block w-full rounded-lg border border-secondary/20 bg-white px-3.5 py-2 text-base text-secondary placeholder:text-secondary/40 shadow-xs transition-colors focus-visible:border-secondary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary';
 const COLOR_FIELD =
-  'block h-11 w-16 cursor-pointer rounded-lg border border-secondary/30 bg-white p-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary';
+  'block h-11 w-16 cursor-pointer rounded-lg border border-secondary/20 bg-white p-1 shadow-xs transition-colors focus-visible:border-secondary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary';
 
 @Component({
   selector: 'ui-input',
@@ -33,7 +33,7 @@ const COLOR_FIELD =
       [class]="fieldClass()"
     />
     @if (hint()) {
-      <p [id]="hintId" class="mt-1 text-sm text-secondary/70">{{ hint() }}</p>
+      <p [id]="hintId" class="mt-1.5 text-xs text-secondary/70">{{ hint() }}</p>
     }
   `,
 })
@@ -54,7 +54,7 @@ export class UiInput {
   protected readonly hintId = `ui-input-${this.uid}-hint`;
 
   protected readonly labelClass = computed(() =>
-    this.labelHidden() ? 'sr-only' : 'mb-1 block text-sm font-medium text-secondary',
+    this.labelHidden() ? 'sr-only' : 'mb-1.5 block text-xs font-bold uppercase tracking-wider text-secondary/80',
   );
   protected readonly fieldClass = computed(() =>
     this.type() === 'color' ? COLOR_FIELD : TEXT_FIELD,

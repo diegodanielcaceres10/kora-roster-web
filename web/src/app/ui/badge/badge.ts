@@ -2,13 +2,14 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
 
 export type BadgeTone = 'neutral' | 'primary' | 'alternative' | 'danger';
 
-const BASE = 'inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold';
+const BASE =
+  'inline-flex select-none items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider';
 
 const TONES: Record<BadgeTone, string> = {
-  neutral: 'bg-secondary/10 text-secondary',
-  primary: 'bg-primary/30 text-secondary',
-  alternative: 'bg-alternative text-white',
-  danger: 'bg-red-100 text-red-800',
+  neutral: 'bg-secondary/8 text-secondary border border-secondary/15',
+  primary: 'bg-primary/25 text-secondary border border-primary/40',
+  alternative: 'bg-alternative text-white shadow-xs',
+  danger: 'bg-red-50 text-red-700 border border-red-200',
 };
 
 @Component({

@@ -9,23 +9,80 @@
 }
 
 @layer base {
+  :root {
+    --sports-canvas: #f8fafc;
+    --sports-surface: #ffffff;
+    --sports-border: rgba(27, 42, 65, 0.12);
+  }
+
   body {
-    @apply bg-white text-secondary;
+    @apply bg-[#f8fafc] text-secondary antialiased;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11', 'tnum';
+    min-height: 100vh;
   }
 
   h1 {
-    @apply text-3xl font-bold tracking-tight;
+    @apply text-2xl sm:text-3xl font-bold tracking-tight text-secondary;
   }
 
   h2 {
-    @apply text-2xl font-semibold;
+    @apply text-xl sm:text-2xl font-bold tracking-tight text-secondary;
   }
 
   h3 {
-    @apply text-xl font-semibold;
+    @apply text-lg sm:text-xl font-semibold tracking-tight text-secondary;
   }
 
   p {
     @apply leading-relaxed;
   }
+
+  /* Accessible focus indicators with sports utility styling */
+  *:focus-visible {
+    outline: 2px solid var(--color-secondary);
+    outline-offset: 2px;
+  }
 }
+
+/* Micro-animations and utility transitions */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes toastSlide {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-toast {
+  animation: toastSlide 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+

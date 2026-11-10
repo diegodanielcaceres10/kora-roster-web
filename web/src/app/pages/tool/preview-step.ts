@@ -17,6 +17,7 @@ import {
   SegmentedOption,
   UiBadge,
   UiButton,
+  UiCard,
   UiIconButton,
   UiInput,
   UiListRow,
@@ -26,88 +27,158 @@ import {
 @Component({
   selector: 'app-preview-step',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [LockNotice, UiBadge, UiButton, UiIconButton, UiInput, UiListRow, UiSegmented],
+  imports: [LockNotice, UiBadge, UiButton, UiCard, UiIconButton, UiInput, UiListRow, UiSegmented],
   template: `
-    <section class="space-y-4">
-      <h2>{{ t().preview.title }}</h2>
+    <section class="space-y-6">
+      <div class="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
+        <!-- Match Setup & Status Control Panel (Desktop Sticky Sidebar) -->
+        <aside class="space-y-5 lg:col-span-4 lg:sticky lg:top-20">
+          <ui-card accent="primary">
+            <h3 card-header class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-secondary/80">
+              <i class="fa-solid fa-sliders text-primary" aria-hidden="true"></i>
+              Configuración de partido
+            </h3>
 
-      <div class="space-y-2">
-        <ui-segmented
-          [label]="t().preview.teamsLabel"
-          [options]="teamOptions()"
-          [value]="teamValue()"
-          (valueChange)="chooseTeams($event)"
-          (lockedSelect)="touchLocked($event)"
-        />
-        <app-lock-notice [reason]="lock()?.reason ?? null" [message]="lock()?.message ?? null" />
-      </div>
+            <div class="space-y-4">
+              <!-- Team Count Selector -->
+              <div class="space-y-2">
+                <span class="block text-xs font-bold uppercase tracking-wider text-secondary/70">
+                  {{ t().preview.teamsLabel }}
+                </span>
+                <ui-segmented
+                  [label]="t().preview.teamsLabel"
+                  [options]="teamOptions()"
+                  [value]="teamValue()"
+                  (valueChange)="chooseTeams($event)"
+                  (lockedSelect)="touchLocked($event)"
+                />
+                <app-lock-notice [reason]="lock()?.reason ?? null" [message]="lock()?.message ?? null" />
+              </div>
 
-      <div>
-        <p class="font-semibold">{{ t().preview.count(store.playerCount()) }}</p>
-        <p role="status" [class]="statusClass()">{{ status() }}</p>
-        @if (notice(); as message) {
-          <p class="text-sm text-secondary/80">{{ message }}</p>
-        }
-      </div>
+              <!-- Status Banner -->
+              <div class="rounded-xl border border-secondary/10 bg-secondary/[0.03] p-3.5 space-y-2">
+                <div class="flex items-center justify-between">
+                  <p class="font-black text-lg text-secondary">{{ t().preview.count(store.playerCount()) }}</p>
+                  <span class="text-xs font-semibold text-secondary/60 tabular-nums">
+                    {{ store.teamCount() }} equipos
+                  </span>
+                </div>
 
-      <div role="list" class="space-y-1">
-        @for (player of store.players(); track player.id; let i = $index) {
-          <ui-list-row>
-            <span row-start class="inline-block w-6 text-right font-semibold">{{ i + 1 }}</span>
-            @if (editingId() === player.id) {
-              <ui-input
-                [label]="t().preview.nameLabel"
-                [labelHidden]="true"
-                [value]="draftName()"
-                (valueChange)="draftName.set($event)"
-                (keydown.enter)="save(player.id)"
-                (keydown.escape)="cancel()"
-                (focusout)="save(player.id)"
-              />
-            } @else {
-              <div class="flex flex-wrap items-center gap-2">
-                <span>{{ player.name }}</span>
-                @if (player.isGoalkeeper) {
-                  <ui-badge tone="alternative">{{ t().preview.goalkeeper }}</ui-badge>
+                <div class="flex items-center gap-2">
+                  <span
+                    class="size-2 rounded-full"
+                    [class.bg-alternative]="store.canDraw()"
+                    [class.bg-red-600]="!store.canDraw()"
+                  ></span>
+                  <p role="status" [class]="statusClass()" class="text-xs font-bold uppercase tracking-wide">
+                    {{ status() }}
+                  </p>
+                </div>
+
+                @if (notice(); as message) {
+                  <p class="mt-1 rounded bg-secondary/8 p-2 text-xs text-secondary/80">{{ message }}</p>
                 }
               </div>
-            }
-            <ui-icon-button
-              row-end
-              [label]="
-                player.isGoalkeeper
-                  ? t().preview.unmarkGoalkeeper(player.name)
-                  : t().preview.markGoalkeeper(player.name)
-              "
-              [pressed]="player.isGoalkeeper"
-              (click)="store.toggleGoalkeeper(player.id)"
-            >
-              <i class="fa-solid fa-mitten" aria-hidden="true"></i>
-            </ui-icon-button>
-            <ui-icon-button
-              row-end
-              [label]="t().preview.edit(player.name)"
-              (click)="startEdit(player)"
-            >
-              <i class="fa-solid fa-pencil" aria-hidden="true"></i>
-            </ui-icon-button>
-            <ui-icon-button
-              row-end
-              variant="danger"
-              [label]="t().preview.remove(player.name)"
-              (click)="store.removePlayer(player.id)"
-            >
-              <i class="fa-solid fa-xmark" aria-hidden="true"></i>
-            </ui-icon-button>
-          </ui-list-row>
-        }
-      </div>
 
-      <div class="flex flex-wrap gap-3">
-        <ui-button variant="outline" (click)="store.back()">{{ t().preview.back }}</ui-button>
-        <ui-button size="lg" [disabled]="!store.canDraw()" (click)="store.draw()">
-          {{ t().preview.draw }}
-        </ui-button>
+              <!-- Tactical Metrics Summary -->
+              <div class="grid grid-cols-2 gap-2 text-center">
+                <div class="rounded-lg border border-secondary/10 bg-white p-2.5 shadow-xs">
+                  <span class="block text-[10px] font-bold uppercase tracking-wider text-secondary/60">Por equipo</span>
+                  <span class="text-base font-black text-secondary tabular-nums">{{ playersPerTeam() }}</span>
+                </div>
+                <div class="rounded-lg border border-secondary/10 bg-white p-2.5 shadow-xs">
+                  <span class="block text-[10px] font-bold uppercase tracking-wider text-secondary/60">Arqueros</span>
+                  <span class="text-base font-black text-alternative tabular-nums">{{ goalkeeperCount() }}</span>
+                </div>
+              </div>
+
+              <!-- Action Controls -->
+              <div class="space-y-2.5 pt-2">
+                <ui-button size="lg" [disabled]="!store.canDraw()" (click)="store.draw()">
+                  <i class="fa-solid fa-shuffle" aria-hidden="true"></i>
+                  {{ t().preview.draw }}
+                </ui-button>
+                <ui-button variant="outline" (click)="store.back()">
+                  <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+                  {{ t().preview.back }}
+                </ui-button>
+              </div>
+            </div>
+          </ui-card>
+        </aside>
+
+        <!-- Player Roster List Panel -->
+        <main class="lg:col-span-8">
+          <ui-card>
+            <div card-header class="flex flex-wrap items-center justify-between gap-2 border-b border-secondary/10 pb-3">
+              <div class="flex items-center gap-2.5">
+                <h2>{{ t().preview.title }}</h2>
+                <ui-badge tone="neutral">{{ store.playerCount() }}</ui-badge>
+              </div>
+              <span class="text-xs text-secondary/60">Edita nombres o asigna arqueros</span>
+            </div>
+
+            <div class="space-y-3 pt-2">
+              <div class="flex items-center justify-between px-3 text-[11px] font-bold uppercase tracking-wider text-secondary/50">
+                <span># Jugador</span>
+                <span>Acciones</span>
+              </div>
+
+              <div role="list" class="divide-y divide-secondary/8 space-y-1">
+                @for (player of store.players(); track player.id; let i = $index) {
+                  <ui-list-row>
+                    <span row-start class="inline-block w-6 text-right font-semibold">{{ i + 1 }}</span>
+                    @if (editingId() === player.id) {
+                      <ui-input
+                        [label]="t().preview.nameLabel"
+                        [labelHidden]="true"
+                        [value]="draftName()"
+                        (valueChange)="draftName.set($event)"
+                        (keydown.enter)="save(player.id)"
+                        (keydown.escape)="cancel()"
+                        (focusout)="save(player.id)"
+                      />
+                    } @else {
+                      <div class="flex flex-wrap items-center gap-2">
+                        <span class="font-medium text-secondary">{{ player.name }}</span>
+                        @if (player.isGoalkeeper) {
+                          <ui-badge tone="alternative">{{ t().preview.goalkeeper }}</ui-badge>
+                        }
+                      </div>
+                    }
+                    <ui-icon-button
+                      row-end
+                      [label]="
+                        player.isGoalkeeper
+                          ? t().preview.unmarkGoalkeeper(player.name)
+                          : t().preview.markGoalkeeper(player.name)
+                      "
+                      [pressed]="player.isGoalkeeper"
+                      (click)="store.toggleGoalkeeper(player.id)"
+                    >
+                      <i class="fa-solid fa-mitten" aria-hidden="true"></i>
+                    </ui-icon-button>
+                    <ui-icon-button
+                      row-end
+                      [label]="t().preview.edit(player.name)"
+                      (click)="startEdit(player)"
+                    >
+                      <i class="fa-solid fa-pencil" aria-hidden="true"></i>
+                    </ui-icon-button>
+                    <ui-icon-button
+                      row-end
+                      variant="danger"
+                      [label]="t().preview.remove(player.name)"
+                      (click)="store.removePlayer(player.id)"
+                    >
+                      <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                    </ui-icon-button>
+                  </ui-list-row>
+                }
+              </div>
+            </div>
+          </ui-card>
+        </main>
       </div>
     </section>
   `,
@@ -124,6 +195,18 @@ export class PreviewStep {
   private readonly editor = viewChild(UiInput);
 
   protected readonly lock = signal<{ reason: LockReason; message: string } | null>(null);
+
+  protected readonly goalkeeperCount = computed(
+    () => this.store.players().filter((p) => p.isGoalkeeper).length,
+  );
+
+  protected readonly playersPerTeam = computed(() => {
+    const count = this.store.playerCount();
+    const teams = this.store.teamCount();
+    if (teams <= 0) return '0';
+    const per = count / teams;
+    return Number.isInteger(per) ? String(per) : per.toFixed(1);
+  });
 
   protected readonly teamOptions = computed<SegmentedOption[]>(() =>
     [2, 3, 4, 5, 6].map((count) => {
@@ -192,8 +275,6 @@ export class PreviewStep {
     );
   }
 
-  // Enter and losing focus both save. Closing the field after Escape can fire a focusout
-  // too, which must not save, so only the row that is still being edited is saved.
   protected save(id: string): void {
     if (this.editingId() !== id) return;
     this.store.renamePlayer(id, this.draftName());

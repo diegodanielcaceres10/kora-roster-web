@@ -3,13 +3,16 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
 export type IconButtonVariant = 'default' | 'danger';
 
 const BASE =
-  'inline-flex size-11 items-center justify-center rounded-lg border text-lg transition ' +
+  'inline-flex size-11 select-none items-center justify-center rounded-lg border text-base sm:text-lg ' +
+  'transition-all duration-150 ease-out active:scale-95 ' +
   'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary ' +
-  'disabled:cursor-not-allowed disabled:opacity-50';
+  'disabled:cursor-not-allowed disabled:opacity-40 disabled:active:scale-100 disabled:shadow-none';
 
-const DEFAULT = 'border-secondary/30 bg-transparent text-secondary hover:bg-secondary/10';
-const DANGER = 'border-red-300 bg-transparent text-red-700 hover:bg-red-50';
-const PRESSED = 'border-primary bg-primary text-secondary';
+const DEFAULT =
+  'border-secondary/20 bg-white/80 text-secondary hover:border-secondary/40 hover:bg-secondary/5 shadow-xs';
+const DANGER =
+  'border-red-200 bg-white/80 text-red-700 hover:border-red-300 hover:bg-red-50 shadow-xs';
+const PRESSED = 'border-primary bg-primary text-secondary shadow-xs font-bold';
 
 @Component({
   selector: 'ui-icon-button',

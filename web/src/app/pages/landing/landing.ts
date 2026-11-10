@@ -10,44 +10,62 @@ import { UiCard } from '../../ui';
   imports: [RouterLink, UiCard],
   host: { class: 'block' },
   template: `
-    <section class="bg-secondary text-white">
-      <div class="mx-auto max-w-3xl space-y-6 px-4 py-12 sm:py-16">
-        <h1>{{ t().hero.title }}</h1>
-        <p class="text-lg text-white/85">{{ t().hero.subtitle }}</p>
-        <a
-          [routerLink]="['/', i18n.lang(), 'amistoso']"
-          class="inline-flex min-h-13 items-center justify-center gap-2 rounded-lg bg-primary px-6 text-lg font-semibold text-secondary transition hover:brightness-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-        >
-          <i class="fa-solid fa-futbol" aria-hidden="true"></i>
-          {{ t().hero.cta }}
-        </a>
+    <!-- Minimal Sports Utility Hero Section -->
+    <section class="border-b border-secondary/15 bg-secondary text-white relative overflow-hidden">
+      <div class="mx-auto max-w-4xl space-y-6 px-4 py-16 sm:py-20 text-center">
+        <div class="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3.5 py-1 text-xs font-bold uppercase tracking-widest text-primary backdrop-blur-md">
+          <i class="fa-solid fa-bolt" aria-hidden="true"></i>
+          <span>Utilidad deportiva de armado rápido</span>
+        </div>
+
+        <h1 class="text-3xl sm:text-5xl font-black tracking-tight text-white leading-tight">
+          {{ t().hero.title }}
+        </h1>
+
+        <p class="mx-auto max-w-2xl text-base sm:text-lg text-white/80 leading-relaxed">
+          {{ t().hero.subtitle }}
+        </p>
+
+        <div class="pt-2">
+          <a
+            [routerLink]="['/', i18n.lang(), 'amistoso']"
+            class="inline-flex min-h-13 items-center justify-center gap-2.5 rounded-xl bg-primary px-8 text-base sm:text-lg font-black tracking-wide text-secondary shadow-lg transition-all duration-150 ease-out hover:brightness-95 hover:shadow-xl active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+          >
+            <i class="fa-solid fa-futbol" aria-hidden="true"></i>
+            {{ t().hero.cta }}
+          </a>
+        </div>
       </div>
     </section>
 
-    <section class="mx-auto max-w-5xl px-4 py-10">
+    <!-- Tactical Benefits Grid -->
+    <section class="mx-auto max-w-5xl px-4 py-14">
       <h2 class="sr-only">{{ t().benefits.title }}</h2>
-      <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        @for (benefit of benefits(); track benefit.title) {
-          <ui-card>
-            <h3 card-header>{{ benefit.title }}</h3>
-            <p>{{ benefit.text }}</p>
+      <div class="grid grid-cols-1 gap-5 sm:grid-cols-3">
+        @for (benefit of benefits(); track benefit.title; let i = $index) {
+          <ui-card [accent]="benefitAccent(i)">
+            <h3 card-header class="text-base font-bold text-secondary">{{ benefit.title }}</h3>
+            <p class="text-sm text-secondary/75 leading-relaxed">{{ benefit.text }}</p>
           </ui-card>
         }
       </div>
     </section>
 
-    <section class="mx-auto max-w-3xl space-y-4 px-4 pb-14">
-      <h2>{{ t().steps.title }}</h2>
+    <!-- How it works (Tactical Step Process) -->
+    <section class="mx-auto max-w-3xl space-y-6 px-4 pb-20">
+      <div class="border-b border-secondary/10 pb-3">
+        <h2 class="text-xl sm:text-2xl font-black tracking-tight text-secondary">{{ t().steps.title }}</h2>
+      </div>
+
       <ol class="space-y-4">
         @for (step of steps(); track step.title; let i = $index) {
-          <li class="flex gap-4">
+          <li class="flex items-start gap-4 rounded-xl border border-secondary/10 bg-white p-4 sm:p-5 shadow-xs transition hover:border-secondary/20">
             <span
-              class="inline-flex size-8 shrink-0 items-center justify-center rounded-full bg-primary font-bold text-secondary"
-              >{{ i + 1 }}</span
-            >
-            <div>
-              <h3>{{ step.title }}</h3>
-              <p>{{ step.text }}</p>
+              class="inline-flex size-9 shrink-0 items-center justify-center rounded-lg bg-secondary text-sm font-black text-primary shadow-xs"
+            >{{ i + 1 }}</span>
+            <div class="space-y-1">
+              <h3 class="text-base font-bold text-secondary">{{ step.title }}</h3>
+              <p class="text-sm text-secondary/75 leading-relaxed">{{ step.text }}</p>
             </div>
           </li>
         }
@@ -70,5 +88,10 @@ export class Landing {
 
   constructor() {
     inject(PageMeta).apply('landing');
+  }
+
+  protected benefitAccent(index: number): 'primary' | 'secondary' | 'alternative' {
+    const accents: ('primary' | 'secondary' | 'alternative')[] = ['primary', 'secondary', 'alternative'];
+    return accents[index % accents.length];
   }
 }

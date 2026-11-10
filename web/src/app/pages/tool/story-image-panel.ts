@@ -14,57 +14,72 @@ import { STORY_BLOB } from '../../image/story-image';
 import { Entitlements, LockReason } from '../../plans/entitlements';
 import { LockNotice } from '../../plans/lock-notice';
 import { AmistosoStore } from '../../state/amistoso.store';
-import { ToastService, UiButton } from '../../ui';
+import { ToastService, UiButton, UiCard } from '../../ui';
 
 interface MadeImage {
   url: string;
   blob: Blob;
   name: string;
   canShare: boolean;
-  // The teams the image was made from, so it is dropped as soon as they change.
   teams: unknown;
 }
 
-// Makes the story image of the drawn teams and lets the person download or share it.
 @Component({
   selector: 'app-story-image-panel',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [LockNotice, UiButton],
+  imports: [LockNotice, UiButton, UiCard],
   template: `
-    <div class="space-y-3">
-      <ui-button variant="outline" size="lg" [disabled]="busy()" (click)="create()">
-        <i
-          class="fa-solid"
-          [class.fa-lock]="locked()"
-          [class.fa-image]="!locked()"
-          aria-hidden="true"
-        ></i>
-        {{ t().createImage }}
-      </ui-button>
+    <div class="space-y-4 pt-2">
+      <div class="flex flex-wrap items-center gap-3">
+        <ui-button variant="outline" size="lg" [disabled]="busy()" (click)="create()">
+          <i
+            class="fa-solid"
+            [class.fa-lock]="locked()"
+            [class.fa-image]="!locked()"
+            aria-hidden="true"
+          ></i>
+          {{ t().createImage }}
+        </ui-button>
+        <span class="text-xs text-secondary/60">Exportá una imagen con formato vertical 9:16 para Instagram o WhatsApp</span>
+      </div>
       <app-lock-notice [reason]="notice()?.reason ?? null" [message]="notice()?.message ?? null" />
 
       @if (image(); as made) {
-        <div class="space-y-3 rounded-xl border border-secondary/15 p-3">
-          <h3>{{ t().imageTitle }}</h3>
-          <img
-            [src]="made.url"
-            [alt]="t().imageAlt"
-            class="mx-auto max-h-[70vh] w-auto rounded-lg"
-          />
-          <div class="flex flex-wrap gap-3">
-            <ui-button (click)="download()">
-              <i class="fa-solid fa-download" aria-hidden="true"></i>
-              {{ t().download }}
+        <ui-card accent="alternative">
+          <div card-header class="flex items-center justify-between border-b border-secondary/10 pb-3">
+            <h3 class="flex items-center gap-2 text-base font-bold text-secondary">
+              <i class="fa-solid fa-mobile-screen-button text-alternative" aria-hidden="true"></i>
+              {{ t().imageTitle }}
+            </h3>
+            <ui-button variant="ghost" (click)="close()">
+              <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+              {{ t().closeImage }}
             </ui-button>
-            @if (made.canShare) {
-              <ui-button variant="outline" (click)="share()">
-                <i class="fa-solid fa-share-nodes" aria-hidden="true"></i>
-                {{ t().share }}
-              </ui-button>
-            }
-            <ui-button variant="ghost" (click)="close()">{{ t().closeImage }}</ui-button>
           </div>
-        </div>
+
+          <div class="space-y-4 pt-2">
+            <div class="overflow-hidden rounded-xl bg-slate-900 p-2 shadow-inner">
+              <img
+                [src]="made.url"
+                [alt]="t().imageAlt"
+                class="mx-auto max-h-[65vh] w-auto rounded-lg shadow-md"
+              />
+            </div>
+            <div class="flex flex-wrap items-center gap-3">
+              <ui-button (click)="download()">
+                <i class="fa-solid fa-download" aria-hidden="true"></i>
+                {{ t().download }}
+              </ui-button>
+              @if (made.canShare) {
+                <ui-button variant="outline" (click)="share()">
+                  <i class="fa-solid fa-share-nodes" aria-hidden="true"></i>
+                  {{ t().share }}
+                </ui-button>
+              }
+              <ui-button variant="ghost" (click)="close()">{{ t().closeImage }}</ui-button>
+            </div>
+          </div>
+        </ui-card>
       }
     </div>
   `,
@@ -87,8 +102,6 @@ export class StoryImagePanel {
 
   constructor() {
     inject(DestroyRef).onDestroy(() => this.forget());
-    // An image that no longer matches the teams is of no use: drop it. Effects of a component
-    // run before its template is drawn, so a stale image is never shown.
     effect(() => {
       const made = this.made();
       if (made && made.teams !== this.store.teams()) untracked(() => this.forget());
