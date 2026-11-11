@@ -36,18 +36,20 @@ const keyOf = (target: Target): string =>
           </span>
         </div>
 
-        <div class="flex items-center gap-2.5 rounded-xl border border-secondary/12 bg-white p-3 text-xs text-secondary/80 shadow-xs">
-          <i class="fa-solid fa-arrows-rotate text-primary text-sm shrink-0" aria-hidden="true"></i>
-          <p class="text-sm text-secondary/80">
-            {{ manual() ? t().result.manualHint : t().result.swapHint }}
-          </p>
-        </div>
+        @if (!store.confirmed()) {
+          <div class="flex items-center gap-2.5 rounded-xl border border-secondary/12 bg-white p-3 text-xs text-secondary/80 shadow-xs">
+            <i class="fa-solid fa-arrows-rotate text-primary text-sm shrink-0" aria-hidden="true"></i>
+            <p class="text-sm text-secondary/80">
+              {{ manual() ? t().result.manualHint : t().result.swapHint }}
+            </p>
+          </div>
+        }
       </div>
 
       <p role="status" class="sr-only">{{ announcement() }}</p>
 
       <!-- Players without a team -->
-      @if (manual()) {
+      @if (manual() && !store.confirmed()) {
         <section
           data-pool
           [class]="poolClass()"
@@ -121,7 +123,7 @@ const keyOf = (target: Target): string =>
           <ui-card [accent]="teamAccent(i)">
             <div card-header class="flex items-center justify-between gap-2">
               <h3>{{ store.teamIcons()[i] }} {{ t().teamTitle(i + 1) }}</h3>
-              @if (manual()) {
+              @if (manual() && !store.confirmed()) {
                 <span
                   data-count
                   class="rounded-full bg-secondary/10 px-2 py-0.5 text-xs font-bold tabular-nums text-secondary"
@@ -133,31 +135,42 @@ const keyOf = (target: Target): string =>
 
             <ol class="space-y-1 pt-1">
               @for (player of team; track player.id; let n = $index) {
-                <li>
-                  <button
-                    type="button"
-                    draggable="true"
-                    [attr.data-player]="player.id"
-                    [class]="playerClass(player.id)"
-                    [attr.aria-pressed]="selected() === player.id"
-                    (click)="tap(player.id)"
-                    (keydown.escape)="clearSelection()"
-                    (dragstart)="dragStart($event, player.id)"
-                    (dragover)="dragOver($event, playerTarget(player.id))"
-                    (dragleave)="dragLeave($event, playerTarget(player.id))"
-                    (drop)="drop($event, playerTarget(player.id))"
-                    (dragend)="dragEnd()"
-                  >
+                @if (store.confirmed()) {
+                  <li class="flex items-center gap-2.5 px-2.5 py-2 text-sm">
                     <span class="w-6 text-right font-bold text-secondary/50 tabular-nums">{{ n + 1 }}.</span>
                     <span class="flex-1 font-medium text-secondary">{{ player.name }}</span>
                     @if (player.isGoalkeeper) {
                       <i class="fa-solid fa-mitten text-alternative" aria-hidden="true"></i>
                       <span class="sr-only">{{ t().preview.goalkeeper }}</span>
                     }
-                  </button>
-                </li>
+                  </li>
+                } @else {
+                  <li>
+                    <button
+                      type="button"
+                      draggable="true"
+                      [attr.data-player]="player.id"
+                      [class]="playerClass(player.id)"
+                      [attr.aria-pressed]="selected() === player.id"
+                      (click)="tap(player.id)"
+                      (keydown.escape)="clearSelection()"
+                      (dragstart)="dragStart($event, player.id)"
+                      (dragover)="dragOver($event, playerTarget(player.id))"
+                      (dragleave)="dragLeave($event, playerTarget(player.id))"
+                      (drop)="drop($event, playerTarget(player.id))"
+                      (dragend)="dragEnd()"
+                    >
+                      <span class="w-6 text-right font-bold text-secondary/50 tabular-nums">{{ n + 1 }}.</span>
+                      <span class="flex-1 font-medium text-secondary">{{ player.name }}</span>
+                      @if (player.isGoalkeeper) {
+                        <i class="fa-solid fa-mitten text-alternative" aria-hidden="true"></i>
+                        <span class="sr-only">{{ t().preview.goalkeeper }}</span>
+                      }
+                    </button>
+                  </li>
+                }
               }
-              @if (manual()) {
+              @if (manual() && !store.confirmed()) {
                 @for (slot of freeSlots(team); track $index) {
                   <li>
                     <button
@@ -181,7 +194,7 @@ const keyOf = (target: Target): string =>
         }
       </div>
 
-      @if (store.isComplete()) {
+      @if (store.confirmed()) {
         <!-- Tactical WhatsApp Text Panel -->
         <div class="rounded-xl border border-secondary/12 bg-white p-4 sm:p-5 shadow-xs space-y-3">
           <div class="flex items-center justify-between border-b border-secondary/10 pb-2.5">
@@ -195,45 +208,47 @@ const keyOf = (target: Target): string =>
             class="overflow-x-auto whitespace-pre-wrap rounded-xl border border-secondary/15 bg-secondary/[0.04] p-4 text-xs sm:text-sm font-mono text-secondary leading-relaxed shadow-inner"
             >{{ store.whatsappText() }}</pre>
         </div>
-      } @else {
-        <p
-          data-share-notice
-          class="rounded-xl border border-secondary/12 bg-white p-4 text-sm text-secondary/80 shadow-xs"
-        >
-          {{ progress() }}
-        </p>
       }
 
       <!-- Quick Actions Bar -->
       <div class="flex flex-wrap items-center gap-3 rounded-xl border border-secondary/10 bg-white p-4 shadow-xs">
-        @if (store.isComplete()) {
+        @if (store.confirmed()) {
           <ui-button size="lg" (click)="copy()">
             <i class="fa-solid fa-copy" aria-hidden="true"></i>
             {{ t().result.copy }}
           </ui-button>
-        }
-        <ui-button variant="outline" (click)="store.draw()">
-          <i class="fa-solid fa-shuffle" aria-hidden="true"></i>
-          {{ t().result.redraw }}
-        </ui-button>
-        @if (manual()) {
-          <ui-button variant="outline" [disabled]="allWaiting()" (click)="clearTeams()">
-            <i class="fa-solid fa-user-minus" aria-hidden="true"></i>
-            {{ t().result.clearTeams }}
+          <ui-button variant="outline" (click)="store.back()">
+            <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+            {{ t().preview.back }}
+          </ui-button>
+          <ui-button variant="ghost" (click)="store.reset()">
+            <i class="fa-solid fa-rotate-left" aria-hidden="true"></i>
+            {{ t().result.startOver }}
+          </ui-button>
+        } @else {
+          <ui-button size="lg" [disabled]="!store.isComplete()" (click)="confirm()">
+            <i class="fa-solid fa-check" aria-hidden="true"></i>
+            {{ t().result.confirm }}
+          </ui-button>
+          <ui-button variant="outline" (click)="store.draw()">
+            <i class="fa-solid fa-shuffle" aria-hidden="true"></i>
+            {{ t().result.redraw }}
+          </ui-button>
+          @if (manual()) {
+            <ui-button variant="outline" [disabled]="allWaiting()" (click)="clearTeams()">
+              <i class="fa-solid fa-user-minus" aria-hidden="true"></i>
+              {{ t().result.clearTeams }}
+            </ui-button>
+          }
+          <ui-button variant="outline" (click)="store.back()">
+            <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+            {{ t().preview.back }}
           </ui-button>
         }
-        <ui-button variant="outline" (click)="store.back()">
-          <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
-          {{ t().preview.back }}
-        </ui-button>
-        <ui-button variant="ghost" (click)="store.reset()">
-          <i class="fa-solid fa-rotate-left" aria-hidden="true"></i>
-          {{ t().result.startOver }}
-        </ui-button>
       </div>
 
       <!-- Story Image Generator Panel -->
-      @if (store.isComplete()) {
+      @if (store.confirmed()) {
         <app-story-image-panel />
       }
     </section>
@@ -373,6 +388,11 @@ export class ResultStep {
   protected drawRemaining(): void {
     this.store.drawRemaining();
     this.say(this.t().result.remainingDrawn);
+  }
+
+  protected confirm(): void {
+    this.store.confirm();
+    this.say(this.t().result.confirmed);
   }
 
   protected clearTeams(): void {

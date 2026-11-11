@@ -181,6 +181,8 @@ export const pt: Dictionary = {
       freeSlot: 'Vaga livre',
       moveHere: (name, team) => `Mover ${name} para ${team}`,
       complete: 'Times completos',
+      confirm: 'Confirmar',
+      confirmed: 'Times confirmados.',
       missing: (count) =>
         count === 1
           ? 'Falta 1 jogador para colocar em um time.'

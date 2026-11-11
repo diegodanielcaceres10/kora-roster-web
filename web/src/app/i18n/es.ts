@@ -182,6 +182,8 @@ export const es: Dictionary = {
       freeSlot: 'Lugar libre',
       moveHere: (name, team) => `Mover a ${name} a ${team}`,
       complete: 'Equipos completos',
+      confirm: 'Confirmar',
+      confirmed: 'Equipos confirmados.',
       missing: (count) =>
         count === 1 ? 'Falta 1 jugador por ubicar.' : `Faltan ${count} jugadores por ubicar.`,
       createImage: 'Crear imagen',

@@ -1156,4 +1156,84 @@ describe('AmistosoStore', () => {
       });
     });
   });
+
+  describe('confirming the teams', () => {
+    beforeEach(() => localStorage.clear());
+    afterEach(() => localStorage.clear());
+
+    it('starts without confirming anything', () => {
+      const { store } = inPreview(list(12));
+      expect(store.confirmed()).toBe(false);
+    });
+
+    it('confirms teams that were drawn, and stays on the same step', () => {
+      const { store } = inPreview(list(12));
+      store.draw(seeded(3));
+      store.confirm();
+      expect(store.confirmed()).toBe(true);
+      expect(store.step()).toBe('result');
+    });
+
+    it('confirms teams that were built by hand once everybody has one', () => {
+      saveSession();
+      const { store } = inPreview(list(12));
+      store.startManual();
+      store
+        .pool()
+        .slice()
+        .forEach((p, i) => store.movePlayer(p.id, i % 2));
+      store.confirm();
+      expect(store.confirmed()).toBe(true);
+    });
+
+    it('does not confirm while somebody is without a team', () => {
+      saveSession();
+      const { store } = inPreview(list(12));
+      store.startManual();
+      store.confirm();
+      expect(store.confirmed()).toBe(false);
+    });
+
+    it('does not confirm before the teams exist', () => {
+      const { store } = inPreview(list(12));
+      store.confirm();
+      expect(store.confirmed()).toBe(false);
+    });
+
+    it('goes back to editing the teams, as they were, when going back from the confirmed ones', () => {
+      const { store } = inPreview(list(12));
+      store.draw(seeded(3));
+      const teams = store.teams();
+      store.confirm();
+      store.back();
+      expect(store.confirmed()).toBe(false);
+      expect(store.step()).toBe('result');
+      expect(store.teams()).toBe(teams);
+    });
+
+    it('goes back to the list from the teams that are being edited, as before', () => {
+      const { store } = inPreview(list(12));
+      store.draw(seeded(3));
+      store.confirm();
+      store.back();
+      store.back();
+      expect(store.step()).toBe('preview');
+      expect(store.teams()).toBeNull();
+      expect(store.confirmed()).toBe(false);
+    });
+
+    it.each([
+      ['draws again', (s: ReturnType<typeof setup>['store']) => s.draw(seeded(4))],
+      ['starts the teams by hand', (s: ReturnType<typeof setup>['store']) => s.startManual()],
+      ['goes to the preview', (s: ReturnType<typeof setup>['store']) => s.continueToPreview()],
+      ['starts over', (s: ReturnType<typeof setup>['store']) => s.reset()],
+    ])('forgets what was confirmed when it %s', (_, act) => {
+      saveSession();
+      const { store } = inPreview(list(12));
+      store.draw(seeded(3));
+      store.confirm();
+      act(store);
+      expect(store.confirmed()).toBe(false);
+    });
+  });
 });

@@ -19,6 +19,16 @@ async function open(url: string, providers: Provider[] = []) {
 
 const heading = (root: HTMLElement) => root.querySelector('h1')?.textContent;
 
+// The text for WhatsApp, the copy button and the image come with the confirmed teams.
+function confirmTeams(harness: { fixture: { detectChanges(): void } }, root: HTMLElement) {
+  (
+    Array.from(root.querySelectorAll('ui-button button')).find(
+      (b) => b.textContent?.trim() === DICTIONARIES.es.tool.result.confirm,
+    ) as HTMLButtonElement
+  ).click();
+  harness.fixture.detectChanges();
+}
+
 describe('app routes', () => {
   afterEach(() => {
     Reflect.deleteProperty(navigator, 'languages');
@@ -288,6 +298,7 @@ describe('app routes', () => {
       ) as HTMLButtonElement;
       draw.click();
       harness.fixture.detectChanges();
+      confirmTeams(harness, root);
       const message = root.querySelector('pre')?.textContent as string;
       expect(message.startsWith('⚽ Amistoso\n\n🟢 Equipo 1')).toBe(true);
       expect(message).toContain('🟡 Equipo 2');
@@ -309,6 +320,7 @@ describe('app routes', () => {
         ) as HTMLButtonElement
       ).click();
       harness.fixture.detectChanges();
+      confirmTeams(harness, root);
       expect(root.querySelector('pre')?.textContent).toContain('🔴 Equipo 1\n1. ');
     });
   });
@@ -373,6 +385,7 @@ describe('app routes', () => {
       const after = Array.from(root.querySelectorAll('ui-card'));
       expect(after[0].querySelector('li button')?.textContent).toBe(nameB);
       expect(after[1].querySelector('li button')?.textContent).toBe(nameA);
+      confirmTeams(harness, root);
       expect(root.querySelector('pre')?.textContent).toContain(
         nameB?.replace(/^\s*1\.\s*/, '').trim(),
       );
@@ -386,6 +399,7 @@ describe('app routes', () => {
         ) as HTMLButtonElement
       ).click();
       harness.fixture.detectChanges();
+      confirmTeams(harness, root);
       (
         Array.from(root.querySelectorAll('ui-button button')).find(
           (b) => b.textContent?.trim() === DICTIONARIES.es.tool.result.createImage,
@@ -409,6 +423,7 @@ describe('app routes', () => {
       ).click();
       harness.fixture.detectChanges();
       expect(root.querySelectorAll('ui-card')).toHaveLength(4);
+      confirmTeams(harness, root);
       expect(root.querySelector('pre')?.textContent).toContain('Equipo 4');
     });
   });

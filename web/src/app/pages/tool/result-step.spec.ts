@@ -12,13 +12,14 @@ const T = DICTIONARIES.es.tool;
 const list = (count: number) =>
   Array.from({ length: count }, (_, i) => `Player ${i + 1}`).join('\n');
 
-function setup(preferences?: Preferences) {
+function setup(preferences?: Preferences, confirmed = false) {
   if (preferences) saveSession(preferences);
   TestBed.inject(I18n).setLang('es');
   const store = TestBed.inject(AmistosoStore);
   store.setRawText('Diego 🧤\nMati 🧤\n' + list(10));
   store.continueToPreview();
   store.draw(() => 0.3);
+  if (confirmed) store.confirm();
   const fixture = TestBed.createComponent(ResultStep);
   fixture.detectChanges();
   const el = fixture.nativeElement as HTMLElement;
@@ -75,7 +76,7 @@ describe('ResultStep', () => {
   });
 
   it('shows the text for WhatsApp exactly as it will be copied', () => {
-    const { el, store } = setup();
+    const { el, store } = setup(undefined, true);
     expect(el.querySelector('pre')?.textContent).toBe(store.whatsappText());
     expect(el.querySelector('pre')?.textContent).toContain(`🔴 ${T.teamTitle(1)}`);
   });
@@ -84,7 +85,7 @@ describe('ResultStep', () => {
     it('puts the text in the clipboard and says it was copied', async () => {
       const writeText = vi.fn().mockResolvedValue(undefined);
       setClipboard(writeText);
-      const { store, byText, toast } = setup();
+      const { store, byText, toast } = setup(undefined, true);
       byText(T.result.copy).click();
       await vi.waitFor(() => expect(toast.message()).toBe(T.result.copied));
       expect(writeText).toHaveBeenCalledWith(store.whatsappText());
@@ -92,14 +93,14 @@ describe('ResultStep', () => {
 
     it('says it could not copy when the clipboard refuses', async () => {
       setClipboard(vi.fn().mockRejectedValue(new Error('denied')));
-      const { byText, toast } = setup();
+      const { byText, toast } = setup(undefined, true);
       byText(T.result.copy).click();
       await vi.waitFor(() => expect(toast.message()).toBe(T.result.copyFailed));
     });
 
     it('says it could not copy when the browser has no clipboard', async () => {
       setClipboard(undefined);
-      const { byText, toast } = setup();
+      const { byText, toast } = setup(undefined, true);
       byText(T.result.copy).click();
       await vi.waitFor(() => expect(toast.message()).toBe(T.result.copyFailed));
     });
@@ -123,14 +124,11 @@ describe('ResultStep', () => {
         (b) => b.textContent?.trim() === T.preview.back,
       ) as HTMLButtonElement;
 
-    it('offers a button to go back, next to the one to start over', () => {
-      const { el, byText } = setup();
+    it('offers a button to go back, with an arrow', () => {
+      const { el } = setup();
       const back = backIn(el);
       expect(back).toBeDefined();
       expect(back.querySelector('i.fa-arrow-left')).not.toBeNull();
-      expect(back.compareDocumentPosition(byText(T.result.startOver))).toBe(
-        Node.DOCUMENT_POSITION_FOLLOWING,
-      );
     });
 
     it('returns to the preview with the same players, and the teams are gone', () => {
@@ -161,7 +159,7 @@ describe('ResultStep', () => {
   });
 
   it('starts over from the beginning', () => {
-    const { fixture, store, byText } = setup();
+    const { fixture, store, byText } = setup(undefined, true);
     byText(T.result.startOver).click();
     fixture.detectChanges();
     expect(store.step()).toBe('paste');
@@ -179,7 +177,7 @@ describe('ResultStep', () => {
     });
 
     it('shows the message with their header, numbering and footer', () => {
-      const { el, store } = setup(TEST_PREFERENCES);
+      const { el, store } = setup(TEST_PREFERENCES, true);
       const text = el.querySelector('pre')?.textContent as string;
       expect(text).toBe(store.whatsappText());
       expect(text.startsWith('⚽ Amistoso\n\n🟢')).toBe(true);
@@ -196,7 +194,7 @@ describe('ResultStep', () => {
     it('copies the message as they set it up', async () => {
       const writeText = vi.fn().mockResolvedValue(undefined);
       setClipboard(writeText);
-      const { byText, toast } = setup(TEST_PREFERENCES);
+      const { byText, toast } = setup(TEST_PREFERENCES, true);
       byText(T.result.copy).click();
       await vi.waitFor(() => expect(toast.message()).toBe(T.result.copied));
       expect(writeText.mock.calls[0][0]).toContain('⚽ Amistoso');
@@ -205,7 +203,7 @@ describe('ResultStep', () => {
   });
 
   describe('with 3 and 4 teams', () => {
-    function setupMany(teams: number, players: number) {
+    function setupMany(teams: number, players: number, confirmed = false) {
       saveSession();
       TestBed.inject(I18n).setLang('es');
       const store = TestBed.inject(AmistosoStore);
@@ -213,6 +211,7 @@ describe('ResultStep', () => {
       store.continueToPreview();
       store.setTeamCount(teams);
       store.draw(() => 0.3);
+      if (confirmed) store.confirm();
       const fixture = TestBed.createComponent(ResultStep);
       fixture.detectChanges();
       return { el: fixture.nativeElement as HTMLElement, store };
@@ -241,7 +240,7 @@ describe('ResultStep', () => {
     });
 
     it('writes every team in the text for WhatsApp', () => {
-      const { el } = setupMany(4, 20);
+      const { el } = setupMany(4, 20, true);
       const text = el.querySelector('pre')?.textContent as string;
       for (let i = 1; i <= 4; i++) expect(text).toContain(T.teamTitle(i));
     });
@@ -356,6 +355,8 @@ describe('ResultStep', () => {
       const { a, b } = trio(ctx);
       tap(ctx, a.id);
       tap(ctx, b.id);
+      ctx.store.confirm();
+      ctx.fixture.detectChanges();
       const text = ctx.el.querySelector('pre')?.textContent as string;
       expect(text).toBe(ctx.store.whatsappText());
       expect(text.split('\n\n')[0]).toContain(b.name);
@@ -469,7 +470,7 @@ describe('ResultStep', () => {
 
   describe('the story image', () => {
     it('is offered below the buttons for the message', () => {
-      const { el } = setup();
+      const { el } = setup(undefined, true);
       const panel = el.querySelector('app-story-image-panel') as HTMLElement;
       const buttons = Array.from(el.querySelectorAll('ui-button')).find((b) =>
         b.textContent?.includes(T.result.copy),
@@ -561,12 +562,10 @@ describe('ResultStep', () => {
         expect(slots(ctx)).toHaveLength(0);
       });
 
-      it('says the teams are complete, and offers the text, the copy button and the image', () => {
+      it('says the teams are complete, and lets confirm them', () => {
         const ctx = manual('drawn');
         expect(progress(ctx)).toBe(T.result.complete);
-        expect(ctx.el.querySelector('pre')?.textContent).toBe(ctx.store.whatsappText());
-        expect(button(ctx, T.result.copy)).toBeDefined();
-        expect(ctx.el.querySelector('app-story-image-panel')).not.toBeNull();
+        expect((button(ctx, T.result.confirm) as HTMLButtonElement).disabled).toBe(false);
       });
 
       it('has the buttons to draw the rest, which waits for somebody, and to remove everyone', () => {
@@ -601,12 +600,10 @@ describe('ResultStep', () => {
         expect(slots(ctx, 0)[0].textContent).toContain(T.result.freeSlot);
       });
 
-      it('says how many players are missing, and does not offer the text or the image yet', () => {
+      it('says how many players are missing, and does not let confirm yet', () => {
         const ctx = manual();
         expect(progress(ctx)).toBe(T.result.missing(12));
-        expect(ctx.el.querySelector('pre')).toBeNull();
-        expect(ctx.el.querySelector('app-story-image-panel')).toBeNull();
-        expect(button(ctx, T.result.copy)).toBeUndefined();
+        expect((button(ctx, T.result.confirm) as HTMLButtonElement).disabled).toBe(true);
       });
 
       it('lets draw the rest, and does not let remove everyone because nobody is in a team', () => {
@@ -719,7 +716,7 @@ describe('ResultStep', () => {
     });
 
     describe('completing the teams', () => {
-      it('offers the text, the copy button and the image once nobody is left without a team', () => {
+      it('lets confirm once nobody is left without a team', () => {
         const ctx = manual();
         ctx.store
           .pool()
@@ -727,9 +724,7 @@ describe('ResultStep', () => {
           .forEach((p, i) => ctx.store.movePlayer(p.id, i % 2));
         ctx.fixture.detectChanges();
         expect(progress(ctx)).toBe(T.result.complete);
-        expect(ctx.el.querySelector('pre')?.textContent).toBe(ctx.store.whatsappText());
-        expect(button(ctx, T.result.copy)).toBeDefined();
-        expect(ctx.el.querySelector('app-story-image-panel')).not.toBeNull();
+        expect((button(ctx, T.result.confirm) as HTMLButtonElement).disabled).toBe(false);
         expect(slots(ctx)).toHaveLength(0);
       });
 
@@ -866,6 +861,146 @@ describe('ResultStep', () => {
         fire('drop', slots(ctx, 0)[0]);
         expect(ctx.store.teams()).toBe(before);
       });
+    });
+  });
+
+  describe('confirming the teams', () => {
+    const named = (el: HTMLElement, text: string) =>
+      Array.from(el.querySelectorAll('ui-button button')).find(
+        (b) => b.textContent?.trim() === text,
+      ) as HTMLButtonElement | undefined;
+
+    it('offers a button to confirm the teams', () => {
+      const { el } = setup();
+      expect(named(el, T.result.confirm)).toBeDefined();
+      expect(named(el, T.result.confirm)?.disabled).toBe(false);
+    });
+
+    it('does not show yet the text for WhatsApp, the copy button, the image or how to start over', () => {
+      const { el } = setup();
+      expect(el.querySelector('pre')).toBeNull();
+      expect(el.querySelector('app-story-image-panel')).toBeNull();
+      expect(named(el, T.result.copy)).toBeUndefined();
+      expect(named(el, T.result.startOver)).toBeUndefined();
+      expect(el.querySelector('[data-share-notice]')).toBeNull();
+    });
+
+    it('keeps the teams to be edited, and the buttons to draw again and to go back', () => {
+      const { el } = setup();
+      expect(el.querySelectorAll('ui-card li button')).toHaveLength(12);
+      expect(named(el, T.result.redraw)).toBeDefined();
+      expect(named(el, T.preview.back)).toBeDefined();
+    });
+
+    it('confirms the teams, and says so', () => {
+      const { fixture, el, store } = setup();
+      (named(el, T.result.confirm) as HTMLButtonElement).click();
+      fixture.detectChanges();
+      expect(store.confirmed()).toBe(true);
+      expect(el.querySelector('p[role="status"]')?.textContent?.trim()).toBe(T.result.confirmed);
+    });
+  });
+
+  describe('the final result', () => {
+    const named = (el: HTMLElement, text: string) =>
+      Array.from(el.querySelectorAll('ui-button button')).find(
+        (b) => b.textContent?.trim() === text,
+      ) as HTMLButtonElement | undefined;
+    const items = (el: HTMLElement) =>
+      Array.from(el.querySelectorAll('ui-card li')).map((li) =>
+        li.textContent?.replace(/\s+/g, ' ').trim(),
+      );
+
+    it.each([[false], [true]])(
+      'shows the cards of the teams, numbered (with an account: %s)',
+      (account) => {
+        if (account) saveSession();
+        const { el, store } = setup(undefined, true);
+        const titles = Array.from(el.querySelectorAll('ui-card h3')).map((h) =>
+          h.textContent?.trim(),
+        );
+        expect(titles).toEqual([`🔴 ${T.teamTitle(1)}`, `🔵 ${T.teamTitle(2)}`]);
+        const [teamA] = store.teams() ?? [[]];
+        expect(items(el)).toHaveLength(12);
+        expect(items(el)[0]).toMatch(new RegExp(`^1\\.\\s*${teamA[0].name}`));
+        expect(el.querySelectorAll('li i.fa-mitten')).toHaveLength(2);
+      },
+    );
+
+    it.each([[false], [true]])(
+      'has nothing left to change in the cards (with an account: %s)',
+      (account) => {
+        if (account) saveSession();
+        const { el } = setup(undefined, true);
+        expect(el.querySelector('ui-card li button')).toBeNull();
+        expect(el.querySelector('[data-player]')).toBeNull();
+        expect(el.querySelector('[data-free-slot]')).toBeNull();
+        expect(el.querySelector('[data-count]')).toBeNull();
+        expect(el.querySelector('[data-pool]')).toBeNull();
+        expect(el.querySelector('[draggable="true"]')).toBeNull();
+      },
+    );
+
+    it.each([[false], [true]])(
+      'does not repeat the guidance to change the teams (with an account: %s)',
+      (account) => {
+        if (account) saveSession();
+        const { el } = setup(undefined, true);
+        expect(el.textContent).not.toContain(T.result.swapHint);
+        expect(el.textContent).not.toContain(T.result.manualHint);
+      },
+    );
+
+    it('shows the text for WhatsApp, the copy button and the image', () => {
+      const { el, store } = setup(undefined, true);
+      expect(el.querySelector('pre')?.textContent).toBe(store.whatsappText());
+      expect(named(el, T.result.copy)).toBeDefined();
+      expect(el.querySelector('app-story-image-panel')?.textContent).toContain(
+        T.result.createImage,
+      );
+    });
+
+    it('has the buttons to go back and to start over, and none to edit the teams', () => {
+      saveSession();
+      const { el } = setup(undefined, true);
+      expect(named(el, T.preview.back)).toBeDefined();
+      expect(named(el, T.result.startOver)).toBeDefined();
+      expect(named(el, T.result.confirm)).toBeUndefined();
+      expect(named(el, T.result.redraw)).toBeUndefined();
+      expect(named(el, T.result.clearTeams)).toBeUndefined();
+      expect(named(el, T.result.drawRemaining)).toBeUndefined();
+    });
+
+    it('goes back to editing the same teams with the back button', () => {
+      const { fixture, el, store } = setup(undefined, true);
+      const teams = store.teams();
+      (named(el, T.preview.back) as HTMLButtonElement).click();
+      fixture.detectChanges();
+      expect(store.confirmed()).toBe(false);
+      expect(store.step()).toBe('result');
+      expect(store.teams()).toBe(teams);
+      expect(el.querySelector('pre')).toBeNull();
+      expect(named(el, T.result.confirm)).toBeDefined();
+      expect(el.querySelectorAll('ui-card li button')).toHaveLength(12);
+    });
+
+    it('also shows the teams that were built by hand', () => {
+      saveSession();
+      TestBed.inject(I18n).setLang('es');
+      const store = TestBed.inject(AmistosoStore);
+      store.setRawText('Diego 🧤\nMati 🧤\n' + list(10));
+      store.continueToPreview();
+      store.startManual();
+      store
+        .pool()
+        .slice()
+        .forEach((p, i) => store.movePlayer(p.id, i % 2));
+      store.confirm();
+      const fixture = TestBed.createComponent(ResultStep);
+      fixture.detectChanges();
+      const el = fixture.nativeElement as HTMLElement;
+      expect(items(el)).toHaveLength(12);
+      expect(el.querySelector('pre')?.textContent).toBe(store.whatsappText());
     });
   });
 });

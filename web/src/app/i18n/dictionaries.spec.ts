@@ -250,4 +250,16 @@ describe('dictionaries', () => {
       expect(preview.manualSignIn).toBe(signIn);
     });
   });
+
+  describe('the confirmation of the teams', () => {
+    it.each([
+      ['en', 'Confirm', 'Teams confirmed.'],
+      ['es', 'Confirmar', 'Equipos confirmados.'],
+      ['pt', 'Confirmar', 'Times confirmados.'],
+    ] as const)('names the button and says it was done in %s', (lang, confirm, confirmed) => {
+      const { result } = DICTIONARIES[lang].tool;
+      expect(result.confirm).toBe(confirm);
+      expect(result.confirmed).toBe(confirmed);
+    });
+  });
 });

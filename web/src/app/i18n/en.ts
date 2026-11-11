@@ -177,6 +177,8 @@ export const en = {
       freeSlot: 'Free spot',
       moveHere: (name: string, team: string) => `Move ${name} to ${team}`,
       complete: 'Teams complete',
+      confirm: 'Confirm',
+      confirmed: 'Teams confirmed.',
       missing: (count: number) =>
         count === 1 ? '1 player still needs a team.' : `${count} players still need a team.`,
       createImage: 'Create image',

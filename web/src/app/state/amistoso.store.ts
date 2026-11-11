@@ -32,6 +32,8 @@ interface AmistosoState {
   teams: Player[][] | null;
   // The players who have no team yet, while the teams are being built by hand.
   pool: Player[];
+  // The teams are final: they can be shared and no longer changed.
+  confirmed: boolean;
   // What the person picked in the selector, or null while they have not picked anything.
   teamCountChoice: number | null;
   step: Step;
@@ -44,6 +46,7 @@ const initialState: AmistosoState = {
   players: [],
   teams: null,
   pool: [],
+  confirmed: false,
   teamCountChoice: null,
   step: 'paste',
   nextId: 1,
@@ -155,7 +158,7 @@ export const AmistosoStore = signalStore(
       continueToPreview(): void {
         const text = store.rawText();
         if (text === store.parsedText() && store.players().length > 0) {
-          patchState(store, { step: 'preview', teams: null, pool: [] });
+          patchState(store, { step: 'preview', teams: null, pool: [], confirmed: false });
           return;
         }
         const parsed = parsePastedNames(text);
@@ -167,18 +170,26 @@ export const AmistosoStore = signalStore(
           nextId: first + parsed.length,
           teams: null,
           pool: [],
+          confirmed: false,
           step: 'preview',
         });
       },
 
-      // One step back: from the teams to the list, and from the list to the pasted text. The
-      // teams are left behind, because the list can change before they are drawn again.
+      // One step back: from the confirmed teams to editing them, from the teams to the list, and
+      // from the list to the pasted text. The teams are left behind when going back to the
+      // list, because it can change before they are drawn again.
       back(): void {
         if (store.step() === 'result') {
-          patchState(store, { step: 'preview', teams: null, pool: [] });
+          if (store.confirmed()) patchState(store, { confirmed: false });
+          else patchState(store, { step: 'preview', teams: null, pool: [], confirmed: false });
           return;
         }
         patchState(store, { step: 'paste' });
+      },
+
+      // The teams are final, so they can be shared. Only possible once everybody has a team.
+      confirm(): void {
+        if (store.isComplete()) patchState(store, { confirmed: true });
       },
 
       renamePlayer(id: string, name: string): void {
@@ -201,7 +212,9 @@ export const AmistosoStore = signalStore(
 
       draw(random: () => number = Math.random): void {
         const result = drawTeams(store.players(), random, store.teamCount());
-        if (result.ok) patchState(store, { teams: result.teams, pool: [], step: 'result' });
+        if (result.ok) {
+          patchState(store, { teams: result.teams, pool: [], confirmed: false, step: 'result' });
+        }
       },
 
       // Opens the teams empty, with everybody waiting without a team, to build them by hand.
@@ -210,6 +223,7 @@ export const AmistosoStore = signalStore(
         patchState(store, {
           teams: Array.from({ length: store.teamCount() }, (): Player[] => []),
           pool: keepersFirst(store.players()),
+          confirmed: false,
           step: 'result',
         });
       },
