@@ -469,17 +469,33 @@ describe('ResultStep', () => {
   });
 
   describe('the story image', () => {
-    it('is offered below the buttons for the message', () => {
+    const rowOf = (el: HTMLElement, text: string) =>
+      Array.from(el.querySelectorAll('ui-button')).find(
+        (host) => host.querySelector('button')?.textContent?.trim() === text,
+      )?.parentElement;
+
+    it('is created from a button in the same row as copying and starting over', () => {
+      const { el } = setup(undefined, true);
+      const row = rowOf(el, T.result.copy);
+      expect(row).toBeDefined();
+      expect(rowOf(el, T.result.startOver)).toBe(row);
+      expect(rowOf(el, T.result.createImage)).toBe(row);
+    });
+
+    it('comes after the buttons to copy and to start over', () => {
+      const { el } = setup(undefined, true);
+      const texts = Array.from(el.querySelectorAll('ui-button button')).map((b) =>
+        b.textContent?.trim(),
+      );
+      expect(texts).toEqual([T.result.copy, T.result.startOver, T.result.createImage]);
+    });
+
+    it('keeps the image below the buttons once it is created', () => {
       const { el } = setup(undefined, true);
       const panel = el.querySelector('app-story-image-panel') as HTMLElement;
-      const buttons = Array.from(el.querySelectorAll('ui-button')).find((b) =>
-        b.textContent?.includes(T.result.copy),
-      ) as HTMLElement;
-      expect(panel).not.toBeNull();
-      expect(panel.textContent).toContain(T.result.createImage);
-      expect(
-        buttons.compareDocumentPosition(panel) & Node.DOCUMENT_POSITION_FOLLOWING,
-      ).toBeTruthy();
+      const row = rowOf(el, T.result.createImage) as HTMLElement;
+      expect(panel.contains(row)).toBe(true);
+      expect(row.nextElementSibling).not.toBeNull();
     });
   });
 

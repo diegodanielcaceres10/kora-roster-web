@@ -29,9 +29,10 @@ interface MadeImage {
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [LockNotice, UiButton, UiCard],
   template: `
-    <div class="space-y-4 pt-2">
-      <div class="flex flex-wrap items-center gap-3">
-        <ui-button variant="outline" size="lg" [disabled]="busy()" (click)="create()">
+    <div class="space-y-4">
+      <div class="flex flex-wrap items-center gap-3 rounded-xl border border-secondary/10 bg-white p-4 shadow-xs">
+        <ng-content />
+        <ui-button variant="outline" [disabled]="busy()" (click)="create()">
           <i
             class="fa-solid"
             [class.fa-lock]="locked()"
@@ -40,8 +41,8 @@ interface MadeImage {
           ></i>
           {{ t().createImage }}
         </ui-button>
-        <span class="text-xs text-secondary/60">Exportá una imagen con formato vertical 9:16 para Instagram o WhatsApp</span>
       </div>
+      <p class="text-xs text-secondary/60">Exportá una imagen con formato vertical 9:16 para Instagram o WhatsApp</p>
       <app-lock-notice [reason]="notice()?.reason ?? null" [message]="notice()?.message ?? null" />
 
       @if (image(); as made) {

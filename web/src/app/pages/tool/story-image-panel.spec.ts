@@ -1,3 +1,4 @@
+import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { DICTIONARIES } from '../../i18n/dictionaries';
@@ -294,6 +295,29 @@ describe('StoryImagePanel', () => {
         expect(image()).toBeNull();
         expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:story-1');
       });
+    });
+  });
+
+  describe('the buttons that come with it', () => {
+    @Component({
+      imports: [StoryImagePanel],
+      template: `<app-story-image-panel
+        ><button id="before">Before</button></app-story-image-panel
+      >`,
+    })
+    class Host {}
+
+    it('puts what it is given in the same row, before its own button', () => {
+      setup();
+      const fixture = TestBed.createComponent(Host);
+      fixture.detectChanges();
+      const el = fixture.nativeElement as HTMLElement;
+      const before = el.querySelector('#before') as HTMLElement;
+      const create = Array.from(el.querySelectorAll('ui-button button')).find(
+        (b) => b.textContent?.trim() === T.result.createImage,
+      ) as HTMLElement;
+      expect(before.parentElement).toBe(create.closest('ui-button')?.parentElement);
+      expect(before.compareDocumentPosition(create)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
     });
   });
 });

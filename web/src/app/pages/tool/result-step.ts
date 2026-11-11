@@ -210,9 +210,9 @@ const keyOf = (target: Target): string =>
         </div>
       }
 
-      <!-- Quick Actions Bar -->
-      <div class="flex flex-wrap items-center gap-3 rounded-xl border border-secondary/10 bg-white p-4 shadow-xs">
-        @if (store.confirmed()) {
+      @if (store.confirmed()) {
+        <!-- Final actions, with the story image generator -->
+        <app-story-image-panel>
           <ui-button size="lg" (click)="copy()">
             <i class="fa-solid fa-copy" aria-hidden="true"></i>
             {{ t().result.copy }}
@@ -221,7 +221,10 @@ const keyOf = (target: Target): string =>
             <i class="fa-solid fa-rotate-left" aria-hidden="true"></i>
             {{ t().result.startOver }}
           </ui-button>
-        } @else {
+        </app-story-image-panel>
+      } @else {
+        <!-- Quick Actions Bar -->
+        <div class="flex flex-wrap items-center gap-3 rounded-xl border border-secondary/10 bg-white p-4 shadow-xs">
           <ui-button size="lg" [disabled]="!store.isComplete()" (click)="confirm()">
             <i class="fa-solid fa-check" aria-hidden="true"></i>
             {{ t().result.confirm }}
@@ -240,12 +243,7 @@ const keyOf = (target: Target): string =>
             <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
             {{ t().preview.back }}
           </ui-button>
-        }
-      </div>
-
-      <!-- Story Image Generator Panel -->
-      @if (store.confirmed()) {
-        <app-story-image-panel />
+        </div>
       }
     </section>
   `,
