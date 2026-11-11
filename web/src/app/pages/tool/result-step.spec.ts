@@ -437,4 +437,391 @@ describe('ResultStep', () => {
       ).toBeTruthy();
     });
   });
+
+  describe('building the teams by hand', () => {
+    // 12 players, two of them goalkeepers, in two teams of six. Without an account there is
+    // nothing to build by hand, and with one the players without a team have their own panel.
+    function manual(mode: 'manual' | 'drawn' = 'manual') {
+      saveSession();
+      TestBed.inject(I18n).setLang('es');
+      const store = TestBed.inject(AmistosoStore);
+      store.setRawText('Diego 🧤\nMati 🧤\n' + list(10));
+      store.continueToPreview();
+      if (mode === 'manual') store.startManual();
+      else store.draw(() => 0.3);
+      const fixture = TestBed.createComponent(ResultStep);
+      fixture.detectChanges();
+      return { fixture, el: fixture.nativeElement as HTMLElement, store };
+    }
+    type Ctx = ReturnType<typeof manual>;
+
+    const all = (el: ParentNode, selector: string) =>
+      Array.from(el.querySelectorAll(selector)) as HTMLElement[];
+    const cards = (ctx: Ctx) => all(ctx.el, 'ui-card');
+    const slots = (ctx: Ctx, team?: number) =>
+      all(team === undefined ? ctx.el : cards(ctx)[team], '[data-free-slot]');
+    const poolPanel = (ctx: Ctx) => ctx.el.querySelector('[data-pool]') as HTMLElement | null;
+    const poolButtons = (ctx: Ctx) => all(ctx.el, '[data-pool] [data-player]');
+    const poolTarget = (ctx: Ctx) =>
+      ctx.el.querySelector('[data-pool-target]') as HTMLButtonElement;
+    const player = (ctx: Ctx, id: string) =>
+      ctx.el.querySelector(`[data-player="${id}"]`) as HTMLButtonElement;
+    const status = (ctx: Ctx) => ctx.el.querySelector('p[role="status"]')?.textContent?.trim();
+    const progress = (ctx: Ctx) => ctx.el.querySelector('[data-progress]')?.textContent?.trim();
+    const counts = (ctx: Ctx) => all(ctx.el, '[data-count]').map((c) => c.textContent?.trim());
+    const button = (ctx: Ctx, text: string) =>
+      all(ctx.el, 'ui-button button').find((b) => b.textContent?.includes(text));
+    const click = (ctx: Ctx, element: HTMLElement | undefined) => {
+      (element as HTMLElement).click();
+      ctx.fixture.detectChanges();
+    };
+    const pressed = (ctx: Ctx) =>
+      all(ctx.el, '[data-player][aria-pressed="true"]').map((b) => b.getAttribute('data-player'));
+    const fire = (type: string, target: Element) => {
+      const event = new Event(type, { bubbles: true, cancelable: true });
+      Object.defineProperty(event, 'dataTransfer', {
+        value: { setData: vi.fn(), effectAllowed: '' },
+      });
+      target.dispatchEvent(event);
+      return event;
+    };
+    // Players from the pool who are not goalkeepers, so the order of a team never moves them.
+    const waiting = (ctx: Ctx) => ctx.store.pool().filter((p) => !p.isGoalkeeper);
+    const place = (ctx: Ctx, id: string, team: number) => {
+      ctx.store.movePlayer(id, team);
+      ctx.fixture.detectChanges();
+    };
+
+    describe('without an account', () => {
+      it('leaves the screen as it was: no panel without a team, no counters, no free places', () => {
+        const ctx = setup();
+        expect(ctx.el.querySelector('[data-pool]')).toBeNull();
+        expect(ctx.el.querySelector('[data-count]')).toBeNull();
+        expect(ctx.el.querySelector('[data-free-slot]')).toBeNull();
+        expect(button(ctx as unknown as Ctx, T.result.clearTeams)).toBeUndefined();
+        expect(ctx.el.textContent).toContain(T.result.swapHint);
+      });
+    });
+
+    describe('with an account, after a draw', () => {
+      it('shows the panel without a team, empty and with a hint of what it is for', () => {
+        const ctx = manual('drawn');
+        expect(poolPanel(ctx)?.textContent).toContain(T.result.poolTitle);
+        expect(poolButtons(ctx)).toHaveLength(0);
+        expect(poolTarget(ctx).textContent).toContain(T.result.poolHint);
+      });
+
+      it('counts the players of each team against its size, with no free places', () => {
+        const ctx = manual('drawn');
+        expect(counts(ctx)).toEqual(['6/6', '6/6']);
+        expect(slots(ctx)).toHaveLength(0);
+      });
+
+      it('says the teams are complete, and offers the text, the copy button and the image', () => {
+        const ctx = manual('drawn');
+        expect(progress(ctx)).toBe(T.result.complete);
+        expect(ctx.el.querySelector('pre')?.textContent).toBe(ctx.store.whatsappText());
+        expect(button(ctx, T.result.copy)).toBeDefined();
+        expect(ctx.el.querySelector('app-story-image-panel')).not.toBeNull();
+      });
+
+      it('has the buttons to draw the rest, which waits for somebody, and to remove everyone', () => {
+        const ctx = manual('drawn');
+        expect((button(ctx, T.result.drawRemaining) as HTMLButtonElement).disabled).toBe(true);
+        expect((button(ctx, T.result.clearTeams) as HTMLButtonElement).disabled).toBe(false);
+      });
+
+      it('explains how to build the teams by hand instead of how to swap', () => {
+        const ctx = manual('drawn');
+        expect(ctx.el.textContent).toContain(T.result.manualHint);
+        expect(ctx.el.textContent).not.toContain(T.result.swapHint);
+      });
+    });
+
+    describe('when the teams start empty', () => {
+      it('lists everybody without a team, goalkeepers first', () => {
+        const ctx = manual();
+        expect(poolButtons(ctx)).toHaveLength(12);
+        expect(poolButtons(ctx).map((b) => b.querySelector('.fa-mitten') !== null)).toEqual([
+          true,
+          true,
+          ...Array(10).fill(false),
+        ]);
+      });
+
+      it('shows every team empty, with a free place for each missing player', () => {
+        const ctx = manual();
+        expect(counts(ctx)).toEqual(['0/6', '0/6']);
+        expect(slots(ctx, 0)).toHaveLength(6);
+        expect(slots(ctx, 1)).toHaveLength(6);
+        expect(slots(ctx, 0)[0].textContent).toContain(T.result.freeSlot);
+      });
+
+      it('says how many players are missing, and does not offer the text or the image yet', () => {
+        const ctx = manual();
+        expect(progress(ctx)).toBe(T.result.missing(12));
+        expect(ctx.el.querySelector('pre')).toBeNull();
+        expect(ctx.el.querySelector('app-story-image-panel')).toBeNull();
+        expect(button(ctx, T.result.copy)).toBeUndefined();
+      });
+
+      it('lets draw the rest, and does not let remove everyone because nobody is in a team', () => {
+        const ctx = manual();
+        expect((button(ctx, T.result.drawRemaining) as HTMLButtonElement).disabled).toBe(false);
+        expect((button(ctx, T.result.clearTeams) as HTMLButtonElement).disabled).toBe(true);
+      });
+
+      it('names the team in the label of each free place', () => {
+        const ctx = manual();
+        expect(slots(ctx, 1)[0].getAttribute('aria-label')).toBe(
+          `${T.result.freeSlot}, ${T.teamTitle(2)}`,
+        );
+      });
+    });
+
+    describe('moving players by tapping', () => {
+      it('moves a player without a team into a free place, and says so', () => {
+        const ctx = manual();
+        const [a] = waiting(ctx);
+        click(ctx, player(ctx, a.id));
+        expect(status(ctx)).toBe(T.result.selectedManual(a.name));
+        expect(slots(ctx, 0)[0].getAttribute('aria-label')).toBe(
+          T.result.moveHere(a.name, T.teamTitle(1)),
+        );
+        click(ctx, slots(ctx, 0)[0]);
+        expect(ctx.store.teams()?.[0]).toEqual([a]);
+        expect(counts(ctx)[0]).toBe('1/6');
+        expect(slots(ctx, 0)).toHaveLength(5);
+        expect(poolButtons(ctx)).toHaveLength(11);
+        expect(pressed(ctx)).toEqual([]);
+        expect(status(ctx)).toBe(T.result.moved(a.name, T.teamTitle(1)));
+      });
+
+      it('takes a player out of a team with the button of the panel, and says so', () => {
+        const ctx = manual();
+        const [a] = waiting(ctx);
+        place(ctx, a.id, 1);
+        expect(poolTarget(ctx).disabled).toBe(true);
+        click(ctx, player(ctx, a.id));
+        expect(poolTarget(ctx).disabled).toBe(false);
+        expect(poolTarget(ctx).textContent).toContain(T.result.poolDrop(a.name));
+        click(ctx, poolTarget(ctx));
+        expect(ctx.store.teams()?.[1]).toEqual([]);
+        expect(ctx.store.pool()).toContain(a);
+        expect(status(ctx)).toBe(T.result.leftTeam(a.name));
+        expect(pressed(ctx)).toEqual([]);
+      });
+
+      it('swaps somebody without a team with somebody in a team', () => {
+        const ctx = manual();
+        const [a, b] = waiting(ctx);
+        place(ctx, a.id, 0);
+        click(ctx, player(ctx, b.id));
+        click(ctx, player(ctx, a.id));
+        expect(ctx.store.teams()?.[0]).toEqual([b]);
+        expect(ctx.store.pool()).toContain(a);
+        expect(status(ctx)).toBe(T.result.swapped(b.name, a.name));
+      });
+
+      it('moves the selection between two players who have no team', () => {
+        const ctx = manual();
+        const [a, b] = waiting(ctx);
+        const before = ctx.store.teams();
+        click(ctx, player(ctx, a.id));
+        click(ctx, player(ctx, b.id));
+        expect(pressed(ctx)).toEqual([b.id]);
+        expect(ctx.store.teams()).toBe(before);
+      });
+
+      it('does nothing when a free place is tapped with nobody selected', () => {
+        const ctx = manual();
+        const before = ctx.store.teams();
+        click(ctx, slots(ctx, 0)[0]);
+        expect(ctx.store.teams()).toBe(before);
+        expect(status(ctx)).toBe('');
+      });
+
+      it('does nothing when a free place of the team the player is already in is tapped', () => {
+        const ctx = manual();
+        const [a] = waiting(ctx);
+        place(ctx, a.id, 0);
+        click(ctx, player(ctx, a.id));
+        const before = ctx.store.teams();
+        click(ctx, slots(ctx, 0)[0]);
+        expect(ctx.store.teams()).toBe(before);
+        expect(pressed(ctx)).toEqual([a.id]);
+      });
+
+      it('clears the selection with Escape on a player without a team', () => {
+        const ctx = manual();
+        const [a] = waiting(ctx);
+        click(ctx, player(ctx, a.id));
+        player(ctx, a.id).dispatchEvent(
+          new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }),
+        );
+        ctx.fixture.detectChanges();
+        expect(pressed(ctx)).toEqual([]);
+      });
+
+      it('forgets the selection when the rest is drawn', () => {
+        const ctx = manual();
+        const [a] = waiting(ctx);
+        click(ctx, player(ctx, a.id));
+        ctx.store.drawRemaining(() => 0.5);
+        ctx.fixture.detectChanges();
+        expect(pressed(ctx)).toEqual([]);
+        expect(status(ctx)).toBe('');
+      });
+    });
+
+    describe('completing the teams', () => {
+      it('offers the text, the copy button and the image once nobody is left without a team', () => {
+        const ctx = manual();
+        ctx.store
+          .pool()
+          .slice()
+          .forEach((p, i) => ctx.store.movePlayer(p.id, i % 2));
+        ctx.fixture.detectChanges();
+        expect(progress(ctx)).toBe(T.result.complete);
+        expect(ctx.el.querySelector('pre')?.textContent).toBe(ctx.store.whatsappText());
+        expect(button(ctx, T.result.copy)).toBeDefined();
+        expect(ctx.el.querySelector('app-story-image-panel')).not.toBeNull();
+        expect(slots(ctx)).toHaveLength(0);
+      });
+
+      it('counts down the missing players as they are placed', () => {
+        const ctx = manual();
+        const [a, b] = waiting(ctx);
+        place(ctx, a.id, 0);
+        expect(progress(ctx)).toBe(T.result.missing(11));
+        place(ctx, b.id, 1);
+        expect(progress(ctx)).toBe(T.result.missing(10));
+      });
+
+      it('writes the singular when only one player is missing', () => {
+        const ctx = manual();
+        const everybody = ctx.store.pool().slice();
+        everybody.slice(0, 11).forEach((p, i) => ctx.store.movePlayer(p.id, i % 2));
+        ctx.fixture.detectChanges();
+        expect(progress(ctx)).toBe(T.result.missing(1));
+      });
+    });
+
+    describe('the buttons', () => {
+      it('draws the rest, completes the teams and says so', () => {
+        vi.spyOn(Math, 'random').mockReturnValue(0.5);
+        const ctx = manual();
+        const [a] = waiting(ctx);
+        place(ctx, a.id, 0);
+        click(ctx, button(ctx, T.result.drawRemaining));
+        expect(ctx.store.pool()).toEqual([]);
+        expect(ctx.store.isComplete()).toBe(true);
+        expect(ctx.store.teams()?.[0]).toContain(a);
+        expect(status(ctx)).toBe(T.result.remainingDrawn);
+        expect(progress(ctx)).toBe(T.result.complete);
+      });
+
+      it('removes everyone from their teams, and says so', () => {
+        const ctx = manual('drawn');
+        click(ctx, button(ctx, T.result.clearTeams));
+        expect(ctx.store.teams()).toEqual([[], []]);
+        expect(poolButtons(ctx)).toHaveLength(12);
+        expect(status(ctx)).toBe(T.result.teamsCleared);
+        expect(progress(ctx)).toBe(T.result.missing(12));
+      });
+
+      it('draws everything again, also what was built by hand', () => {
+        vi.spyOn(Math, 'random').mockReturnValue(0.9);
+        const ctx = manual();
+        click(ctx, button(ctx, T.result.redraw));
+        expect(ctx.store.pool()).toEqual([]);
+        expect(ctx.store.isComplete()).toBe(true);
+      });
+    });
+
+    describe('moving players by dragging', () => {
+      it('moves a player without a team when it is dropped on a free place', () => {
+        const ctx = manual();
+        const [a] = waiting(ctx);
+        fire('dragstart', player(ctx, a.id));
+        const over = fire('dragover', slots(ctx, 1)[0]);
+        expect(over.defaultPrevented).toBe(true);
+        fire('drop', slots(ctx, 1)[0]);
+        ctx.fixture.detectChanges();
+        expect(ctx.store.teams()?.[1]).toEqual([a]);
+        expect(status(ctx)).toBe(T.result.moved(a.name, T.teamTitle(2)));
+      });
+
+      it('takes a player out of a team when it is dropped on the panel without a team', () => {
+        const ctx = manual();
+        const [a] = waiting(ctx);
+        place(ctx, a.id, 0);
+        fire('dragstart', player(ctx, a.id));
+        const over = fire('dragover', poolPanel(ctx) as HTMLElement);
+        expect(over.defaultPrevented).toBe(true);
+        fire('drop', poolPanel(ctx) as HTMLElement);
+        ctx.fixture.detectChanges();
+        expect(ctx.store.teams()?.[0]).toEqual([]);
+        expect(ctx.store.pool()).toContain(a);
+        expect(status(ctx)).toBe(T.result.leftTeam(a.name));
+      });
+
+      it('swaps, and only swaps, when it is dropped on a player of the panel', () => {
+        const ctx = manual();
+        const [a, b] = waiting(ctx);
+        place(ctx, a.id, 0);
+        fire('dragstart', player(ctx, a.id));
+        fire('dragover', player(ctx, b.id));
+        fire('drop', player(ctx, b.id));
+        ctx.fixture.detectChanges();
+        expect(ctx.store.teams()?.[0]).toEqual([b]);
+        expect(ctx.store.pool()).toContain(a);
+        expect(ctx.store.pool()).toHaveLength(11);
+        expect(status(ctx)).toBe(T.result.swapped(a.name, b.name));
+      });
+
+      it('does not accept a drop on a free place of the team the player is already in', () => {
+        const ctx = manual();
+        const [a] = waiting(ctx);
+        place(ctx, a.id, 0);
+        const before = ctx.store.teams();
+        fire('dragstart', player(ctx, a.id));
+        const over = fire('dragover', slots(ctx, 0)[0]);
+        const dropped = fire('drop', slots(ctx, 0)[0]);
+        expect(over.defaultPrevented).toBe(false);
+        expect(dropped.defaultPrevented).toBe(false);
+        expect(ctx.store.teams()).toBe(before);
+      });
+
+      it('does not accept a drop on the panel for a player who is already there', () => {
+        const ctx = manual();
+        const [a] = waiting(ctx);
+        fire('dragstart', player(ctx, a.id));
+        const over = fire('dragover', poolPanel(ctx) as HTMLElement);
+        expect(over.defaultPrevented).toBe(false);
+      });
+
+      it('marks the free place or the panel that would take the player, and unmarks it', () => {
+        const ctx = manual();
+        const [a] = waiting(ctx);
+        fire('dragstart', player(ctx, a.id));
+        fire('dragover', slots(ctx, 0)[0]);
+        ctx.fixture.detectChanges();
+        expect(slots(ctx, 0)[0].className).toContain('ring-primary');
+        fire('dragleave', slots(ctx, 0)[0]);
+        ctx.fixture.detectChanges();
+        expect(slots(ctx, 0)[0].className).not.toContain('ring-primary');
+      });
+
+      it('forgets the player that was being dragged once the drag ends', () => {
+        const ctx = manual();
+        const [a] = waiting(ctx);
+        const before = ctx.store.teams();
+        fire('dragstart', player(ctx, a.id));
+        fire('dragend', player(ctx, a.id));
+        fire('drop', slots(ctx, 0)[0]);
+        expect(ctx.store.teams()).toBe(before);
+      });
+    });
+  });
 });

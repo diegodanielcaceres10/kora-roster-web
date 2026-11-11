@@ -163,6 +163,26 @@ export const pt: Dictionary = {
         'Toque em um jogador e depois em um de outro time para trocá-los. Você também pode arrastá-los.',
       selected: (name) => `Selecionado: ${name}. Toque em um jogador de outro time.`,
       swapped: (a, b) => `${a} e ${b} trocados.`,
+      manualHint:
+        'Toque em um jogador e depois em outro para trocá-los, em uma vaga livre para movê-lo até lá, ou em «Sem time» para tirá-lo do time. Você também pode arrastá-los.',
+      selectedManual: (name) =>
+        `Selecionado: ${name}. Toque em outro jogador, em uma vaga livre ou em «Sem time».`,
+      moved: (name, team) => `${name} foi para ${team}.`,
+      leftTeam: (name) => `${name} ficou sem time.`,
+      remainingDrawn: 'Os jogadores que faltavam foram sorteados.',
+      teamsCleared: 'Todos os jogadores ficaram sem time.',
+      poolTitle: 'Sem time',
+      poolHint: 'Toque ou arraste aqui um jogador para tirá-lo do time.',
+      poolDrop: (name) => `Tirar ${name} do time`,
+      drawRemaining: 'Sortear os que faltam',
+      clearTeams: 'Tirar todos',
+      freeSlot: 'Vaga livre',
+      moveHere: (name, team) => `Mover ${name} para ${team}`,
+      complete: 'Times completos',
+      missing: (count) =>
+        count === 1
+          ? 'Falta 1 jogador para colocar em um time.'
+          : `Faltam ${count} jogadores para colocar em um time.`,
       createImage: 'Criar imagem',
       imageSignIn: 'Entre para criar a imagem.',
       imageTitle: 'Imagem para stories',

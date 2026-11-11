@@ -181,4 +181,61 @@ describe('dictionaries', () => {
       },
     );
   });
+
+  describe('the texts to build the teams by hand', () => {
+    it.each([
+      ['en', 'Without a team', 'Free spot', 'Draw the rest', 'Remove everyone', 'Teams complete'],
+      [
+        'es',
+        'Sin equipo',
+        'Lugar libre',
+        'Sortear los que faltan',
+        'Sacar a todos',
+        'Equipos completos',
+      ],
+      ['pt', 'Sem time', 'Vaga livre', 'Sortear os que faltam', 'Tirar todos', 'Times completos'],
+    ] as const)(
+      'name the players without a team, the free places and the buttons in %s',
+      (lang, pool, freeSlot, drawRemaining, clearTeams, complete) => {
+        const { result } = DICTIONARIES[lang].tool;
+        expect(result.poolTitle).toBe(pool);
+        expect(result.freeSlot).toBe(freeSlot);
+        expect(result.drawRemaining).toBe(drawRemaining);
+        expect(result.clearTeams).toBe(clearTeams);
+        expect(result.complete).toBe(complete);
+      },
+    );
+
+    it.each([
+      ['en', '1 player still needs a team.', '3 players still need a team.'],
+      ['es', 'Falta 1 jugador por ubicar.', 'Faltan 3 jugadores por ubicar.'],
+      [
+        'pt',
+        'Falta 1 jogador para colocar em um time.',
+        'Faltam 3 jogadores para colocar em um time.',
+      ],
+    ] as const)(
+      'say how many players are missing in %s, in singular and plural',
+      (lang, one, many) => {
+        const { result } = DICTIONARIES[lang].tool;
+        expect(result.missing(1)).toBe(one);
+        expect(result.missing(3)).toBe(many);
+      },
+    );
+
+    it.each([
+      ['en', 'Nico moved to Team 2.', 'Nico is now without a team.', 'Move Nico to Team 2'],
+      ['es', 'Nico pasó a Equipo 2.', 'Nico quedó sin equipo.', 'Mover a Nico a Equipo 2'],
+      ['pt', 'Nico foi para Time 2.', 'Nico ficou sem time.', 'Mover Nico para Time 2'],
+    ] as const)(
+      'say where a player went and what a free place does in %s',
+      (lang, moved, left, moveHere) => {
+        const { result, teamTitle } = DICTIONARIES[lang].tool;
+        const team = teamTitle(2);
+        expect(result.moved('Nico', team)).toBe(moved);
+        expect(result.leftTeam('Nico')).toBe(left);
+        expect(result.moveHere('Nico', team)).toBe(moveHere);
+      },
+    );
+  });
 });
