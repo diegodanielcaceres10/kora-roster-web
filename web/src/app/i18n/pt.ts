@@ -137,6 +137,7 @@ export const pt: Dictionary = {
       },
       back: 'Voltar',
       draw: 'Sortear',
+      continue: 'Continuar',
       goalkeeper: 'Goleiro',
       nameLabel: 'Nome do jogador',
       edit: (name) => `Editar ${name}`,
@@ -150,6 +151,7 @@ export const pt: Dictionary = {
       teamsLabel: 'Times',
       teamsSignIn: 'Entre para usar 3 e 4 times.',
       teamsPremium: '5 e 6 times chegam com o Premium, em breve.',
+      manualSignIn: 'Entre para montar os times à mão.',
     },
     result: {
       title: 'Times',

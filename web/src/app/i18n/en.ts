@@ -133,6 +133,7 @@ export const en = {
       },
       back: 'Back',
       draw: 'Draw teams',
+      continue: 'Continue',
       goalkeeper: 'Goalkeeper',
       nameLabel: 'Player name',
       edit: (name: string) => `Edit ${name}`,
@@ -146,6 +147,7 @@ export const en = {
       teamsLabel: 'Teams',
       teamsSignIn: 'Sign in to use 3 and 4 teams.',
       teamsPremium: '5 and 6 teams come with Premium, coming soon.',
+      manualSignIn: 'Sign in to build the teams by hand.',
     },
     result: {
       title: 'Teams',

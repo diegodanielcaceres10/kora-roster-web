@@ -94,13 +94,30 @@ import {
 
               <!-- Action Controls -->
               <div class="space-y-2.5 pt-2">
+                <div data-secondary-actions class="grid grid-cols-2 gap-2.5">
+                  <ui-button variant="secondary" [disabled]="!store.canDraw()" (click)="continueByHand()">
+                    {{ t().preview.continue }}
+                    <i
+                      class="fa-solid"
+                      [class.fa-lock]="manualLocked()"
+                      [class.fa-arrow-right]="!manualLocked()"
+                      aria-hidden="true"
+                    ></i>
+                  </ui-button>
+                  <ui-button variant="outline" (click)="store.back()">
+                    <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+                    {{ t().preview.back }}
+                  </ui-button>
+                </div>
+                <div data-manual-notice>
+                  <app-lock-notice
+                    [reason]="manualNotice()?.reason ?? null"
+                    [message]="manualNotice()?.message ?? null"
+                  />
+                </div>
                 <ui-button size="lg" [disabled]="!store.canDraw()" (click)="store.draw()">
                   <i class="fa-solid fa-shuffle" aria-hidden="true"></i>
                   {{ t().preview.draw }}
-                </ui-button>
-                <ui-button variant="outline" (click)="store.back()">
-                  <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
-                  {{ t().preview.back }}
                 </ui-button>
               </div>
             </div>
@@ -195,6 +212,8 @@ export class PreviewStep {
   private readonly editor = viewChild(UiInput);
 
   protected readonly lock = signal<{ reason: LockReason; message: string } | null>(null);
+  protected readonly manualNotice = signal<{ reason: LockReason; message: string } | null>(null);
+  protected readonly manualLocked = computed(() => this.entitlements.manualLock() !== null);
 
   protected readonly goalkeeperCount = computed(
     () => this.store.players().filter((p) => p.isGoalkeeper).length,
@@ -252,6 +271,18 @@ export class PreviewStep {
   protected chooseTeams(value: string): void {
     this.lock.set(null);
     this.store.setTeamCount(Number(value));
+  }
+
+  // Goes to the teams without drawing them, to build them by hand. Without an account it
+  // explains why it does not.
+  protected continueByHand(): void {
+    const lock = this.entitlements.manualLock();
+    if (lock) {
+      this.manualNotice.set({ reason: lock, message: this.t().preview.manualSignIn });
+      return;
+    }
+    this.manualNotice.set(null);
+    this.store.startManual();
   }
 
   protected touchLocked(option: SegmentedOption): void {

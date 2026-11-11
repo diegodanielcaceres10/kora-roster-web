@@ -119,6 +119,93 @@ describe('PreviewStep', () => {
     });
   });
 
+  describe('continuing without drawing', () => {
+    const pair = (el: HTMLElement) => el.querySelector('[data-secondary-actions]') as HTMLElement;
+    const manualNotice = (el: HTMLElement) =>
+      el
+        .querySelector('[data-manual-notice] [role="status"]')
+        ?.textContent?.replace(/\s+/g, ' ')
+        .trim();
+
+    it('puts Continue and Back on one row, with Draw below them', () => {
+      const { el, byText } = setup(list(12));
+      expect(pair(el).contains(byText(T.preview.continue))).toBe(true);
+      expect(pair(el).contains(byText(T.preview.back))).toBe(true);
+      expect(pair(el).contains(byText(T.preview.draw))).toBe(false);
+      expect(pair(el).compareDocumentPosition(byText(T.preview.draw))).toBe(
+        Node.DOCUMENT_POSITION_FOLLOWING,
+      );
+    });
+
+    it.each([[true], [false]])(
+      'keeps Continue disabled while the count is not valid (with an account: %s)',
+      (account) => {
+        if (account) saveSession();
+        const { byText } = setup(list(11));
+        expect(byText(T.preview.continue).disabled).toBe(true);
+      },
+    );
+
+    describe('with an account', () => {
+      beforeEach(() => saveSession());
+
+      it('opens the teams empty, with everybody without a team, and nothing drawn', () => {
+        const { store, byText, click } = setup(list(12));
+        expect(byText(T.preview.continue).disabled).toBe(false);
+        click(byText(T.preview.continue));
+        expect(store.step()).toBe('result');
+        expect(store.teams()).toEqual([[], []]);
+        expect(store.pool()).toHaveLength(12);
+        expect(store.isComplete()).toBe(false);
+      });
+
+      it('opens as many empty teams as were chosen', () => {
+        const { fixture, store, byText, click } = setup(list(15));
+        store.setTeamCount(3);
+        fixture.detectChanges();
+        click(byText(T.preview.continue));
+        expect(store.teams()).toEqual([[], [], []]);
+        expect(store.pool()).toHaveLength(15);
+      });
+
+      it('shows an arrow, not a lock, and says nothing', () => {
+        const { el, byText } = setup(list(12));
+        const button = byText(T.preview.continue);
+        expect(button.querySelector('i.fa-arrow-right')).not.toBeNull();
+        expect(button.querySelector('i.fa-lock')).toBeNull();
+        expect(manualNotice(el) ?? '').toBe('');
+      });
+    });
+
+    describe('without an account', () => {
+      it('shows a lock and says nothing until it is touched', () => {
+        const { el, byText } = setup(list(12));
+        const button = byText(T.preview.continue);
+        expect(button.disabled).toBe(false);
+        expect(button.querySelector('i.fa-lock')).not.toBeNull();
+        expect(button.querySelector('i.fa-arrow-right')).toBeNull();
+        expect(manualNotice(el) ?? '').toBe('');
+      });
+
+      it('does not move on when it is touched, and offers to sign in', () => {
+        const { el, store, byText, click } = setup(list(12));
+        click(byText(T.preview.continue));
+        expect(store.step()).toBe('preview');
+        expect(store.teams()).toBeNull();
+        expect(store.pool()).toEqual([]);
+        expect(manualNotice(el)).toContain(T.preview.manualSignIn);
+        expect(el.querySelector('[data-manual-notice] a')?.getAttribute('href')).toBe('/es/cuenta');
+      });
+
+      it('still draws', () => {
+        const { store, byText, click } = setup(list(12));
+        click(byText(T.preview.draw));
+        expect(store.step()).toBe('result');
+        expect(store.isComplete()).toBe(true);
+      });
+    });
+  });
+
   describe('removing and the goalkeeper glove', () => {
     it('removes only the player whose cross is pressed', () => {
       const { names, byLabel, click } = setup('Diego\nMati\nNico');

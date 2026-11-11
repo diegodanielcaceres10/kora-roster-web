@@ -238,4 +238,16 @@ describe('dictionaries', () => {
       },
     );
   });
+
+  describe('the way to the teams without drawing', () => {
+    it.each([
+      ['en', 'Continue', 'Sign in to build the teams by hand.'],
+      ['es', 'Continuar', 'Inicia sesión para armar los equipos a mano.'],
+      ['pt', 'Continuar', 'Entre para montar os times à mão.'],
+    ] as const)('names the button and explains the lock in %s', (lang, label, signIn) => {
+      const { preview } = DICTIONARIES[lang].tool;
+      expect(preview.continue).toBe(label);
+      expect(preview.manualSignIn).toBe(signIn);
+    });
+  });
 });

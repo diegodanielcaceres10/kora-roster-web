@@ -138,6 +138,7 @@ export const es: Dictionary = {
       },
       back: 'Volver',
       draw: 'Sortear',
+      continue: 'Continuar',
       goalkeeper: 'Arquero',
       nameLabel: 'Nombre del jugador',
       edit: (name) => `Editar a ${name}`,
@@ -151,6 +152,7 @@ export const es: Dictionary = {
       teamsLabel: 'Equipos',
       teamsSignIn: 'Inicia sesión para usar 3 y 4 equipos.',
       teamsPremium: '5 y 6 equipos llegan con Premium, próximamente.',
+      manualSignIn: 'Inicia sesión para armar los equipos a mano.',
     },
     result: {
       title: 'Equipos',
