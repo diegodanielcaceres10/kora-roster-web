@@ -113,6 +113,49 @@ describe('AmistosoStore', () => {
       expect(store.step()).toBe('paste');
       expect(store.rawText()).toBe('Diego\nMati');
     });
+
+    describe('from the teams', () => {
+      it('returns to the preview, with the list as it was edited', () => {
+        const { store } = inPreview(list(12));
+        store.renamePlayer(store.players()[0].id, 'Nico');
+        store.draw(seeded(3));
+        store.back();
+        expect(store.step()).toBe('preview');
+        expect(store.players()).toHaveLength(12);
+        expect(store.players()[0].name).toBe('Nico');
+        expect(store.rawText()).toBe(list(12));
+      });
+
+      it('leaves the teams behind, so the list can be changed and drawn again', () => {
+        const { store } = inPreview(list(12));
+        store.draw(seeded(3));
+        store.back();
+        expect(store.teams()).toBeNull();
+        expect(store.whatsappText()).toBe('');
+        store.draw(seeded(4));
+        expect(store.step()).toBe('result');
+        expect(store.teams()).not.toBeNull();
+      });
+
+      it('also leaves behind the players who had no team', () => {
+        saveSession();
+        const { store } = inPreview(list(12));
+        store.startManual();
+        store.movePlayer(store.pool()[0].id, 0);
+        store.back();
+        expect(store.pool()).toEqual([]);
+        expect(store.teams()).toBeNull();
+      });
+
+      it('goes one more step back to the paste step on the next time', () => {
+        const { store } = inPreview(list(12));
+        store.draw(seeded(3));
+        store.back();
+        store.back();
+        expect(store.step()).toBe('paste');
+        expect(store.rawText()).toBe(list(12));
+      });
+    });
   });
 
   describe('editing the list', () => {

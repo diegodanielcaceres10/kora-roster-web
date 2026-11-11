@@ -222,6 +222,10 @@ const keyOf = (target: Target): string =>
             {{ t().result.clearTeams }}
           </ui-button>
         }
+        <ui-button variant="outline" (click)="store.back()">
+          <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+          {{ t().preview.back }}
+        </ui-button>
         <ui-button variant="ghost" (click)="store.reset()">
           <i class="fa-solid fa-rotate-left" aria-hidden="true"></i>
           {{ t().result.startOver }}

@@ -171,7 +171,13 @@ export const AmistosoStore = signalStore(
         });
       },
 
+      // One step back: from the teams to the list, and from the list to the pasted text. The
+      // teams are left behind, because the list can change before they are drawn again.
       back(): void {
+        if (store.step() === 'result') {
+          patchState(store, { step: 'preview', teams: null, pool: [] });
+          return;
+        }
         patchState(store, { step: 'paste' });
       },
 

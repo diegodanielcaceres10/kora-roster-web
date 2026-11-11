@@ -116,6 +116,50 @@ describe('ResultStep', () => {
     expect(store.step()).toBe('result');
   });
 
+  describe('going back to the list', () => {
+    // "Volver" is also the start of "Volver a sortear", so the whole text has to match.
+    const backIn = (el: HTMLElement) =>
+      Array.from(el.querySelectorAll('ui-button button')).find(
+        (b) => b.textContent?.trim() === T.preview.back,
+      ) as HTMLButtonElement;
+
+    it('offers a button to go back, next to the one to start over', () => {
+      const { el, byText } = setup();
+      const back = backIn(el);
+      expect(back).toBeDefined();
+      expect(back.querySelector('i.fa-arrow-left')).not.toBeNull();
+      expect(back.compareDocumentPosition(byText(T.result.startOver))).toBe(
+        Node.DOCUMENT_POSITION_FOLLOWING,
+      );
+    });
+
+    it('returns to the preview with the same players, and the teams are gone', () => {
+      const { fixture, el, store } = setup();
+      const players = store.players();
+      backIn(el).click();
+      fixture.detectChanges();
+      expect(store.step()).toBe('preview');
+      expect(store.players()).toBe(players);
+      expect(store.teams()).toBeNull();
+    });
+
+    it('is there for people with an account too, also with the teams half built', () => {
+      saveSession();
+      TestBed.inject(I18n).setLang('es');
+      const store = TestBed.inject(AmistosoStore);
+      store.setRawText('Diego 🧤\nMati 🧤\n' + list(10));
+      store.continueToPreview();
+      store.startManual();
+      const fixture = TestBed.createComponent(ResultStep);
+      fixture.detectChanges();
+      const back = backIn(fixture.nativeElement as HTMLElement);
+      expect(back.disabled).toBe(false);
+      back.click();
+      expect(store.step()).toBe('preview');
+      expect(store.pool()).toEqual([]);
+    });
+  });
+
   it('starts over from the beginning', () => {
     const { fixture, store, byText } = setup();
     byText(T.result.startOver).click();
