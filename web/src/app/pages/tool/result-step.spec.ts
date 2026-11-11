@@ -960,28 +960,15 @@ describe('ResultStep', () => {
       );
     });
 
-    it('has the buttons to go back and to start over, and none to edit the teams', () => {
+    it('has the button to start over, and none to go back or to edit the teams', () => {
       saveSession();
       const { el } = setup(undefined, true);
-      expect(named(el, T.preview.back)).toBeDefined();
       expect(named(el, T.result.startOver)).toBeDefined();
+      expect(named(el, T.preview.back)).toBeUndefined();
       expect(named(el, T.result.confirm)).toBeUndefined();
       expect(named(el, T.result.redraw)).toBeUndefined();
       expect(named(el, T.result.clearTeams)).toBeUndefined();
       expect(named(el, T.result.drawRemaining)).toBeUndefined();
-    });
-
-    it('goes back to editing the same teams with the back button', () => {
-      const { fixture, el, store } = setup(undefined, true);
-      const teams = store.teams();
-      (named(el, T.preview.back) as HTMLButtonElement).click();
-      fixture.detectChanges();
-      expect(store.confirmed()).toBe(false);
-      expect(store.step()).toBe('result');
-      expect(store.teams()).toBe(teams);
-      expect(el.querySelector('pre')).toBeNull();
-      expect(named(el, T.result.confirm)).toBeDefined();
-      expect(el.querySelectorAll('ui-card li button')).toHaveLength(12);
     });
 
     it('also shows the teams that were built by hand', () => {

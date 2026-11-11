@@ -1200,32 +1200,11 @@ describe('AmistosoStore', () => {
       expect(store.confirmed()).toBe(false);
     });
 
-    it('goes back to editing the teams, as they were, when going back from the confirmed ones', () => {
-      const { store } = inPreview(list(12));
-      store.draw(seeded(3));
-      const teams = store.teams();
-      store.confirm();
-      store.back();
-      expect(store.confirmed()).toBe(false);
-      expect(store.step()).toBe('result');
-      expect(store.teams()).toBe(teams);
-    });
-
-    it('goes back to the list from the teams that are being edited, as before', () => {
-      const { store } = inPreview(list(12));
-      store.draw(seeded(3));
-      store.confirm();
-      store.back();
-      store.back();
-      expect(store.step()).toBe('preview');
-      expect(store.teams()).toBeNull();
-      expect(store.confirmed()).toBe(false);
-    });
-
     it.each([
       ['draws again', (s: ReturnType<typeof setup>['store']) => s.draw(seeded(4))],
       ['starts the teams by hand', (s: ReturnType<typeof setup>['store']) => s.startManual()],
       ['goes to the preview', (s: ReturnType<typeof setup>['store']) => s.continueToPreview()],
+      ['goes back to the list', (s: ReturnType<typeof setup>['store']) => s.back()],
       ['starts over', (s: ReturnType<typeof setup>['store']) => s.reset()],
     ])('forgets what was confirmed when it %s', (_, act) => {
       saveSession();

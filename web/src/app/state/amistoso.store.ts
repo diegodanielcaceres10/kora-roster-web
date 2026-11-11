@@ -175,13 +175,11 @@ export const AmistosoStore = signalStore(
         });
       },
 
-      // One step back: from the confirmed teams to editing them, from the teams to the list, and
-      // from the list to the pasted text. The teams are left behind when going back to the
-      // list, because it can change before they are drawn again.
+      // One step back: from the teams to the list, and from the list to the pasted text. The
+      // teams are left behind, because the list can change before they are drawn again.
       back(): void {
         if (store.step() === 'result') {
-          if (store.confirmed()) patchState(store, { confirmed: false });
-          else patchState(store, { step: 'preview', teams: null, pool: [], confirmed: false });
+          patchState(store, { step: 'preview', teams: null, pool: [], confirmed: false });
           return;
         }
         patchState(store, { step: 'paste' });

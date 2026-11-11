@@ -51,4 +51,62 @@ describe('Tool', () => {
     fixture.detectChanges();
     expect(shown()).toEqual(['app-paste-step']);
   });
+
+  describe('the indicator of the steps', () => {
+    // A step is the one in use (dark), already done (green) or still to come (plain).
+    const states = (el: HTMLElement) =>
+      Array.from(el.querySelectorAll('nav li > div')).map((badge) =>
+        badge.className.includes('bg-secondary')
+          ? 'active'
+          : badge.className.includes('bg-alternative')
+            ? 'done'
+            : 'pending',
+      );
+
+    function open() {
+      const store = TestBed.inject(AmistosoStore);
+      const fixture = TestBed.createComponent(Tool);
+      const el = fixture.nativeElement as HTMLElement;
+      fixture.detectChanges();
+      const refresh = () => fixture.detectChanges();
+      return { store, el, refresh };
+    }
+
+    it('shows the first step in use, and the others to come', () => {
+      const { el } = open();
+      expect(states(el)).toEqual(['active', 'pending', 'pending']);
+    });
+
+    it('marks the steps already passed as done, and the one in use', () => {
+      const { store, el, refresh } = open();
+      store.setRawText(list(12));
+      store.continueToPreview();
+      refresh();
+      expect(states(el)).toEqual(['done', 'active', 'pending']);
+      store.draw(() => 0.3);
+      refresh();
+      expect(states(el)).toEqual(['done', 'done', 'active']);
+    });
+
+    it('marks the three steps as done once the teams are confirmed', () => {
+      const { store, el, refresh } = open();
+      store.setRawText(list(12));
+      store.continueToPreview();
+      store.draw(() => 0.3);
+      store.confirm();
+      refresh();
+      expect(states(el)).toEqual(['done', 'done', 'done']);
+    });
+
+    it('goes back to the first step in use when the person starts over', () => {
+      const { store, el, refresh } = open();
+      store.setRawText(list(12));
+      store.continueToPreview();
+      store.draw(() => 0.3);
+      store.confirm();
+      store.reset();
+      refresh();
+      expect(states(el)).toEqual(['active', 'pending', 'pending']);
+    });
+  });
 });

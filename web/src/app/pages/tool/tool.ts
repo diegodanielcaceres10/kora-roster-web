@@ -102,11 +102,15 @@ export class Tool {
     const currentIndex = order.indexOf(current);
     const stepIndex = order.indexOf(stepKey);
 
+    const done = 'bg-alternative/15 text-alternative font-semibold';
+
+    // With the teams confirmed there is nothing left to do, so the last step is done as well.
+    if (this.store.confirmed()) return done;
     if (current === stepKey) {
       return 'bg-secondary text-white shadow-xs';
     }
     if (stepIndex < currentIndex) {
-      return 'bg-alternative/15 text-alternative font-semibold';
+      return done;
     }
     return 'text-secondary/50';
   }
