@@ -32,6 +32,11 @@ function shuffled<T>(items: readonly T[], random: () => number): T[] {
   return copy;
 }
 
+// Goalkeepers go first in a team, and everybody else keeps their order.
+export function keepersFirst<T extends { isGoalkeeper: boolean }>(team: readonly T[]): T[] {
+  return [...team.filter((p) => p.isGoalkeeper), ...team.filter((p) => !p.isGoalkeeper)];
+}
+
 export function drawTeams<T extends { isGoalkeeper: boolean }>(
   players: readonly T[],
   random: () => number = Math.random,
@@ -65,4 +70,42 @@ export function drawTeams<T extends { isGoalkeeper: boolean }>(
   }
 
   return { ok: true, teams };
+}
+
+// Deals the players who have no team into the free places of teams that are already being
+// built. A goalkeeper goes to a team that has none while there is one with room, and the rest
+// is shuffled, so it works like a draw that starts from where the person left it.
+export function completeTeams<T extends { isGoalkeeper: boolean }>(
+  teams: readonly (readonly T[])[],
+  pool: readonly T[],
+  size: number,
+  random: () => number = Math.random,
+): T[][] {
+  const result = teams.map((team) => [...team]);
+  const keepers = shuffled(
+    pool.filter((p) => p.isGoalkeeper),
+    random,
+  );
+  const fieldPlayers = shuffled(
+    pool.filter((p) => !p.isGoalkeeper),
+    random,
+  );
+
+  for (const keeper of keepers) {
+    const open = result.flatMap((team, i) => (team.length < size ? [i] : []));
+    // Cannot happen while the pool fits in the free places.
+    if (open.length === 0) break;
+    const withoutKeeper = open.filter((i) => !result[i].some((p) => p.isGoalkeeper));
+    const options = withoutKeeper.length > 0 ? withoutKeeper : open;
+    result[options[Math.floor(random() * options.length)]].push(keeper);
+  }
+
+  let next = 0;
+  for (const team of result) {
+    const missing = Math.max(0, size - team.length);
+    team.push(...fieldPlayers.slice(next, next + missing));
+    next += missing;
+  }
+
+  return result.map(keepersFirst);
 }

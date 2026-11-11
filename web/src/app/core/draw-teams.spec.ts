@@ -1,7 +1,9 @@
 import {
   checkPlayerCount,
+  completeTeams,
   drawTeams,
   DrawResult,
+  keepersFirst,
   MAX_TEAM_SIZE,
   MIN_TEAM_SIZE,
   playerRange,
@@ -343,5 +345,127 @@ describe('with 3 and 4 teams', () => {
     const players = squad(12, 2);
     expect(drawTeams(players, seeded(5))).toEqual(drawTeams(players, seeded(5), 2));
     expect(teamsOf(drawTeams(players, seeded(5)))).toHaveLength(2);
+  });
+});
+
+describe('keepersFirst', () => {
+  it('puts the goalkeepers first and keeps the order of everybody else', () => {
+    const team: Player[] = [
+      { name: 'A', isGoalkeeper: false },
+      { name: 'B', isGoalkeeper: true },
+      { name: 'C', isGoalkeeper: false },
+      { name: 'D', isGoalkeeper: true },
+    ];
+    expect(keepersFirst(team).map((p) => p.name)).toEqual(['B', 'D', 'A', 'C']);
+  });
+
+  it('returns a new list and leaves the given one as it was', () => {
+    const team: Player[] = [
+      { name: 'A', isGoalkeeper: false },
+      { name: 'B', isGoalkeeper: true },
+    ];
+    const result = keepersFirst(team);
+    expect(result).not.toBe(team);
+    expect(team.map((p) => p.name)).toEqual(['A', 'B']);
+  });
+});
+
+describe('completeTeams', () => {
+  const keeper = (name: string): Player => ({ name, isGoalkeeper: true });
+  const field = (name: string): Player => ({ name, isGoalkeeper: false });
+  const names = (players: Player[]) => players.map((p) => p.name).sort();
+
+  it('fills every team up to its size from the pool, and nobody is lost or repeated', () => {
+    const all = squad(10);
+    const teams = [[all[0], all[1]], [all[2]]];
+    const result = completeTeams(teams, all.slice(3), 5, seeded(1));
+    expect(result.map((team) => team.length)).toEqual([5, 5]);
+    expect(names(result.flat())).toEqual(names(all));
+  });
+
+  it('keeps the players who were already in a team where they were', () => {
+    const all = squad(10);
+    const teams = [[all[0], all[1]], [all[2]]];
+    const result = completeTeams(teams, all.slice(3), 5, seeded(2));
+    expect(result[0]).toEqual(expect.arrayContaining([all[0], all[1]]));
+    expect(result[1]).toContain(all[2]);
+  });
+
+  it('only fills the places that are free in each team', () => {
+    const all = squad(12);
+    const teams = [all.slice(0, 5), [all[5]]];
+    const result = completeTeams(teams, all.slice(6), 6, seeded(3));
+    expect(result.map((team) => team.length)).toEqual([6, 6]);
+    expect(result[0].slice(0, 5)).toEqual(all.slice(0, 5));
+    expect(result[1][0]).toBe(all[5]);
+  });
+
+  it.each([1, 2, 3, 4, 5, 6, 7, 8])(
+    'gives a goalkeeper of the pool to the team that has none (seed %i)',
+    (seed) => {
+      const teams = [[keeper('A1'), field('a2')], [field('b1')]];
+      const pool = [keeper('B1'), ...Array.from({ length: 6 }, (_, i) => field(`x${i}`))];
+      const result = completeTeams(teams, pool, 5, seeded(seed));
+      expect(result[0].filter((p) => p.isGoalkeeper)).toHaveLength(1);
+      expect(result[1].filter((p) => p.isGoalkeeper).map((p) => p.name)).toEqual(['B1']);
+    },
+  );
+
+  it.each([1, 2, 3, 4, 5, 6])(
+    'spreads two goalkeepers of the pool over two teams that have none (seed %i)',
+    (seed) => {
+      const pool = [
+        keeper('G1'),
+        keeper('G2'),
+        ...Array.from({ length: 8 }, (_, i) => field(`x${i}`)),
+      ];
+      const result = completeTeams([[], []], pool, 5, seeded(seed));
+      expect(result.map((team) => team.filter((p) => p.isGoalkeeper).length)).toEqual([1, 1]);
+    },
+  );
+
+  it('still places a goalkeeper when every team already has one', () => {
+    const teams = [
+      [keeper('A1'), field('a2'), field('a3')],
+      [keeper('B1'), field('b2'), field('b3')],
+    ];
+    const pool = [keeper('C1'), field('x1'), field('x2'), field('x3')];
+    const result = completeTeams(teams, pool, 5, seeded(4));
+    expect(result.map((team) => team.length)).toEqual([5, 5]);
+    expect(result.flat().map((p) => p.name)).toContain('C1');
+  });
+
+  it('keeps the goalkeepers first in every team', () => {
+    const teams = [[field('a1')], [keeper('B1'), field('b2')]];
+    const pool = [
+      keeper('C1'),
+      keeper('C2'),
+      ...Array.from({ length: 5 }, (_, i) => field(`x${i}`)),
+    ];
+    const result = completeTeams(teams, pool, 5, seeded(5));
+    for (const team of result) {
+      const flags = team.map((p) => p.isGoalkeeper);
+      expect(flags).toEqual([...flags].sort((a, b) => Number(b) - Number(a)));
+    }
+  });
+
+  it('returns the same teams when the pool is empty', () => {
+    const teams = [squad(5), squad(5)];
+    expect(completeTeams(teams, [], 5, seeded(1))).toEqual(teams);
+  });
+
+  it('does not touch the teams or the pool it was given', () => {
+    const all = squad(10, 2);
+    const teams = [[all[0]], [all[1]]];
+    const pool = all.slice(2);
+    const snapshot = structuredClone({ teams, pool });
+    completeTeams(teams, pool, 5, seeded(6));
+    expect({ teams, pool }).toEqual(snapshot);
+  });
+
+  it('gives the same result for the same seed', () => {
+    const all = squad(12, 2);
+    const run = () => completeTeams([[all[0]], []], all.slice(1), 6, seeded(9));
+    expect(run()).toEqual(run());
   });
 });

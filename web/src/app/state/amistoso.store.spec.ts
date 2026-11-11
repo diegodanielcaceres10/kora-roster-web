@@ -746,4 +746,371 @@ describe('AmistosoStore', () => {
       expect(names?.[1]).toContain(a.name);
     });
   });
+
+  describe('manual assignment', () => {
+    beforeEach(() => localStorage.clear());
+    afterEach(() => localStorage.clear());
+
+    // 12 players with two goalkeepers; 18 for three teams. More than 2 teams needs an account,
+    // and so does the manual assignment, so everybody here has signed in.
+    function manual(teams?: number) {
+      saveSession();
+      const ctx = inPreview('Diego 🧤\nMati 🧤\n' + list(teams === 3 ? 16 : 10));
+      if (teams) ctx.store.setTeamCount(teams);
+      ctx.store.startManual();
+      return ctx;
+    }
+    const teamsOf = (store: ReturnType<typeof setup>['store']) => store.teams() as Player[][];
+    const idsOf = (players: Player[]) => players.map((p) => p.id);
+
+    describe('startManual', () => {
+      it('opens the teams, all of them empty, with everybody waiting without a team', () => {
+        const { store } = manual();
+        expect(store.step()).toBe('result');
+        expect(teamsOf(store)).toEqual([[], []]);
+        expect(idsOf(store.pool()).sort()).toEqual(idsOf(store.players()).sort());
+      });
+
+      it('has as many empty teams as the person chose', () => {
+        const { store } = manual(3);
+        expect(teamsOf(store)).toEqual([[], [], []]);
+        expect(store.pool()).toHaveLength(18);
+      });
+
+      it('lists the goalkeepers first among those without a team', () => {
+        const { store } = manual();
+        expect(
+          store
+            .pool()
+            .map((p) => p.isGoalkeeper)
+            .slice(0, 2),
+        ).toEqual([true, true]);
+        expect(
+          store
+            .pool()
+            .slice(2)
+            .every((p) => !p.isGoalkeeper),
+        ).toBe(true);
+      });
+
+      it('does nothing without an account', () => {
+        const ctx = inPreview('Diego 🧤\nMati 🧤\n' + list(10));
+        ctx.store.startManual();
+        expect(ctx.store.step()).toBe('preview');
+        expect(ctx.store.teams()).toBeNull();
+        expect(ctx.store.pool()).toEqual([]);
+      });
+
+      it('does nothing when the number of players is not valid for the teams', () => {
+        saveSession();
+        const { store } = inPreview(list(11));
+        store.startManual();
+        expect(store.step()).toBe('preview');
+        expect(store.teams()).toBeNull();
+        expect(store.pool()).toEqual([]);
+      });
+    });
+
+    describe('the size of a team', () => {
+      it('is the number of players divided by the number of teams', () => {
+        expect(manual().store.teamSize()).toBe(6);
+        TestBed.resetTestingModule();
+        localStorage.clear();
+        expect(manual(3).store.teamSize()).toBe(6);
+      });
+
+      it('is not known while the number of players is not valid', () => {
+        const { store } = inPreview(list(11));
+        expect(store.teamSize()).toBeNull();
+      });
+    });
+
+    describe('without a team', () => {
+      it('is empty after a draw, and the draw is complete', () => {
+        saveSession();
+        const { store } = inPreview('Diego 🧤\nMati 🧤\n' + list(10));
+        store.draw(seeded(3));
+        expect(store.pool()).toEqual([]);
+        expect(store.isComplete()).toBe(true);
+      });
+
+      it('is emptied when the person goes back to the preview with the same list', () => {
+        const { store } = manual();
+        store.continueToPreview();
+        expect(store.pool()).toEqual([]);
+        expect(store.teams()).toBeNull();
+      });
+
+      it('is emptied when the person starts again', () => {
+        const { store } = manual();
+        store.reset();
+        expect(store.pool()).toEqual([]);
+        expect(store.teams()).toBeNull();
+      });
+
+      it('is emptied when a new draw is made after a manual start', () => {
+        const { store } = manual();
+        store.draw(seeded(3));
+        expect(store.pool()).toEqual([]);
+      });
+    });
+
+    describe('movePlayer', () => {
+      it('puts a player who has no team into a team', () => {
+        const { store } = manual();
+        const [diego] = store.pool();
+        store.movePlayer(diego.id, 0);
+        expect(teamsOf(store)[0]).toEqual([diego]);
+        expect(store.pool()).toHaveLength(11);
+        expect(store.pool()).not.toContain(diego);
+      });
+
+      it('takes a player out of a team and leaves them without one', () => {
+        const { store } = manual();
+        const [diego] = store.pool();
+        store.movePlayer(diego.id, 1);
+        store.movePlayer(diego.id, 'pool');
+        expect(teamsOf(store)[1]).toEqual([]);
+        expect(store.pool()).toContain(diego);
+      });
+
+      it('moves a player from one team to another that has room', () => {
+        const { store } = manual();
+        const [diego] = store.pool();
+        store.movePlayer(diego.id, 0);
+        store.movePlayer(diego.id, 1);
+        expect(teamsOf(store)[0]).toEqual([]);
+        expect(teamsOf(store)[1]).toEqual([diego]);
+      });
+
+      it('does not put a seventh player into a team of six', () => {
+        const { store } = manual();
+        const everybody = [...store.pool()];
+        everybody.slice(0, 6).forEach((p) => store.movePlayer(p.id, 0));
+        store.movePlayer(everybody[6].id, 0);
+        expect(teamsOf(store)[0]).toHaveLength(6);
+        expect(store.pool()).toContain(everybody[6]);
+      });
+
+      it('does not move a player who is already where they are asked to go', () => {
+        const { store } = manual();
+        const [diego, mati] = store.pool();
+        store.movePlayer(diego.id, 0);
+        store.movePlayer(diego.id, 0);
+        store.movePlayer(mati.id, 'pool');
+        expect(teamsOf(store)[0]).toEqual([diego]);
+        expect(store.pool()).toHaveLength(11);
+      });
+
+      it.each([[-1], [2], [1.5], [Number.NaN]])(
+        'ignores the team %s, which does not exist',
+        (to) => {
+          const { store } = manual();
+          const before = structuredClone({ teams: store.teams(), pool: store.pool() });
+          store.movePlayer(store.pool()[0].id, to);
+          expect({ teams: store.teams(), pool: store.pool() }).toEqual(before);
+        },
+      );
+
+      it('ignores a player who does not exist', () => {
+        const { store } = manual();
+        const before = structuredClone({ teams: store.teams(), pool: store.pool() });
+        store.movePlayer('nobody', 0);
+        store.movePlayer('nobody', 'pool');
+        expect({ teams: store.teams(), pool: store.pool() }).toEqual(before);
+      });
+
+      it('does nothing before the teams exist', () => {
+        const { store } = inPreview(list(12));
+        store.movePlayer(store.players()[0].id, 0);
+        expect(store.teams()).toBeNull();
+        expect(store.pool()).toEqual([]);
+      });
+
+      it('keeps the goalkeepers first in the team they go to and among those without a team', () => {
+        const { store } = manual();
+        const keepers = store.pool().filter((p) => p.isGoalkeeper);
+        const fieldPlayers = store.pool().filter((p) => !p.isGoalkeeper);
+        store.movePlayer(fieldPlayers[0].id, 0);
+        store.movePlayer(keepers[0].id, 0);
+        expect(teamsOf(store)[0].map((p) => p.isGoalkeeper)).toEqual([true, false]);
+        store.movePlayer(keepers[0].id, 'pool');
+        store.movePlayer(fieldPlayers[0].id, 'pool');
+        expect(
+          store
+            .pool()
+            .map((p) => p.isGoalkeeper)
+            .slice(0, 2),
+        ).toEqual([true, true]);
+      });
+    });
+
+    describe('isComplete', () => {
+      it('is false before the teams exist', () => {
+        const { store } = inPreview(list(12));
+        expect(store.isComplete()).toBe(false);
+      });
+
+      it('is false while somebody is without a team, and true once everybody has one', () => {
+        const { store } = manual();
+        const everybody = [...store.pool()];
+        expect(store.isComplete()).toBe(false);
+        everybody.forEach((p, i) => store.movePlayer(p.id, i % 2));
+        expect(teamsOf(store).map((team) => team.length)).toEqual([6, 6]);
+        expect(store.isComplete()).toBe(true);
+      });
+
+      it('goes back to false when somebody is taken out of a team', () => {
+        const { store } = manual();
+        const everybody = [...store.pool()];
+        everybody.forEach((p, i) => store.movePlayer(p.id, i % 2));
+        store.movePlayer(everybody[0].id, 'pool');
+        expect(store.isComplete()).toBe(false);
+      });
+    });
+
+    describe('drawRemaining', () => {
+      it('puts everybody without a team into a team, and keeps those who were placed', () => {
+        const { store } = manual();
+        const [diego, mati] = store.pool();
+        store.movePlayer(diego.id, 0);
+        store.movePlayer(mati.id, 1);
+        store.drawRemaining(seeded(3));
+        expect(store.pool()).toEqual([]);
+        expect(teamsOf(store).map((team) => team.length)).toEqual([6, 6]);
+        expect(teamsOf(store)[0]).toContain(diego);
+        expect(teamsOf(store)[1]).toContain(mati);
+        expect(store.isComplete()).toBe(true);
+      });
+
+      it('does not lose or repeat anybody', () => {
+        const { store } = manual(3);
+        store.movePlayer(store.pool()[5].id, 2);
+        store.drawRemaining(seeded(8));
+        expect(idsOf(teamsOf(store).flat()).sort()).toEqual(idsOf(store.players()).sort());
+      });
+
+      it.each([1, 2, 3, 4, 5])(
+        'gives one goalkeeper to each team when both are without a team (seed %i)',
+        (seed) => {
+          const { store } = manual();
+          store.drawRemaining(seeded(seed));
+          expect(teamsOf(store).map((team) => team.filter((p) => p.isGoalkeeper).length)).toEqual([
+            1, 1,
+          ]);
+        },
+      );
+
+      it('keeps the goalkeepers first in every team', () => {
+        const { store } = manual();
+        store.drawRemaining(seeded(4));
+        for (const team of teamsOf(store)) {
+          expect(team[0].isGoalkeeper).toBe(true);
+        }
+      });
+
+      it('does nothing when nobody is without a team', () => {
+        saveSession();
+        const { store } = inPreview('Diego 🧤\nMati 🧤\n' + list(10));
+        store.draw(seeded(3));
+        const before = structuredClone(store.teams());
+        store.drawRemaining(seeded(5));
+        expect(store.teams()).toEqual(before);
+      });
+
+      it('does nothing before the teams exist', () => {
+        const { store } = inPreview(list(12));
+        store.drawRemaining(seeded(5));
+        expect(store.teams()).toBeNull();
+        expect(store.pool()).toEqual([]);
+      });
+    });
+
+    describe('clearTeams', () => {
+      it('sends everybody back to being without a team, and keeps the empty teams', () => {
+        saveSession();
+        const { store } = inPreview('Diego 🧤\nMati 🧤\n' + list(10));
+        store.draw(seeded(3));
+        store.clearTeams();
+        expect(teamsOf(store)).toEqual([[], []]);
+        expect(idsOf(store.pool()).sort()).toEqual(idsOf(store.players()).sort());
+        expect(
+          store
+            .pool()
+            .map((p) => p.isGoalkeeper)
+            .slice(0, 2),
+        ).toEqual([true, true]);
+        expect(store.step()).toBe('result');
+        expect(store.isComplete()).toBe(false);
+      });
+
+      it('does nothing before the teams exist', () => {
+        const { store } = inPreview(list(12));
+        store.clearTeams();
+        expect(store.teams()).toBeNull();
+        expect(store.pool()).toEqual([]);
+      });
+    });
+
+    describe('swapping with somebody who has no team', () => {
+      it('puts each of the two where the other was, and keeps every size', () => {
+        const { store } = manual();
+        const everybody = [...store.pool()];
+        const inTeam = everybody.find((p) => !p.isGoalkeeper) as Player;
+        store.movePlayer(inTeam.id, 0);
+        const waiting = store.pool().find((p) => !p.isGoalkeeper) as Player;
+        store.swapPlayers(inTeam.id, waiting.id);
+        expect(teamsOf(store)[0]).toEqual([waiting]);
+        expect(store.pool()).toContain(inTeam);
+        expect(store.pool()).not.toContain(waiting);
+        expect(store.pool()).toHaveLength(11);
+      });
+
+      it('works whichever of the two is named first', () => {
+        const { store } = manual();
+        const inTeam = store.pool().find((p) => !p.isGoalkeeper) as Player;
+        store.movePlayer(inTeam.id, 1);
+        const waiting = store.pool().find((p) => !p.isGoalkeeper) as Player;
+        store.swapPlayers(waiting.id, inTeam.id);
+        expect(teamsOf(store)[1]).toEqual([waiting]);
+        expect(store.pool()).toContain(inTeam);
+      });
+
+      it('keeps the goalkeepers first in the team and among those without a team', () => {
+        const { store } = manual();
+        const [diego] = store.pool();
+        const fieldPlayer = store.pool().find((p) => !p.isGoalkeeper) as Player;
+        store.movePlayer(fieldPlayer.id, 0);
+        store.swapPlayers(fieldPlayer.id, diego.id);
+        expect(teamsOf(store)[0]).toEqual([diego]);
+        // Mati is the only goalkeeper left without a team, and the player who left the team
+        // joins the others after him.
+        expect(store.pool()[0].isGoalkeeper).toBe(true);
+        expect(
+          store
+            .pool()
+            .slice(1)
+            .every((p) => !p.isGoalkeeper),
+        ).toBe(true);
+        expect(store.pool()).toContain(fieldPlayer);
+      });
+
+      it('does nothing between two players who are both without a team', () => {
+        const { store } = manual();
+        const before = structuredClone({ teams: store.teams(), pool: store.pool() });
+        store.swapPlayers(store.pool()[0].id, store.pool()[1].id);
+        expect({ teams: store.teams(), pool: store.pool() }).toEqual(before);
+      });
+
+      it('still swaps two players of different teams', () => {
+        const { store } = manual();
+        const [a, b] = store.pool().filter((p) => !p.isGoalkeeper);
+        store.movePlayer(a.id, 0);
+        store.movePlayer(b.id, 1);
+        store.swapPlayers(a.id, b.id);
+        expect(teamsOf(store)[0]).toEqual([b]);
+        expect(teamsOf(store)[1]).toEqual([a]);
+      });
+    });
+  });
 });

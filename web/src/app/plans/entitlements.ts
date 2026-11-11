@@ -26,6 +26,15 @@ export class Entitlements {
   }
 
   storyImageLock(): LockReason | null {
+    return this.accountLock();
+  }
+
+  manualLock(): LockReason | null {
+    return this.accountLock();
+  }
+
+  // What is open to any account, free or Premium, and closed to somebody who is not signed in.
+  private accountLock(): LockReason | null {
     return this.plan() === 'anonymous' ? 'sign-in' : null;
   }
 }

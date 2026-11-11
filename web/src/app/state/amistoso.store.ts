@@ -1,6 +1,13 @@
 import { computed, inject } from '@angular/core';
 import { patchState, signalStore, withComputed, withMethods, withState } from '@ngrx/signals';
-import { checkPlayerCount, drawTeams, MAX_TEAMS, MIN_TEAMS } from '../core/draw-teams';
+import {
+  checkPlayerCount,
+  completeTeams,
+  drawTeams,
+  keepersFirst,
+  MAX_TEAMS,
+  MIN_TEAMS,
+} from '../core/draw-teams';
 import { DEFAULT_TEAM_ICONS, formatTeamsForWhatsApp } from '../core/format-teams';
 import { parsePastedNames } from '../core/parse-players';
 import { StoryInput } from '../core/story-layout';
@@ -23,23 +30,20 @@ interface AmistosoState {
   parsedText: string | null;
   players: Player[];
   teams: Player[][] | null;
+  // The players who have no team yet, while the teams are being built by hand.
+  pool: Player[];
   // What the person picked in the selector, or null while they have not picked anything.
   teamCountChoice: number | null;
   step: Step;
   nextId: number;
 }
 
-// Goalkeepers go first in a team, and everybody else keeps their order.
-const keepersFirst = (team: Player[]): Player[] => [
-  ...team.filter((p) => p.isGoalkeeper),
-  ...team.filter((p) => !p.isGoalkeeper),
-];
-
 const initialState: AmistosoState = {
   rawText: '',
   parsedText: null,
   players: [],
   teams: null,
+  pool: [],
   teamCountChoice: null,
   step: 'paste',
   nextId: 1,
@@ -48,7 +52,7 @@ const initialState: AmistosoState = {
 export const AmistosoStore = signalStore(
   { providedIn: 'root' },
   withState(initialState),
-  withComputed(({ players, teams, teamCountChoice }) => {
+  withComputed(({ players, teams, pool, teamCountChoice }) => {
     const i18n = inject(I18n);
     const preferences = inject(PreferencesService);
     const entitlements = inject(Entitlements);
@@ -66,6 +70,7 @@ export const AmistosoStore = signalStore(
     );
     const playerCount = computed(() => players().length);
     const countError = computed(() => checkPlayerCount(playerCount(), teamCount()));
+    const canDraw = computed(() => countError() === null);
     // The icons and colors of the person who is signed in, or the defaults for everybody else.
     // The preferences always hold the six teams, with six different icons.
     const teamIcons = computed(
@@ -81,7 +86,12 @@ export const AmistosoStore = signalStore(
       countError,
       teamIcons,
       teamColors,
-      canDraw: computed(() => countError() === null),
+      canDraw,
+      // How many players each team has, once the list is valid for the teams in use.
+      teamSize: computed(() => (canDraw() ? playerCount() / teamCount() : null)),
+      // Everybody has a team. A team never takes more players than its size, so with nobody
+      // left without a team every team is full.
+      isComplete: computed(() => teams() !== null && pool().length === 0),
       // Set when the person usually plays a team size and this list is not that many
       // players for the teams in use. It is only a notice: it never stops the draw.
       sizeMismatch: computed(() => {
@@ -126,6 +136,11 @@ export const AmistosoStore = signalStore(
   withMethods((store) => {
     const entitlements = inject(Entitlements);
 
+    // The teams followed by the players without a team, which count as one more place.
+    const groupsOf = (teams: Player[][], pool: Player[]): Player[][] => [...teams, pool];
+    const place = (groups: Player[][]): void =>
+      patchState(store, { teams: groups.slice(0, -1), pool: groups[groups.length - 1] });
+
     return {
       setRawText(rawText: string): void {
         patchState(store, { rawText });
@@ -140,7 +155,7 @@ export const AmistosoStore = signalStore(
       continueToPreview(): void {
         const text = store.rawText();
         if (text === store.parsedText() && store.players().length > 0) {
-          patchState(store, { step: 'preview', teams: null });
+          patchState(store, { step: 'preview', teams: null, pool: [] });
           return;
         }
         const parsed = parsePastedNames(text);
@@ -151,6 +166,7 @@ export const AmistosoStore = signalStore(
           parsedText: text,
           nextId: first + parsed.length,
           teams: null,
+          pool: [],
           step: 'preview',
         });
       },
@@ -179,26 +195,80 @@ export const AmistosoStore = signalStore(
 
       draw(random: () => number = Math.random): void {
         const result = drawTeams(store.players(), random, store.teamCount());
-        if (result.ok) patchState(store, { teams: result.teams, step: 'result' });
+        if (result.ok) patchState(store, { teams: result.teams, pool: [], step: 'result' });
       },
 
-      // Two players of different teams change places: the one who comes takes the place of
-      // the one who goes, so every team keeps its size. Anything else is ignored.
+      // Opens the teams empty, with everybody waiting without a team, to build them by hand.
+      startManual(): void {
+        if (entitlements.manualLock() !== null || !store.canDraw()) return;
+        patchState(store, {
+          teams: Array.from({ length: store.teamCount() }, (): Player[] => []),
+          pool: keepersFirst(store.players()),
+          step: 'result',
+        });
+      },
+
+      // A player goes to a team that has room, or to the players without a team. Anything
+      // else is ignored, so every team keeps at most its size.
+      movePlayer(id: string, to: number | 'pool'): void {
+        const teams = store.teams();
+        const size = store.teamSize();
+        if (!teams || size === null) return;
+        if (to !== 'pool' && !(Number.isInteger(to) && to >= 0 && to < teams.length)) return;
+        const groups = groupsOf(teams, store.pool());
+        const target = to === 'pool' ? teams.length : to;
+        const from = groups.findIndex((group) => group.some((p) => p.id === id));
+        if (from < 0 || from === target) return;
+        if (target < teams.length && groups[target].length >= size) return;
+        const player = groups[from].find((p) => p.id === id) as Player;
+        place(
+          groups.map((group, i) =>
+            i === from
+              ? group.filter((p) => p.id !== id)
+              : i === target
+                ? keepersFirst([...group, player])
+                : group,
+          ),
+        );
+      },
+
+      // Deals everybody who has no team into the places that are free, as a draw would.
+      drawRemaining(random: () => number = Math.random): void {
+        const teams = store.teams();
+        const size = store.teamSize();
+        if (!teams || size === null || store.pool().length === 0) return;
+        patchState(store, { teams: completeTeams(teams, store.pool(), size, random), pool: [] });
+      },
+
+      // Takes everybody out of their team, to build them again from scratch.
+      clearTeams(): void {
+        const teams = store.teams();
+        if (!teams) return;
+        patchState(store, {
+          teams: teams.map((): Player[] => []),
+          pool: keepersFirst(store.players()),
+        });
+      },
+
+      // Two players who are not in the same place change places: the one who comes takes the
+      // place of the one who goes, so every team keeps its size. The players without a team
+      // count as one more place. Anything else is ignored.
       swapPlayers(idA: string, idB: string): void {
         const teams = store.teams();
         if (!teams) return;
-        const teamA = teams.findIndex((team) => team.some((p) => p.id === idA));
-        const teamB = teams.findIndex((team) => team.some((p) => p.id === idB));
-        if (teamA < 0 || teamB < 0 || teamA === teamB) return;
-        const a = teams[teamA].find((p) => p.id === idA) as Player;
-        const b = teams[teamB].find((p) => p.id === idB) as Player;
-        const replace = (team: Player[], out: Player, into: Player) =>
-          keepersFirst(team.map((p) => (p.id === out.id ? into : p)));
-        patchState(store, {
-          teams: teams.map((team, i) =>
-            i === teamA ? replace(team, a, b) : i === teamB ? replace(team, b, a) : team,
+        const groups = groupsOf(teams, store.pool());
+        const groupA = groups.findIndex((group) => group.some((p) => p.id === idA));
+        const groupB = groups.findIndex((group) => group.some((p) => p.id === idB));
+        if (groupA < 0 || groupB < 0 || groupA === groupB) return;
+        const a = groups[groupA].find((p) => p.id === idA) as Player;
+        const b = groups[groupB].find((p) => p.id === idB) as Player;
+        const replace = (group: Player[], out: Player, into: Player) =>
+          keepersFirst(group.map((p) => (p.id === out.id ? into : p)));
+        place(
+          groups.map((group, i) =>
+            i === groupA ? replace(group, a, b) : i === groupB ? replace(group, b, a) : group,
           ),
-        });
+        );
       },
 
       reset(): void {

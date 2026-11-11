@@ -97,4 +97,20 @@ describe('Entitlements', () => {
       expect(entitlements.storyImageLock()).toBeNull();
     });
   });
+
+  describe('the lock on the manual assignment', () => {
+    it('asks for an account when there is none, and is open with one', async () => {
+      const { entitlements, signIn } = await setup();
+      expect(entitlements.manualLock()).toBe('sign-in');
+      signIn();
+      expect(entitlements.manualLock()).toBeNull();
+    });
+
+    it('goes back to asking for an account when they sign out', async () => {
+      const { entitlements, auth, signIn } = await setup();
+      signIn();
+      await auth.signOut();
+      expect(entitlements.manualLock()).toBe('sign-in');
+    });
+  });
 });
