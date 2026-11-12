@@ -111,6 +111,20 @@ describe('PasteStep', () => {
       );
     });
 
+    it('puts Continue on the left and Draw on the right of the row', () => {
+      const { el, next } = setup();
+      const row = next().closest('ui-button')?.parentElement as HTMLElement;
+      expect(row.className).toContain('justify-between');
+      expect(next().compareDocumentPosition(drawButton(el))).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+    });
+
+    it('paints Draw yellow and Continue white', () => {
+      const { el, next } = setup();
+      expect(drawButton(el).className).toContain('bg-primary');
+      expect(next().className).not.toContain('bg-primary');
+      expect(next().className).toContain('bg-transparent');
+    });
+
     it.each([[0], [8], [9], [11], [13], [23], [24]])(
       'is disabled with %i players, which cannot be drawn into two teams',
       (count) => {
