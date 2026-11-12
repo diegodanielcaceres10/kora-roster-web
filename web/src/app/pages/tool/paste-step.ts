@@ -21,7 +21,7 @@ import { UiButton, UiCard, UiTextarea } from '../../ui';
                   class="inline-flex items-center gap-1.5 rounded-full bg-secondary/8 px-3 py-1 text-xs font-bold text-secondary tabular-nums"
                 >
                   <i class="fa-solid fa-users text-primary" aria-hidden="true"></i>
-                  {{ count }} {{ count === 1 ? 'jugador detectado' : 'jugadores detectados' }}
+                  {{ t().paste.detected(count) }}
                 </span>
               }
             </div>
@@ -51,20 +51,20 @@ import { UiButton, UiCard, UiTextarea } from '../../ui';
           <div class="rounded-xl border border-secondary/15 bg-white p-5 shadow-xs">
             <h3 class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-secondary/80">
               <i class="fa-solid fa-clipboard-check text-primary" aria-hidden="true"></i>
-              Guía de carga rápida
+              {{ t().paste.guide.title }}
             </h3>
             <ul class="mt-4 space-y-3.5 text-xs text-secondary/80">
               <li class="flex items-start gap-2.5">
                 <span class="mt-0.5 inline-flex size-5 shrink-0 items-center justify-center rounded bg-secondary/8 font-bold text-secondary">1</span>
-                <span>Copiá y pegá la lista tal cual sale de tu grupo de WhatsApp.</span>
+                <span>{{ t().paste.guide.step1 }}</span>
               </li>
               <li class="flex items-start gap-2.5">
                 <span class="mt-0.5 inline-flex size-5 shrink-0 items-center justify-center rounded bg-secondary/8 font-bold text-secondary">2</span>
-                <span>Los números, viñetas, guiones y emojis se limpian de manera automática.</span>
+                <span>{{ t().paste.guide.step2 }}</span>
               </li>
               <li class="flex items-start gap-2.5">
                 <span class="mt-0.5 inline-flex size-5 shrink-0 items-center justify-center rounded bg-alternative/15 font-bold text-alternative">🧤</span>
-                <span>Agregá el emoji de guante o la palabra <strong class="text-secondary">(arquero)</strong> para repartir arqueros parejos.</span>
+                <span>{{ t().paste.guide.step3Before }} <strong class="text-secondary">{{ t().paste.guide.step3Word }}</strong> {{ t().paste.guide.step3After }}</span>
               </li>
             </ul>
           </div>

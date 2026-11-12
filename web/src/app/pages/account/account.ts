@@ -26,7 +26,7 @@ import { PremiumCard } from './premium-card';
       <div class="border-b border-secondary/10 pb-4">
         <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-secondary/60">
           <i class="fa-solid fa-id-card text-primary" aria-hidden="true"></i>
-          <span>Perfil de Organizador</span>
+          <span>{{ t().eyebrow }}</span>
         </div>
         <h1 class="mt-1 text-2xl font-black tracking-tight text-secondary sm:text-3xl">
           {{ t().title }}

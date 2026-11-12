@@ -68,4 +68,27 @@ describe('PasteStep', () => {
     expect(store.step()).toBe('preview');
     expect(store.players().map((p) => p.name)).toEqual(['Diego', 'Mati']);
   });
+
+  describe('the texts that depend on the language', () => {
+    it.each(['en', 'es', 'pt'] as const)(
+      'shows the guide and the count of players detected in %s',
+      (lang) => {
+        const { fixture, el, type } = setup();
+        TestBed.inject(I18n).setLang(lang);
+        const { paste } = DICTIONARIES[lang].tool;
+        type('Diego\nMati');
+        fixture.detectChanges();
+        const text = el.textContent?.replace(/\s+/g, ' ') as string;
+        expect(text).toContain(paste.detected(2));
+        expect(text).toContain(paste.guide.title);
+        expect(text).toContain(paste.guide.step1);
+        expect(text).toContain(paste.guide.step2);
+        expect(text).toContain(
+          `${paste.guide.step3Before} ${paste.guide.step3Word} ${paste.guide.step3After}`,
+        );
+        type('Diego');
+        expect(el.textContent).toContain(paste.detected(1));
+      },
+    );
+  });
 });

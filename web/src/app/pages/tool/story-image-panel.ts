@@ -42,7 +42,7 @@ interface MadeImage {
           {{ t().createImage }}
         </ui-button>
       </div>
-      <p class="text-xs text-secondary/60">Exportá una imagen con formato vertical 9:16 para Instagram o WhatsApp</p>
+      <p class="text-xs text-secondary/60">{{ t().imageHint }}</p>
       <app-lock-notice [reason]="notice()?.reason ?? null" [message]="notice()?.message ?? null" />
 
       @if (image(); as made) {

@@ -109,4 +109,19 @@ describe('Tool', () => {
       expect(states(el)).toEqual(['active', 'pending', 'pending']);
     });
   });
+
+  describe('the texts that depend on the language', () => {
+    it.each(['en', 'es', 'pt'] as const)(
+      'shows the mode and the label of the progress in %s',
+      (lang) => {
+        const fixture = TestBed.createComponent(Tool);
+        TestBed.inject(I18n).setLang(lang);
+        fixture.detectChanges();
+        const el = fixture.nativeElement as HTMLElement;
+        const { tool } = DICTIONARIES[lang];
+        expect(el.textContent).toContain(tool.mode);
+        expect(el.querySelector('nav')?.getAttribute('aria-label')).toBe(tool.progressLabel);
+      },
+    );
+  });
 });

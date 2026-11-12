@@ -81,4 +81,9 @@ describe('Shell', () => {
       expect(el.querySelectorAll('header a')).toHaveLength(1);
     });
   });
+
+  it.each(['en', 'es', 'pt'] as const)('shows the tagline of the footer in %s', (lang) => {
+    const el = setup(lang);
+    expect(el.querySelector('footer')?.textContent).toContain(DICTIONARIES[lang].footer.tagline);
+  });
 });

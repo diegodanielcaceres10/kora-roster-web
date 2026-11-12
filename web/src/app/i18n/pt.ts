@@ -21,6 +21,7 @@ export const pt: Dictionary = {
     },
   },
   account: {
+    eyebrow: 'Perfil de organizador',
     title: 'Minha conta',
     signInLink: 'Entrar',
     signInPrompt: 'Entre com sua conta do Google para salvar suas preferências neste dispositivo.',
@@ -47,6 +48,8 @@ export const pt: Dictionary = {
     signUps: 'Inscrições por link',
   },
   preferences: {
+    teamsSection: 'Personalização dos times',
+    templateSection: 'Modelo para WhatsApp',
     title: 'Preferências',
     description:
       'Ficam salvas neste dispositivo e são usadas quando você monta times com a sessão iniciada.',
@@ -72,7 +75,11 @@ export const pt: Dictionary = {
     saved: 'Salvo',
     restore: 'Restaurar padrões',
   },
+  footer: {
+    tagline: 'Sorteador tático de times para futebol entre amigos',
+  },
   landing: {
+    eyebrow: 'Utilitário esportivo de montagem rápida',
     hero: {
       title: 'Monte os times da partida em segundos',
       subtitle:
@@ -108,9 +115,20 @@ export const pt: Dictionary = {
     },
   },
   tool: {
+    mode: 'Modo Amistoso',
+    progressLabel: 'Progresso do sorteio',
     heading: 'Amistoso rápido',
     teamTitle: (n) => `Time ${n}`,
     paste: {
+      detected: (n) => (n === 1 ? '1 jogador detectado' : `${n} jogadores detectados`),
+      guide: {
+        title: 'Guia de carga rápida',
+        step1: 'Copie e cole a lista exatamente como sai do seu grupo de WhatsApp.',
+        step2: 'Números, marcadores, hifens e emojis são limpos automaticamente.',
+        step3Before: 'Adicione o emoji de luva ou a palavra',
+        step3Word: '(goleiro)',
+        step3After: 'para distribuir os goleiros de forma equilibrada.',
+      },
       title: 'Cole a lista',
       label: 'Lista do WhatsApp',
       placeholder: 'Cole aqui a lista do seu grupo do WhatsApp',
@@ -118,6 +136,13 @@ export const pt: Dictionary = {
       continue: 'Continuar',
     },
     preview: {
+      settings: 'Configuração da partida',
+      teamsCount: (n) => `${n} times`,
+      perTeam: 'Por time',
+      goalkeepers: 'Goleiros',
+      editHint: 'Edite os nomes ou defina os goleiros',
+      columnPlayer: '# Jogador',
+      columnActions: 'Ações',
       title: 'Confira os nomes',
       count: (n) => (n === 1 ? '1 jogador' : `${n} jogadores`),
       status: {
@@ -154,6 +179,9 @@ export const pt: Dictionary = {
       manualSignIn: 'Entre para montar os times à mão.',
     },
     result: {
+      balanced: (n) => `${n} times equilibrados`,
+      shareFormat: 'Formato pronto para compartilhar',
+      imageHint: 'Exporte uma imagem em formato vertical 9:16 para Instagram ou WhatsApp',
       title: 'Times',
       whatsappTitle: 'Texto para o WhatsApp',
       copy: 'Copiar texto',

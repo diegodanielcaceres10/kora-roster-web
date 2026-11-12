@@ -225,4 +225,14 @@ describe('Account page', () => {
       expect(card.compareDocumentPosition(editor) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     });
   });
+
+  it.each(['en', 'es', 'pt'] as const)(
+    'says what the page is above the title in %s',
+    async (lang) => {
+      const { el, settle } = await setup();
+      TestBed.inject(I18n).setLang(lang);
+      await settle();
+      expect(el.textContent).toContain(DICTIONARIES[lang].account.eyebrow);
+    },
+  );
 });

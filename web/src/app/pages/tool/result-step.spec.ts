@@ -1006,4 +1006,20 @@ describe('ResultStep', () => {
       expect(el.querySelector('pre')?.textContent).toBe(store.whatsappText());
     });
   });
+
+  describe('the texts that depend on the language', () => {
+    it.each(['en', 'es', 'pt'] as const)(
+      'shows the balance of the teams, the format of the message and the hint of the image in %s',
+      (lang) => {
+        const { fixture, el } = setup(undefined, true);
+        TestBed.inject(I18n).setLang(lang);
+        fixture.detectChanges();
+        const { result } = DICTIONARIES[lang].tool;
+        const text = el.textContent?.replace(/\s+/g, ' ') as string;
+        expect(text).toContain(result.balanced(2));
+        expect(text).toContain(result.shareFormat);
+        expect(text).toContain(result.imageHint);
+      },
+    );
+  });
 });

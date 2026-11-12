@@ -73,7 +73,7 @@ const copyOf = (preferences: Preferences): Preferences => ({
 
       <div class="space-y-3">
         <span class="block text-xs font-bold uppercase tracking-wider text-secondary/70">
-          Personalización de equipos
+          {{ t().teamsSection }}
         </span>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           @for (team of visibleTeams(); track $index; let i = $index) {
@@ -98,7 +98,7 @@ const copyOf = (preferences: Preferences): Preferences => ({
 
       <div class="space-y-4 border-t border-secondary/10 pt-4">
         <span class="block text-xs font-bold uppercase tracking-wider text-secondary/70">
-          Plantilla para WhatsApp
+          {{ t().templateSection }}
         </span>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <ui-input

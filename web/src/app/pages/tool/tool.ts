@@ -29,7 +29,7 @@ interface StepDef {
             <span class="inline-block size-2 rounded-full bg-alternative"></span>
             <span>Matchday Tool</span>
             <span>•</span>
-            <span>Modo Amistoso</span>
+            <span>{{ i18n.t().tool.mode }}</span>
           </div>
           <h1 class="mt-1 text-2xl font-black tracking-tight text-secondary sm:text-3xl">
             {{ i18n.t().tool.heading }}
@@ -37,7 +37,7 @@ interface StepDef {
         </div>
 
         <!-- Sporty Stepper Indicator -->
-        <nav aria-label="Progreso del sorteo" class="w-full sm:w-auto">
+        <nav [attr.aria-label]="i18n.t().tool.progressLabel" class="w-full sm:w-auto">
           <ol
             class="flex items-center gap-1 sm:gap-2 rounded-xl border border-secondary/15 bg-white p-1.5 shadow-xs"
           >

@@ -453,4 +453,28 @@ describe('PreviewStep', () => {
       expect(store.teams()).toHaveLength(2);
     });
   });
+
+  describe('the texts that depend on the language', () => {
+    it.each(['en', 'es', 'pt'] as const)(
+      'shows the settings, the figures and the headers of the list in %s',
+      (lang) => {
+        const { fixture, el } = setup(list(12));
+        TestBed.inject(I18n).setLang(lang);
+        fixture.detectChanges();
+        const { preview } = DICTIONARIES[lang].tool;
+        const text = el.textContent?.replace(/\s+/g, ' ') as string;
+        for (const expected of [
+          preview.settings,
+          preview.teamsCount(2),
+          preview.perTeam,
+          preview.goalkeepers,
+          preview.editHint,
+          preview.columnPlayer,
+          preview.columnActions,
+        ]) {
+          expect(text).toContain(expected);
+        }
+      },
+    );
+  });
 });

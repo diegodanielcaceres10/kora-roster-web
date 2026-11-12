@@ -32,7 +32,7 @@ const keyOf = (target: Target): string =>
         <div class="flex flex-wrap items-center justify-between gap-3 border-b border-secondary/10 pb-3">
           <h2>{{ t().result.title }}</h2>
           <span class="rounded-full bg-alternative/15 px-3 py-1 text-xs font-bold uppercase tracking-wider text-alternative">
-            {{ teams().length }} equipos equilibrados
+            {{ t().result.balanced(teams().length) }}
           </span>
         </div>
 
@@ -201,7 +201,7 @@ const keyOf = (target: Target): string =>
             <h3 class="text-sm font-bold uppercase tracking-wider text-secondary">
               {{ t().result.whatsappTitle }}
             </h3>
-            <span class="text-xs text-secondary/60">Formato listo para compartir</span>
+            <span class="text-xs text-secondary/60">{{ t().result.shareFormat }}</span>
           </div>
 
           <pre

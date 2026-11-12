@@ -262,4 +262,117 @@ describe('dictionaries', () => {
       expect(result.confirmed).toBe(confirmed);
     });
   });
+
+  describe('the texts that used to be written in the templates', () => {
+    it.each([
+      [
+        'en',
+        'Tactical team picker for friendly football',
+        'Quick team-building sports utility',
+        'Organizer profile',
+      ],
+      [
+        'es',
+        'Sorteador táctico de equipos para fútbol entre amigos',
+        'Utilidad deportiva de armado rápido',
+        'Perfil de Organizador',
+      ],
+      [
+        'pt',
+        'Sorteador tático de times para futebol entre amigos',
+        'Utilitário esportivo de montagem rápida',
+        'Perfil de organizador',
+      ],
+    ] as const)(
+      'name the footer, the landing and the account in %s',
+      (lang, footer, landing, account) => {
+        const dictionary = DICTIONARIES[lang];
+        expect(dictionary.footer.tagline).toBe(footer);
+        expect(dictionary.landing.eyebrow).toBe(landing);
+        expect(dictionary.account.eyebrow).toBe(account);
+      },
+    );
+
+    it.each([
+      ['en', 'Team customization', 'WhatsApp template'],
+      ['es', 'Personalización de equipos', 'Plantilla para WhatsApp'],
+      ['pt', 'Personalização dos times', 'Modelo para WhatsApp'],
+    ] as const)('name the sections of the preferences in %s', (lang, teams, template) => {
+      const { preferences } = DICTIONARIES[lang];
+      expect(preferences.teamsSection).toBe(teams);
+      expect(preferences.templateSection).toBe(template);
+    });
+
+    it.each([
+      ['en', 'Friendly mode', 'Draw progress'],
+      ['es', 'Modo Amistoso', 'Progreso del sorteo'],
+      ['pt', 'Modo Amistoso', 'Progresso do sorteio'],
+    ] as const)('name the mode and the progress of the tool in %s', (lang, mode, progress) => {
+      const { tool } = DICTIONARIES[lang];
+      expect(tool.mode).toBe(mode);
+      expect(tool.progressLabel).toBe(progress);
+    });
+
+    it.each([
+      ['en', '1 player detected', '5 players detected', 'Quick loading guide'],
+      ['es', '1 jugador detectado', '5 jugadores detectados', 'Guía de carga rápida'],
+      ['pt', '1 jogador detectado', '5 jogadores detectados', 'Guia de carga rápida'],
+    ] as const)(
+      'count the players detected and title the guide in %s',
+      (lang, one, many, title) => {
+        const { paste } = DICTIONARIES[lang].tool;
+        expect(paste.detected(1)).toBe(one);
+        expect(paste.detected(5)).toBe(many);
+        expect(paste.guide.title).toBe(title);
+      },
+    );
+
+    it.each([['en'], ['es'], ['pt']] as const)(
+      'write the three steps of the guide in %s, with the word of the goalkeeper between brackets',
+      (lang) => {
+        const { guide } = DICTIONARIES[lang].tool.paste;
+        for (const text of [guide.step1, guide.step2, guide.step3Before, guide.step3After]) {
+          expect(text.trim().length).toBeGreaterThan(10);
+        }
+        expect(guide.step3Word).toMatch(/^\(\p{L}+\)$/u);
+      },
+    );
+
+    it.each([
+      ['en', 'Match settings', '3 teams', 'Per team', 'Goalkeepers', '# Player', 'Actions'],
+      [
+        'es',
+        'Configuración de partido',
+        '3 equipos',
+        'Por equipo',
+        'Arqueros',
+        '# Jugador',
+        'Acciones',
+      ],
+      ['pt', 'Configuração da partida', '3 times', 'Por time', 'Goleiros', '# Jogador', 'Ações'],
+    ] as const)(
+      'name the settings, the figures and the columns of the preview in %s',
+      (lang, settings, teams, perTeam, goalkeepers, player, actions) => {
+        const { preview } = DICTIONARIES[lang].tool;
+        expect(preview.settings).toBe(settings);
+        expect(preview.teamsCount(3)).toBe(teams);
+        expect(preview.perTeam).toBe(perTeam);
+        expect(preview.goalkeepers).toBe(goalkeepers);
+        expect(preview.columnPlayer).toBe(player);
+        expect(preview.columnActions).toBe(actions);
+        expect(preview.editHint.length).toBeGreaterThan(10);
+      },
+    );
+
+    it.each([
+      ['en', '2 balanced teams', 'Ready-to-share format'],
+      ['es', '2 equipos equilibrados', 'Formato listo para compartir'],
+      ['pt', '2 times equilibrados', 'Formato pronto para compartilhar'],
+    ] as const)('name the balance and the format of the result in %s', (lang, balanced, format) => {
+      const { result } = DICTIONARIES[lang].tool;
+      expect(result.balanced(2)).toBe(balanced);
+      expect(result.shareFormat).toBe(format);
+      expect(result.imageHint.length).toBeGreaterThan(10);
+    });
+  });
 });

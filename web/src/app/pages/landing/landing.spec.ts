@@ -98,4 +98,9 @@ describe('Landing', () => {
     expect(document.head.querySelector('link[rel="canonical"]')).toBeNull();
     expect(document.head.querySelector('link[rel="alternate"]')).toBeNull();
   });
+
+  it.each(LANGS)('says what the tool is above the headline in %s', (lang) => {
+    const el = setup(lang);
+    expect(text(el)).toContain(DICTIONARIES[lang].landing.eyebrow);
+  });
 });

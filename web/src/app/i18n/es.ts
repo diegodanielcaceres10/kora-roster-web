@@ -21,6 +21,7 @@ export const es: Dictionary = {
     },
   },
   account: {
+    eyebrow: 'Perfil de Organizador',
     title: 'Mi cuenta',
     signInLink: 'Iniciar sesión',
     signInPrompt:
@@ -48,6 +49,8 @@ export const es: Dictionary = {
     signUps: 'Inscripciones por enlace',
   },
   preferences: {
+    teamsSection: 'Personalización de equipos',
+    templateSection: 'Plantilla para WhatsApp',
     title: 'Preferencias',
     description:
       'Se guardan en este dispositivo y se usan cuando armas equipos con la sesión iniciada.',
@@ -73,7 +76,11 @@ export const es: Dictionary = {
     saved: 'Guardado',
     restore: 'Restaurar valores',
   },
+  footer: {
+    tagline: 'Sorteador táctico de equipos para fútbol entre amigos',
+  },
   landing: {
+    eyebrow: 'Utilidad deportiva de armado rápido',
     hero: {
       title: 'Arma los equipos del partido en segundos',
       subtitle:
@@ -109,9 +116,20 @@ export const es: Dictionary = {
     },
   },
   tool: {
+    mode: 'Modo Amistoso',
+    progressLabel: 'Progreso del sorteo',
     heading: 'Amistoso rápido',
     teamTitle: (n) => `Equipo ${n}`,
     paste: {
+      detected: (n) => (n === 1 ? '1 jugador detectado' : `${n} jugadores detectados`),
+      guide: {
+        title: 'Guía de carga rápida',
+        step1: 'Copia y pega la lista tal cual sale de tu grupo de WhatsApp.',
+        step2: 'Los números, viñetas, guiones y emojis se limpian de manera automática.',
+        step3Before: 'Agrega el emoji de guante o la palabra',
+        step3Word: '(arquero)',
+        step3After: 'para repartir arqueros parejos.',
+      },
       title: 'Pega la lista',
       label: 'Lista de WhatsApp',
       placeholder: 'Pega aquí la lista de tu grupo de WhatsApp',
@@ -119,6 +137,13 @@ export const es: Dictionary = {
       continue: 'Continuar',
     },
     preview: {
+      settings: 'Configuración de partido',
+      teamsCount: (n) => `${n} equipos`,
+      perTeam: 'Por equipo',
+      goalkeepers: 'Arqueros',
+      editHint: 'Edita nombres o asigna arqueros',
+      columnPlayer: '# Jugador',
+      columnActions: 'Acciones',
       title: 'Revisa los nombres',
       count: (n) => (n === 1 ? '1 jugador' : `${n} jugadores`),
       status: {
@@ -155,6 +180,9 @@ export const es: Dictionary = {
       manualSignIn: 'Inicia sesión para armar los equipos a mano.',
     },
     result: {
+      balanced: (n) => `${n} equipos equilibrados`,
+      shareFormat: 'Formato listo para compartir',
+      imageHint: 'Exporta una imagen con formato vertical 9:16 para Instagram o WhatsApp',
       title: 'Equipos',
       whatsappTitle: 'Texto para WhatsApp',
       copy: 'Copiar texto',

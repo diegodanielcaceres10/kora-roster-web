@@ -404,4 +404,13 @@ describe('PreferencesEditor', () => {
       expect(fieldsets(ctx)).toBe(2);
     });
   });
+
+  it.each(['en', 'es', 'pt'] as const)('names its sections in %s', (lang) => {
+    const { fixture, el } = setup();
+    TestBed.inject(I18n).setLang(lang);
+    fixture.detectChanges();
+    const { preferences } = DICTIONARIES[lang];
+    expect(el.textContent).toContain(preferences.teamsSection);
+    expect(el.textContent).toContain(preferences.templateSection);
+  });
 });

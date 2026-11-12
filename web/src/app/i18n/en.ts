@@ -19,6 +19,7 @@ export const en = {
     },
   },
   account: {
+    eyebrow: 'Organizer profile',
     title: 'My account',
     signInLink: 'Sign in',
     signInPrompt: 'Sign in with your Google account to save your preferences on this device.',
@@ -44,6 +45,8 @@ export const en = {
     signUps: 'Sign-ups by link',
   },
   preferences: {
+    teamsSection: 'Team customization',
+    templateSection: 'WhatsApp template',
     title: 'Preferences',
     description: 'They are saved on this device and used when you build teams while signed in.',
     playersPerTeam: { label: 'Players per team', any: 'Any' },
@@ -68,7 +71,11 @@ export const en = {
     saved: 'Saved',
     restore: 'Restore defaults',
   },
+  footer: {
+    tagline: 'Tactical team picker for friendly football',
+  },
   landing: {
+    eyebrow: 'Quick team-building sports utility',
     hero: {
       title: 'Build the match teams in seconds',
       subtitle:
@@ -104,9 +111,20 @@ export const en = {
     },
   },
   tool: {
+    mode: 'Friendly mode',
+    progressLabel: 'Draw progress',
     heading: 'Quick match',
     teamTitle: (n: number) => `Team ${n}`,
     paste: {
+      detected: (n: number) => (n === 1 ? '1 player detected' : `${n} players detected`),
+      guide: {
+        title: 'Quick loading guide',
+        step1: 'Copy and paste the list exactly as it comes from your WhatsApp group.',
+        step2: 'Numbers, bullets, dashes and emojis are cleaned up automatically.',
+        step3Before: 'Add the glove emoji or the word',
+        step3Word: '(goalkeeper)',
+        step3After: 'to spread the goalkeepers evenly.',
+      },
       title: 'Paste the list',
       label: 'WhatsApp list',
       placeholder: 'Paste the list from your WhatsApp group here',
@@ -114,6 +132,13 @@ export const en = {
       continue: 'Continue',
     },
     preview: {
+      settings: 'Match settings',
+      teamsCount: (n: number) => `${n} teams`,
+      perTeam: 'Per team',
+      goalkeepers: 'Goalkeepers',
+      editHint: 'Edit names or assign goalkeepers',
+      columnPlayer: '# Player',
+      columnActions: 'Actions',
       title: 'Check the names',
       count: (n: number) => (n === 1 ? '1 player' : `${n} players`),
       status: {
@@ -150,6 +175,9 @@ export const en = {
       manualSignIn: 'Sign in to build the teams by hand.',
     },
     result: {
+      balanced: (n: number) => `${n} balanced teams`,
+      shareFormat: 'Ready-to-share format',
+      imageHint: 'Export a vertical 9:16 image for Instagram or WhatsApp',
       title: 'Teams',
       whatsappTitle: 'Text for WhatsApp',
       copy: 'Copy text',

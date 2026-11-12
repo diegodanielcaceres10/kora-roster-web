@@ -17,7 +17,7 @@ import { UiCard } from '../../ui';
           class="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3.5 py-1 text-xs font-bold uppercase tracking-widest text-primary backdrop-blur-md"
         >
           <i class="fa-solid fa-bolt" aria-hidden="true"></i>
-          <span>Utilidad deportiva de armado rápido</span>
+          <span>{{ t().eyebrow }}</span>
         </div>
 
         <h1 class="text-3xl sm:text-5xl font-black tracking-tight text-white leading-tight">

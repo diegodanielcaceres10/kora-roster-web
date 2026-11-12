@@ -36,7 +36,7 @@ import {
           <ui-card accent="primary">
             <h3 card-header class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-secondary/80">
               <i class="fa-solid fa-sliders text-primary" aria-hidden="true"></i>
-              Configuración de partido
+              {{ t().preview.settings }}
             </h3>
 
             <div class="space-y-4">
@@ -60,7 +60,7 @@ import {
                 <div class="flex items-center justify-between">
                   <p class="font-black text-lg text-secondary">{{ t().preview.count(store.playerCount()) }}</p>
                   <span class="text-xs font-semibold text-secondary/60 tabular-nums">
-                    {{ store.teamCount() }} equipos
+                    {{ t().preview.teamsCount(store.teamCount()) }}
                   </span>
                 </div>
 
@@ -83,11 +83,11 @@ import {
               <!-- Tactical Metrics Summary -->
               <div class="grid grid-cols-2 gap-2 text-center">
                 <div class="rounded-lg border border-secondary/10 bg-white p-2.5 shadow-xs">
-                  <span class="block text-[10px] font-bold uppercase tracking-wider text-secondary/60">Por equipo</span>
+                  <span class="block text-[10px] font-bold uppercase tracking-wider text-secondary/60">{{ t().preview.perTeam }}</span>
                   <span class="text-base font-black text-secondary tabular-nums">{{ playersPerTeam() }}</span>
                 </div>
                 <div class="rounded-lg border border-secondary/10 bg-white p-2.5 shadow-xs">
-                  <span class="block text-[10px] font-bold uppercase tracking-wider text-secondary/60">Arqueros</span>
+                  <span class="block text-[10px] font-bold uppercase tracking-wider text-secondary/60">{{ t().preview.goalkeepers }}</span>
                   <span class="text-base font-black text-alternative tabular-nums">{{ goalkeeperCount() }}</span>
                 </div>
               </div>
@@ -132,13 +132,13 @@ import {
                 <h2>{{ t().preview.title }}</h2>
                 <ui-badge tone="neutral">{{ store.playerCount() }}</ui-badge>
               </div>
-              <span class="text-xs text-secondary/60">Edita nombres o asigna arqueros</span>
+              <span class="text-xs text-secondary/60">{{ t().preview.editHint }}</span>
             </div>
 
             <div class="space-y-3 pt-2">
               <div class="flex items-center justify-between px-3 text-[11px] font-bold uppercase tracking-wider text-secondary/50">
-                <span># Jugador</span>
-                <span>Acciones</span>
+                <span>{{ t().preview.columnPlayer }}</span>
+                <span>{{ t().preview.columnActions }}</span>
               </div>
 
               <div role="list" class="divide-y divide-secondary/8 space-y-1">

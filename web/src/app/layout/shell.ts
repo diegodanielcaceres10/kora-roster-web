@@ -65,7 +65,7 @@ import { LanguageSelector } from '../i18n/language-selector';
       >
         <p class="font-medium">Kora Roster</p>
         <p class="text-[11px] text-secondary/50">
-          Sorteador táctico de equipos para fútbol entre amigos
+          {{ i18n.t().footer.tagline }}
         </p>
       </div>
     </footer>
