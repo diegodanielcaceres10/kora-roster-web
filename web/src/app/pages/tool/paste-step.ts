@@ -101,8 +101,10 @@ export class PasteStep {
       : null,
   );
 
+  // Draws and confirms in one go, so the person lands on the final result.
   protected drawNow(): void {
     this.store.continueToPreview();
     this.store.draw();
+    this.store.confirm();
   }
 }

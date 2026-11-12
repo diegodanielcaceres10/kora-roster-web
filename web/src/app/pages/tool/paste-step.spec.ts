@@ -140,26 +140,16 @@ describe('PasteStep', () => {
       expect(drawButton(el).disabled).toBe(false);
     });
 
-    it('draws the list and goes straight to the teams', () => {
+    it('draws the list and goes straight to the final result', () => {
       const { el, store, type, fixture } = setup();
       type(players(12));
       drawButton(el).click();
       fixture.detectChanges();
       expect(store.step()).toBe('result');
+      expect(store.confirmed()).toBe(true);
       expect(store.players()).toHaveLength(12);
       expect(store.teams()?.map((team) => team.length)).toEqual([6, 6]);
       expect(store.isComplete()).toBe(true);
-    });
-
-    it('lets the person go back to the list from the teams it drew', () => {
-      const { el, store, type, fixture } = setup();
-      type(players(12));
-      drawButton(el).click();
-      fixture.detectChanges();
-      store.back();
-      expect(store.step()).toBe('preview');
-      expect(store.players()).toHaveLength(12);
-      expect(store.teams()).toBeNull();
     });
 
     it('does not draw when it is disabled', () => {
@@ -169,6 +159,7 @@ describe('PasteStep', () => {
       fixture.detectChanges();
       expect(store.step()).toBe('paste');
       expect(store.teams()).toBeNull();
+      expect(store.confirmed()).toBe(false);
     });
 
     it('does not change what the button to continue does', () => {
@@ -178,6 +169,7 @@ describe('PasteStep', () => {
       fixture.detectChanges();
       expect(store.step()).toBe('preview');
       expect(store.teams()).toBeNull();
+      expect(store.confirmed()).toBe(false);
     });
 
     describe('says why it cannot draw yet', () => {
@@ -233,6 +225,7 @@ describe('PasteStep', () => {
         drawButton(el).click();
         fixture.detectChanges();
         expect(store.teams()?.map((team) => team.length)).toEqual([5, 5, 5]);
+        expect(store.confirmed()).toBe(true);
       });
     });
   });
