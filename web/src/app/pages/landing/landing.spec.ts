@@ -42,8 +42,8 @@ describe('Landing', () => {
 
   it.each(LANGS)('offers the quick match as a link to the tool in %s', (lang) => {
     const el = setup(lang);
-    const link = el.querySelector('a[href$="/amistoso"]') as HTMLAnchorElement;
-    expect(link.getAttribute('href')).toBe(`/${lang}/amistoso`);
+    const link = el.querySelector('a[href$="/friendly"]') as HTMLAnchorElement;
+    expect(link.getAttribute('href')).toBe(`/${lang}/friendly`);
     expect(text(link)).toBe(DICTIONARIES[lang].landing.hero.cta);
   });
 

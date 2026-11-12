@@ -7,7 +7,7 @@ import { makeCredential, provideFakeGoogle } from './auth/testing';
 import { DICTIONARIES } from './i18n/dictionaries';
 import { I18n } from './i18n/i18n';
 import { saveSession, TEST_PREFERENCES } from './preferences/testing';
-import { AmistosoStore } from './state/amistoso.store';
+import { FriendlyStore } from './state/friendly.store';
 
 async function open(url: string, providers: Provider[] = []) {
   TestBed.configureTestingModule({ providers: [provideRouter(routes), ...providers] });
@@ -44,16 +44,16 @@ describe('app routes', () => {
   });
 
   it.each(['en', 'es', 'pt'] as const)(
-    'shows the tool in its language at /%s/amistoso',
+    'shows the tool in its language at /%s/friendly',
     async (lang) => {
-      const { root, i18n } = await open(`/${lang}/amistoso`);
+      const { root, i18n } = await open(`/${lang}/friendly`);
       expect(i18n.lang()).toBe(lang);
       expect(heading(root)).toContain(DICTIONARIES[lang].tool.heading);
     },
   );
 
   it('wraps both pages in the shared header with the language selector', async () => {
-    const { root } = await open('/es/amistoso');
+    const { root } = await open('/es/friendly');
     expect(root.querySelector('header app-language-selector')).not.toBeNull();
     expect(root.querySelector('footer')).not.toBeNull();
   });
@@ -87,19 +87,19 @@ describe('app routes', () => {
   });
 
   it('changes language from the header and lands on the same page in the new language', async () => {
-    const { harness, root, router } = await open('/es/amistoso');
+    const { harness, root, router } = await open('/es/friendly');
     const portuguese = Array.from(root.querySelectorAll('[role="radio"]')).find(
       (r) => r.textContent?.trim() === 'PT',
     ) as HTMLButtonElement;
     portuguese.click();
     await harness.fixture.whenStable();
-    expect(router.url).toBe('/pt/amistoso');
+    expect(router.url).toBe('/pt/friendly');
     expect(heading(root)).toContain(DICTIONARIES.pt.tool.heading);
   });
 
   it('keeps the pasted list when the language changes', async () => {
-    const { harness, root, router } = await open('/es/amistoso');
-    const store = TestBed.inject(AmistosoStore);
+    const { harness, root, router } = await open('/es/friendly');
+    const store = TestBed.inject(FriendlyStore);
     const field = root.querySelector('textarea') as HTMLTextAreaElement;
     field.value = Array.from({ length: 12 }, (_, i) => `Player ${i + 1}`).join('\n');
     field.dispatchEvent(new Event('input'));
@@ -114,7 +114,7 @@ describe('app routes', () => {
     portuguese.click();
     await harness.fixture.whenStable();
 
-    expect(router.url).toBe('/pt/amistoso');
+    expect(router.url).toBe('/pt/friendly');
     expect(store.players()).toHaveLength(12);
     expect(root.textContent).toContain(DICTIONARIES.pt.tool.preview.count(12));
   });
@@ -123,15 +123,15 @@ describe('app routes', () => {
     'leads from the landing to the tool in the same language: /%s',
     async (lang) => {
       const { harness, root, router } = await open(`/${lang}`);
-      (root.querySelector(`main a[href="/${lang}/amistoso"]`) as HTMLAnchorElement).click();
+      (root.querySelector(`main a[href="/${lang}/friendly"]`) as HTMLAnchorElement).click();
       await harness.fixture.whenStable();
-      expect(router.url).toBe(`/${lang}/amistoso`);
+      expect(router.url).toBe(`/${lang}/friendly`);
       expect(heading(root)).toContain(DICTIONARIES[lang].tool.heading);
     },
   );
 
   it('brings the person back to the list they left when they return from the landing', async () => {
-    const { harness, root, router } = await open('/es/amistoso');
+    const { harness, root, router } = await open('/es/friendly');
     const field = root.querySelector('textarea') as HTMLTextAreaElement;
     field.value = Array.from({ length: 12 }, (_, i) => `Player ${i + 1}`).join('\n');
     field.dispatchEvent(new Event('input'));
@@ -145,9 +145,9 @@ describe('app routes', () => {
     expect(router.url).toBe('/es');
     expect(heading(root)).toContain(DICTIONARIES.es.landing.hero.title);
 
-    (root.querySelector('main a[href="/es/amistoso"]') as HTMLAnchorElement).click();
+    (root.querySelector('main a[href="/es/friendly"]') as HTMLAnchorElement).click();
     await harness.fixture.whenStable();
-    expect(router.url).toBe('/es/amistoso');
+    expect(router.url).toBe('/es/friendly');
     expect(root.textContent).toContain(DICTIONARIES.es.tool.preview.count(12));
   });
 
@@ -167,9 +167,9 @@ describe('app routes', () => {
     afterEach(() => localStorage.clear());
 
     it.each(['en', 'es', 'pt'] as const)(
-      'shows the account page in its language at /%s/cuenta',
+      'shows the account page in its language at /%s/account',
       async (lang) => {
-        const { root, i18n } = await open(`/${lang}/cuenta`);
+        const { root, i18n } = await open(`/${lang}/account`);
         expect(i18n.lang()).toBe(lang);
         expect(heading(root)).toContain(DICTIONARIES[lang].account.title);
       },
@@ -177,15 +177,15 @@ describe('app routes', () => {
 
     it('has no sign in link in the header while sign in is off', async () => {
       const { root } = await open('/es');
-      expect(root.querySelector('header a[href$="/cuenta"]')).toBeNull();
+      expect(root.querySelector('header a[href$="/account"]')).toBeNull();
     });
 
     it('goes from the header link to the account page, signs in, and the header shows the photo', async () => {
       const google = provideFakeGoogle();
       const { harness, root, router } = await open('/es', google.providers);
-      (root.querySelector('header a[href="/es/cuenta"]') as HTMLAnchorElement).click();
+      (root.querySelector('header a[href="/es/account"]') as HTMLAnchorElement).click();
       await harness.fixture.whenStable();
-      expect(router.url).toBe('/es/cuenta');
+      expect(router.url).toBe('/es/account');
 
       await pickAccount(google.fake, harness);
       expect(root.querySelector('main')?.textContent).toContain('diego@example.com');
@@ -194,19 +194,19 @@ describe('app routes', () => {
 
     it('is still signed in after the page is reloaded', async () => {
       const first = provideFakeGoogle();
-      const opened = await open('/es/cuenta', first.providers);
+      const opened = await open('/es/account', first.providers);
       await pickAccount(first.fake, opened.harness);
 
       TestBed.resetTestingModule();
       const second = provideFakeGoogle();
-      const { root } = await open('/es/cuenta', second.providers);
+      const { root } = await open('/es/account', second.providers);
       expect(root.querySelector('main')?.textContent).toContain('diego@example.com');
       expect(second.fake.hosts).toHaveLength(0);
     });
 
     it('stays signed in when the language changes', async () => {
       const google = provideFakeGoogle();
-      const { harness, root, router } = await open('/es/cuenta', google.providers);
+      const { harness, root, router } = await open('/es/account', google.providers);
       await pickAccount(google.fake, harness);
 
       const portuguese = Array.from(root.querySelectorAll('[role="radio"]')).find(
@@ -216,14 +216,14 @@ describe('app routes', () => {
       await harness.fixture.whenStable();
       harness.fixture.detectChanges();
 
-      expect(router.url).toBe('/pt/cuenta');
+      expect(router.url).toBe('/pt/account');
       expect(heading(root)).toContain(DICTIONARIES.pt.account.title);
       expect(root.querySelector('main')?.textContent).toContain('diego@example.com');
     });
 
     it('signs out and the header offers to sign in again', async () => {
       const google = provideFakeGoogle();
-      const { harness, root } = await open('/es/cuenta', google.providers);
+      const { harness, root } = await open('/es/account', google.providers);
       await pickAccount(google.fake, harness);
 
       const signOut = Array.from(root.querySelectorAll('main ui-button button')).find(
@@ -234,7 +234,7 @@ describe('app routes', () => {
       harness.fixture.detectChanges();
 
       expect(root.querySelector('header app-user-avatar')).toBeNull();
-      expect(root.querySelector('header a[href="/es/cuenta"]')?.textContent?.trim()).toBe(
+      expect(root.querySelector('header a[href="/es/account"]')?.textContent?.trim()).toBe(
         DICTIONARIES.es.account.signInLink,
       );
     });
@@ -245,7 +245,7 @@ describe('app routes', () => {
 
     it('are saved on the account page and are still there after a reload', async () => {
       const first = provideFakeGoogle();
-      const opened = await open('/es/cuenta', first.providers);
+      const opened = await open('/es/account', first.providers);
       opened.harness.fixture.detectChanges();
       await opened.harness.fixture.whenStable();
       first.fake.pick(makeCredential());
@@ -269,7 +269,7 @@ describe('app routes', () => {
 
       TestBed.resetTestingModule();
       const second = provideFakeGoogle();
-      const { root } = await open('/es/cuenta', second.providers);
+      const { root } = await open('/es/account', second.providers);
       const again = Array.from(root.querySelectorAll('label')).find(
         (l) => l.textContent?.trim() === DICTIONARIES.es.preferences.template.header,
       ) as HTMLLabelElement;
@@ -282,7 +282,7 @@ describe('app routes', () => {
 
     it('warns about the team size, and then draws with their icons and message', async () => {
       saveSession(TEST_PREFERENCES);
-      const { harness, root } = await open('/es/amistoso');
+      const { harness, root } = await open('/es/friendly');
       const T = DICTIONARIES.es.tool;
 
       const field = root.querySelector('textarea') as HTMLTextAreaElement;
@@ -305,7 +305,7 @@ describe('app routes', () => {
     });
 
     it('is the plain tool for somebody who is not signed in', async () => {
-      const { harness, root } = await open('/es/amistoso');
+      const { harness, root } = await open('/es/friendly');
       const T = DICTIONARIES.es.tool;
       const field = root.querySelector('textarea') as HTMLTextAreaElement;
       field.value = Array.from({ length: 12 }, (_, i) => `Player ${i + 1}`).join('\n');
@@ -334,7 +334,7 @@ describe('app routes', () => {
       ).find((r) => r.textContent?.trim().startsWith(label)) as HTMLButtonElement;
 
     async function pasted(count: number) {
-      const opened = await open('/es/amistoso');
+      const opened = await open('/es/friendly');
       const field = opened.root.querySelector('textarea') as HTMLTextAreaElement;
       field.value = Array.from({ length: count }, (_, i) => `Player ${i + 1}`).join('\n');
       field.dispatchEvent(new Event('input'));
@@ -350,7 +350,7 @@ describe('app routes', () => {
       harness.fixture.detectChanges();
       expect(root.textContent).toContain(DICTIONARIES.es.tool.preview.teamsSignIn);
       expect(teamRadio(root, '2').getAttribute('aria-checked')).toBe('true');
-      expect(root.querySelector('app-lock-notice a[href="/es/cuenta"]')).not.toBeNull();
+      expect(root.querySelector('app-lock-notice a[href="/es/account"]')).not.toBeNull();
     });
 
     it('starts at the number of teams the person prefers, and draws that many', async () => {
@@ -407,7 +407,7 @@ describe('app routes', () => {
       ).click();
       harness.fixture.detectChanges();
       expect(root.textContent).toContain(DICTIONARIES.es.tool.result.imageSignIn);
-      expect(root.querySelector('app-lock-notice a[href="/es/cuenta"]')).not.toBeNull();
+      expect(root.querySelector('app-lock-notice a[href="/es/account"]')).not.toBeNull();
       expect(root.querySelector('app-story-image-panel img')).toBeNull();
     });
 

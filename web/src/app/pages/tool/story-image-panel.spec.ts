@@ -7,7 +7,7 @@ import { STORY_DELIVERY } from '../../image/story-delivery';
 import { STORY_BLOB } from '../../image/story-image';
 import { Preferences } from '../../preferences/preferences';
 import { saveSession } from '../../preferences/testing';
-import { AmistosoStore, Player } from '../../state/amistoso.store';
+import { FriendlyStore, Player } from '../../state/friendly.store';
 import { ToastService } from '../../ui';
 import { StoryImagePanel } from './story-image-panel';
 
@@ -39,7 +39,7 @@ function setup(options: Options = {}) {
     ],
   });
   TestBed.inject(I18n).setLang('es');
-  const store = TestBed.inject(AmistosoStore);
+  const store = TestBed.inject(FriendlyStore);
   store.setRawText(list(12));
   store.continueToPreview();
   store.draw(() => 0.3);
@@ -81,7 +81,7 @@ function setup(options: Options = {}) {
   };
 }
 
-const swapTwo = (store: InstanceType<typeof AmistosoStore>) => {
+const swapTwo = (store: InstanceType<typeof FriendlyStore>) => {
   const [x, y] = store.teams() as Player[][];
   store.swapPlayers(x[0].id, y[0].id);
 };
@@ -113,7 +113,7 @@ describe('StoryImagePanel', () => {
       const { press, notice, create, image, el } = setup();
       press(T.result.createImage);
       expect(notice()).toContain(T.result.imageSignIn);
-      expect(el.querySelector('app-lock-notice a')?.getAttribute('href')).toBe('/es/cuenta');
+      expect(el.querySelector('app-lock-notice a')?.getAttribute('href')).toBe('/es/account');
       expect(create).not.toHaveBeenCalled();
       expect(image()).toBeNull();
     });

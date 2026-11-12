@@ -172,8 +172,8 @@ Not components, but just as easy to duplicate by accident:
 - `preferences/`: `PreferencesService` (`active()` for the person who is signed in, `save()`),
   `sanitizePreferences` and `DEFAULT_PREFERENCES`. They hold the number of teams in use and an
   icon and a color for each of the six possible teams. The quick match reads them through
-  `AmistosoStore` (`teamIcons`, `whatsappText`, `sizeMismatch`): use those instead of asking the
+  `FriendlyStore` (`teamIcons`, `whatsappText`, `sizeMismatch`): use those instead of asking the
   service again.
-- `state/`: `AmistosoStore`, the NgRx Signals store of the quick match flow. `teamCount()` is the number of teams in use, never above what the plan allows; change it with `setTeamCount()`. `swapPlayers(idA, idB)` swaps two players of different teams.
+- `state/`: `FriendlyStore`, the NgRx Signals store of the quick match flow. `teamCount()` is the number of teams in use, never above what the plan allows; change it with `setTeamCount()`. `swapPlayers(idA, idB)` swaps two players of different teams.
 - `layout/shell.ts`: the header (logo, account link or photo, language selector) and footer
   shared by every language route.

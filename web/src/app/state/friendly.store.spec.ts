@@ -5,7 +5,7 @@ import { DEFAULT_TEAM_ICONS } from '../core/format-teams';
 import { I18n } from '../i18n/i18n';
 import { PreferencesService } from '../preferences/preferences-service';
 import { saveSession, TEST_PREFERENCES } from '../preferences/testing';
-import { AmistosoStore, Player } from './amistoso.store';
+import { FriendlyStore, Player } from './friendly.store';
 
 const list = (count: number) =>
   Array.from({ length: count }, (_, i) => `Player ${i + 1}`).join('\n');
@@ -23,7 +23,7 @@ function seeded(seed: number): () => number {
 }
 
 function setup() {
-  return { store: TestBed.inject(AmistosoStore), i18n: TestBed.inject(I18n) };
+  return { store: TestBed.inject(FriendlyStore), i18n: TestBed.inject(I18n) };
 }
 
 function inPreview(text: string) {
@@ -33,7 +33,7 @@ function inPreview(text: string) {
   return ctx;
 }
 
-describe('AmistosoStore', () => {
+describe('FriendlyStore', () => {
   afterEach(() => {
     document.documentElement.lang = 'en';
   });

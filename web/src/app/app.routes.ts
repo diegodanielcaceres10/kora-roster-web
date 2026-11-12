@@ -15,11 +15,11 @@ export const routes: Routes = [
     children: [
       { path: '', loadComponent: () => import('./pages/landing/landing').then((m) => m.Landing) },
       {
-        path: 'amistoso',
+        path: 'friendly',
         loadComponent: () => import('./pages/tool/tool').then((m) => m.Tool),
       },
       {
-        path: 'cuenta',
+        path: 'account',
         loadComponent: () => import('./pages/account/account').then((m) => m.Account),
       },
     ],

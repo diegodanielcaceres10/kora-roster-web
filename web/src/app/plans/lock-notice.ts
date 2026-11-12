@@ -17,7 +17,7 @@ import { LockReason } from './entitlements';
           {{ text }}
           @if (reason() === 'sign-in') {
             <a
-              [routerLink]="['/', i18n.lang(), 'cuenta']"
+              [routerLink]="['/', i18n.lang(), 'account']"
               class="font-semibold underline underline-offset-4"
               >{{ i18n.t().locks.signInLink }}</a
             >

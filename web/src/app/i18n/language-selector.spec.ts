@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 import { I18n } from './i18n';
 import { LanguageSelector } from './language-selector';
 
-function setup(lang: 'en' | 'es' | 'pt', url = '/es/amistoso') {
+function setup(lang: 'en' | 'es' | 'pt', url = '/es/friendly') {
   const router = { url, navigateByUrl: vi.fn() };
   TestBed.configureTestingModule({ providers: [{ provide: Router, useValue: router }] });
   TestBed.inject(I18n).setLang(lang);
@@ -42,9 +42,9 @@ describe('LanguageSelector', () => {
   });
 
   it('goes to the same place in the chosen language', () => {
-    const { router, pick } = setup('es', '/es/amistoso');
+    const { router, pick } = setup('es', '/es/friendly');
     pick('PT');
-    expect(router.navigateByUrl).toHaveBeenCalledWith('/pt/amistoso');
+    expect(router.navigateByUrl).toHaveBeenCalledWith('/pt/friendly');
   });
 
   it('keeps the query string when it changes language', () => {

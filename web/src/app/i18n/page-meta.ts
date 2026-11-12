@@ -8,7 +8,7 @@ import { SITE_URL } from './site';
 export type PageKind = 'landing' | 'tool' | 'account';
 
 // Pages that search engines may index, with the path that follows the language.
-const INDEXED_PATHS: Partial<Record<PageKind, string>> = { landing: '', tool: '/amistoso' };
+const INDEXED_PATHS: Partial<Record<PageKind, string>> = { landing: '', tool: '/friendly' };
 
 @Injectable({ providedIn: 'root' })
 export class PageMeta {

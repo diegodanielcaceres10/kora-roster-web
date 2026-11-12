@@ -46,7 +46,7 @@ describe('LockNotice', () => {
       const { show, el } = setup(lang);
       show('sign-in', 'Texto');
       const link = el.querySelector('a') as HTMLAnchorElement;
-      expect(link.getAttribute('href')).toBe(`/${lang}/cuenta`);
+      expect(link.getAttribute('href')).toBe(`/${lang}/account`);
       expect(link.textContent?.trim()).toBe(DICTIONARIES[lang].locks.signInLink);
     },
   );

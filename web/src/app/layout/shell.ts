@@ -37,7 +37,7 @@ import { LanguageSelector } from '../i18n/language-selector';
           @if (auth.enabled) {
             @if (auth.user(); as user) {
               <a
-                [routerLink]="['/', i18n.lang(), 'cuenta']"
+                [routerLink]="['/', i18n.lang(), 'account']"
                 [attr.aria-label]="i18n.t().account.title"
                 class="inline-flex rounded-full transition hover:ring-2 hover:ring-secondary/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary"
               >
@@ -45,7 +45,7 @@ import { LanguageSelector } from '../i18n/language-selector';
               </a>
             } @else {
               <a
-                [routerLink]="['/', i18n.lang(), 'cuenta']"
+                [routerLink]="['/', i18n.lang(), 'account']"
                 class="rounded-md px-2.5 py-1 text-sm font-semibold text-secondary transition hover:bg-secondary/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary"
                 >{{ i18n.t().account.signInLink }}</a
               >

@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { parsePastedNames } from '../../core/parse-players';
 import { I18n } from '../../i18n/i18n';
-import { AmistosoStore } from '../../state/amistoso.store';
+import { FriendlyStore } from '../../state/friendly.store';
 import { UiButton, UiCard, UiTextarea } from '../../ui';
 
 @Component({
@@ -74,7 +74,7 @@ import { UiButton, UiCard, UiTextarea } from '../../ui';
   `,
 })
 export class PasteStep {
-  protected readonly store = inject(AmistosoStore);
+  protected readonly store = inject(FriendlyStore);
   private readonly i18n = inject(I18n);
 
   protected readonly t = computed(() => this.i18n.t().tool);

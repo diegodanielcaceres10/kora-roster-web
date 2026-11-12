@@ -1,14 +1,14 @@
 import { TestBed } from '@angular/core/testing';
 import { DICTIONARIES } from '../../i18n/dictionaries';
 import { I18n } from '../../i18n/i18n';
-import { AmistosoStore } from '../../state/amistoso.store';
+import { FriendlyStore } from '../../state/friendly.store';
 import { PasteStep } from './paste-step';
 
 const T = DICTIONARIES.es.tool;
 
 function setup(initialText = '') {
   TestBed.inject(I18n).setLang('es');
-  const store = TestBed.inject(AmistosoStore);
+  const store = TestBed.inject(FriendlyStore);
   store.setRawText(initialText);
   const fixture = TestBed.createComponent(PasteStep);
   fixture.detectChanges();

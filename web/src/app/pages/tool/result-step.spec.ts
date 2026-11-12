@@ -4,7 +4,7 @@ import { DICTIONARIES } from '../../i18n/dictionaries';
 import { I18n } from '../../i18n/i18n';
 import { Preferences } from '../../preferences/preferences';
 import { saveSession, TEST_PREFERENCES } from '../../preferences/testing';
-import { AmistosoStore } from '../../state/amistoso.store';
+import { FriendlyStore } from '../../state/friendly.store';
 import { ToastService } from '../../ui';
 import { ResultStep } from './result-step';
 
@@ -15,7 +15,7 @@ const list = (count: number) =>
 function setup(preferences?: Preferences, confirmed = false) {
   if (preferences) saveSession(preferences);
   TestBed.inject(I18n).setLang('es');
-  const store = TestBed.inject(AmistosoStore);
+  const store = TestBed.inject(FriendlyStore);
   store.setRawText('Diego 🧤\nMati 🧤\n' + list(10));
   store.continueToPreview();
   store.draw(() => 0.3);
@@ -144,7 +144,7 @@ describe('ResultStep', () => {
     it('is there for people with an account too, also with the teams half built', () => {
       saveSession();
       TestBed.inject(I18n).setLang('es');
-      const store = TestBed.inject(AmistosoStore);
+      const store = TestBed.inject(FriendlyStore);
       store.setRawText('Diego 🧤\nMati 🧤\n' + list(10));
       store.continueToPreview();
       store.startManual();
@@ -206,7 +206,7 @@ describe('ResultStep', () => {
     function setupMany(teams: number, players: number, confirmed = false) {
       saveSession();
       TestBed.inject(I18n).setLang('es');
-      const store = TestBed.inject(AmistosoStore);
+      const store = TestBed.inject(FriendlyStore);
       store.setRawText(list(players));
       store.continueToPreview();
       store.setTeamCount(teams);
@@ -368,7 +368,7 @@ describe('ResultStep', () => {
     ])('works with %i teams', (teams, players) => {
       saveSession();
       TestBed.inject(I18n).setLang('es');
-      const store = TestBed.inject(AmistosoStore);
+      const store = TestBed.inject(FriendlyStore);
       store.setRawText(list(players));
       store.continueToPreview();
       store.setTeamCount(teams);
@@ -505,7 +505,7 @@ describe('ResultStep', () => {
     function manual(mode: 'manual' | 'drawn' = 'manual') {
       saveSession();
       TestBed.inject(I18n).setLang('es');
-      const store = TestBed.inject(AmistosoStore);
+      const store = TestBed.inject(FriendlyStore);
       store.setRawText('Diego 🧤\nMati 🧤\n' + list(10));
       store.continueToPreview();
       if (mode === 'manual') store.startManual();
@@ -990,7 +990,7 @@ describe('ResultStep', () => {
     it('also shows the teams that were built by hand', () => {
       saveSession();
       TestBed.inject(I18n).setLang('es');
-      const store = TestBed.inject(AmistosoStore);
+      const store = TestBed.inject(FriendlyStore);
       store.setRawText('Diego 🧤\nMati 🧤\n' + list(10));
       store.continueToPreview();
       store.startManual();

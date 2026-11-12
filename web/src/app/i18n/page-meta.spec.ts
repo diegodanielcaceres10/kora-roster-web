@@ -67,9 +67,9 @@ describe('PageMeta', () => {
     const { i18n, pageMeta } = setup('https://kora.test');
     i18n.setLang('pt');
     pageMeta.apply('tool');
-    expect(links('canonical')[0].href).toBe('https://kora.test/pt/amistoso');
+    expect(links('canonical')[0].href).toBe('https://kora.test/pt/friendly');
     expect(links('alternate').find((l) => l.hreflang === 'x-default')?.href).toBe(
-      'https://kora.test/en/amistoso',
+      'https://kora.test/en/friendly',
     );
   });
 

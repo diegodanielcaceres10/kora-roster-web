@@ -60,7 +60,7 @@ describe('Shell', () => {
     it.each(['en', 'es', 'pt'] as const)('offers "Sign in" to the account page in %s', (lang) => {
       const el = setup(lang, { signIn: true });
       const link = el.querySelectorAll('header a')[1] as HTMLAnchorElement;
-      expect(link.getAttribute('href')).toBe(`/${lang}/cuenta`);
+      expect(link.getAttribute('href')).toBe(`/${lang}/account`);
       expect(link.textContent?.trim()).toBe(DICTIONARIES[lang].account.signInLink);
     });
 
@@ -69,7 +69,7 @@ describe('Shell', () => {
       (lang) => {
         const el = setup(lang, { signIn: true, session: true });
         const link = el.querySelectorAll('header a')[1] as HTMLAnchorElement;
-        expect(link.getAttribute('href')).toBe(`/${lang}/cuenta`);
+        expect(link.getAttribute('href')).toBe(`/${lang}/account`);
         expect(link.getAttribute('aria-label')).toBe(DICTIONARIES[lang].account.title);
         expect(link.querySelector('app-user-avatar img')?.getAttribute('src')).toBe(SAVED.picture);
         expect(link.textContent).not.toContain(DICTIONARIES[lang].account.signInLink);

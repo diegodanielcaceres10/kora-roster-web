@@ -13,7 +13,7 @@ import { STORY_DELIVERY, storyFileName } from '../../image/story-delivery';
 import { STORY_BLOB } from '../../image/story-image';
 import { Entitlements, LockReason } from '../../plans/entitlements';
 import { LockNotice } from '../../plans/lock-notice';
-import { AmistosoStore } from '../../state/amistoso.store';
+import { FriendlyStore } from '../../state/friendly.store';
 import { ToastService, UiButton, UiCard } from '../../ui';
 
 interface MadeImage {
@@ -86,7 +86,7 @@ interface MadeImage {
   `,
 })
 export class StoryImagePanel {
-  private readonly store = inject(AmistosoStore);
+  private readonly store = inject(FriendlyStore);
   private readonly entitlements = inject(Entitlements);
   private readonly i18n = inject(I18n);
   private readonly toast = inject(ToastService);

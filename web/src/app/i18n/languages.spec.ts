@@ -44,16 +44,16 @@ describe('pickLanguage', () => {
 
 describe('switchLanguageUrl', () => {
   it.each([
-    ['/es/amistoso', 'pt', '/pt/amistoso'],
+    ['/es/friendly', 'pt', '/pt/friendly'],
     ['/es', 'pt', '/pt'],
-    ['/en/amistoso', 'es', '/es/amistoso'],
+    ['/en/friendly', 'es', '/es/friendly'],
     ['/es?x=1#top', 'pt', '/pt?x=1#top'],
-    ['/es/amistoso?x=1', 'en', '/en/amistoso?x=1'],
+    ['/es/friendly?x=1', 'en', '/en/friendly?x=1'],
   ])('moves %s to %s as %s', (url, lang, expected) => {
     expect(switchLanguageUrl(url, lang as 'en' | 'es' | 'pt')).toBe(expected);
   });
 
-  it.each([['/'], ['/design-system'], ['/espana'], ['/xyz/amistoso']])(
+  it.each([['/'], ['/design-system'], ['/espana'], ['/xyz/friendly']])(
     'sends %s to the landing of the chosen language',
     (url) => {
       expect(switchLanguageUrl(url, 'pt')).toBe('/pt');

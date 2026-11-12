@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { I18n } from '../../i18n/i18n';
 import { PageMeta } from '../../i18n/page-meta';
-import { AmistosoStore } from '../../state/amistoso.store';
+import { FriendlyStore } from '../../state/friendly.store';
 import { PasteStep } from './paste-step';
 import { PreviewStep } from './preview-step';
 import { ResultStep } from './result-step';
@@ -81,7 +81,7 @@ interface StepDef {
 })
 export class Tool {
   protected readonly i18n = inject(I18n);
-  protected readonly store = inject(AmistosoStore);
+  protected readonly store = inject(FriendlyStore);
 
   protected readonly steps = computed<StepDef[]>(() => {
     const t = this.i18n.t().tool;

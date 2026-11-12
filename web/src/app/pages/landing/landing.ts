@@ -30,7 +30,7 @@ import { UiCard } from '../../ui';
 
         <div class="pt-2">
           <a
-            [routerLink]="['/', i18n.lang(), 'amistoso']"
+            [routerLink]="['/', i18n.lang(), 'friendly']"
             class="inline-flex min-h-13 items-center justify-center gap-2.5 rounded-xl bg-primary px-8 text-base sm:text-lg font-black tracking-wide text-secondary shadow-lg transition-all duration-150 ease-out hover:brightness-95 hover:shadow-xl active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
           >
             <i class="fa-solid fa-futbol" aria-hidden="true"></i>

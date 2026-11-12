@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { DICTIONARIES } from '../../i18n/dictionaries';
 import { I18n } from '../../i18n/i18n';
-import { AmistosoStore } from '../../state/amistoso.store';
+import { FriendlyStore } from '../../state/friendly.store';
 import { Tool } from './tool';
 
 const list = (count: number) =>
@@ -27,7 +27,7 @@ describe('Tool', () => {
   );
 
   it('shows the step the store is on', () => {
-    const store = TestBed.inject(AmistosoStore);
+    const store = TestBed.inject(FriendlyStore);
     const fixture = TestBed.createComponent(Tool);
     const el = fixture.nativeElement as HTMLElement;
     const shown = () =>
@@ -64,7 +64,7 @@ describe('Tool', () => {
       );
 
     function open() {
-      const store = TestBed.inject(AmistosoStore);
+      const store = TestBed.inject(FriendlyStore);
       const fixture = TestBed.createComponent(Tool);
       const el = fixture.nativeElement as HTMLElement;
       fixture.detectChanges();

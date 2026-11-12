@@ -12,7 +12,7 @@ import { playerRange } from '../../core/draw-teams';
 import { I18n } from '../../i18n/i18n';
 import { Entitlements, LockReason } from '../../plans/entitlements';
 import { LockNotice } from '../../plans/lock-notice';
-import { AmistosoStore, Player } from '../../state/amistoso.store';
+import { FriendlyStore, Player } from '../../state/friendly.store';
 import {
   SegmentedOption,
   UiBadge,
@@ -201,7 +201,7 @@ import {
   `,
 })
 export class PreviewStep {
-  protected readonly store = inject(AmistosoStore);
+  protected readonly store = inject(FriendlyStore);
   private readonly i18n = inject(I18n);
   private readonly injector = inject(Injector);
   private readonly entitlements = inject(Entitlements);

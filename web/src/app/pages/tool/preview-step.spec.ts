@@ -4,7 +4,7 @@ import { DICTIONARIES } from '../../i18n/dictionaries';
 import { I18n } from '../../i18n/i18n';
 import { Preferences } from '../../preferences/preferences';
 import { saveSession, TEST_PREFERENCES } from '../../preferences/testing';
-import { AmistosoStore } from '../../state/amistoso.store';
+import { FriendlyStore } from '../../state/friendly.store';
 import { PreviewStep } from './preview-step';
 
 const T = DICTIONARIES.es.tool;
@@ -15,7 +15,7 @@ function setup(text: string, preferences?: Preferences) {
   TestBed.configureTestingModule({ providers: [provideRouter([])] });
   if (preferences) saveSession(preferences);
   TestBed.inject(I18n).setLang('es');
-  const store = TestBed.inject(AmistosoStore);
+  const store = TestBed.inject(FriendlyStore);
   store.setRawText(text);
   store.continueToPreview();
   const fixture = TestBed.createComponent(PreviewStep);
@@ -194,7 +194,9 @@ describe('PreviewStep', () => {
         expect(store.teams()).toBeNull();
         expect(store.pool()).toEqual([]);
         expect(manualNotice(el)).toContain(T.preview.manualSignIn);
-        expect(el.querySelector('[data-manual-notice] a')?.getAttribute('href')).toBe('/es/cuenta');
+        expect(el.querySelector('[data-manual-notice] a')?.getAttribute('href')).toBe(
+          '/es/account',
+        );
       });
 
       it('still draws', () => {
@@ -388,7 +390,7 @@ describe('PreviewStep', () => {
       const { el, store, click } = setup(list(12));
       click(radios(el)[1]);
       expect(notice(el)).toContain(T.preview.teamsSignIn);
-      expect(el.querySelector('app-lock-notice a')?.getAttribute('href')).toBe('/es/cuenta');
+      expect(el.querySelector('app-lock-notice a')?.getAttribute('href')).toBe('/es/account');
       expect(checked(el)).toBe('2');
       expect(store.teamCount()).toBe(2);
     });

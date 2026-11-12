@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { I18n } from '../../i18n/i18n';
 import { Entitlements } from '../../plans/entitlements';
-import { AmistosoStore, Player } from '../../state/amistoso.store';
+import { FriendlyStore, Player } from '../../state/friendly.store';
 import { ToastService, UiButton, UiCard } from '../../ui';
 import { StoryImagePanel } from './story-image-panel';
 
@@ -249,7 +249,7 @@ const keyOf = (target: Target): string =>
   `,
 })
 export class ResultStep {
-  protected readonly store = inject(AmistosoStore);
+  protected readonly store = inject(FriendlyStore);
   private readonly i18n = inject(I18n);
   private readonly toast = inject(ToastService);
   private readonly entitlements = inject(Entitlements);

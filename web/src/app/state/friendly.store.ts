@@ -24,7 +24,7 @@ export interface Player {
 
 export type Step = 'paste' | 'preview' | 'result';
 
-interface AmistosoState {
+interface FriendlyState {
   rawText: string;
   // The text the current list was read from, so going back and forward keeps the edits.
   parsedText: string | null;
@@ -40,7 +40,7 @@ interface AmistosoState {
   nextId: number;
 }
 
-const initialState: AmistosoState = {
+const initialState: FriendlyState = {
   rawText: '',
   parsedText: null,
   players: [],
@@ -52,7 +52,7 @@ const initialState: AmistosoState = {
   nextId: 1,
 };
 
-export const AmistosoStore = signalStore(
+export const FriendlyStore = signalStore(
   { providedIn: 'root' },
   withState(initialState),
   withComputed(({ players, teams, pool, teamCountChoice }) => {
