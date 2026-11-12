@@ -1,8 +1,10 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { checkPlayerCount } from '../../core/draw-teams';
 import { parsePastedNames } from '../../core/parse-players';
 import { I18n } from '../../i18n/i18n';
 import { FriendlyStore } from '../../state/friendly.store';
 import { UiButton, UiCard, UiTextarea } from '../../ui';
+import { countStatus } from './count-status';
 
 @Component({
   selector: 'app-paste-step',
@@ -36,11 +38,20 @@ import { UiButton, UiCard, UiTextarea } from '../../ui';
                 (valueChange)="store.setRawText($event)"
               />
 
-              <div class="flex items-center justify-end pt-2">
-                <ui-button size="lg" [disabled]="!hasNames()" (click)="store.continueToPreview()">
-                  <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
-                  {{ t().paste.continue }}
-                </ui-button>
+              <div class="space-y-2 pt-2">
+                @if (drawNote(); as note) {
+                  <p data-draw-note class="text-right text-xs text-secondary/70">{{ note }}</p>
+                }
+                <div class="flex flex-wrap items-center justify-end gap-3">
+                  <ui-button size="lg" [disabled]="!hasNames()" (click)="store.continueToPreview()">
+                    <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                    {{ t().paste.continue }}
+                  </ui-button>
+                  <ui-button size="lg" variant="outline" [disabled]="!canDraw()" (click)="drawNow()">
+                    <i class="fa-solid fa-shuffle" aria-hidden="true"></i>
+                    {{ t().preview.draw }}
+                  </ui-button>
+                </div>
               </div>
             </div>
           </ui-card>
@@ -80,4 +91,18 @@ export class PasteStep {
   protected readonly t = computed(() => this.i18n.t().tool);
   protected readonly detectedCount = computed(() => parsePastedNames(this.store.rawText()).length);
   protected readonly hasNames = computed(() => this.detectedCount() > 0);
+  // The list can be drawn right away when it fits the teams, with no need to check it first.
+  protected readonly canDraw = computed(
+    () => checkPlayerCount(this.detectedCount(), this.store.teamCount()) === null,
+  );
+  protected readonly drawNote = computed(() =>
+    this.hasNames() && !this.canDraw()
+      ? countStatus(this.t().preview.status, this.detectedCount(), this.store.teamCount())
+      : null,
+  );
+
+  protected drawNow(): void {
+    this.store.continueToPreview();
+    this.store.draw();
+  }
 }

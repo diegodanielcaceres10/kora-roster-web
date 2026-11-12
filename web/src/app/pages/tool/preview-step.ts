@@ -8,7 +8,6 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { playerRange } from '../../core/draw-teams';
 import { I18n } from '../../i18n/i18n';
 import { Entitlements, LockReason } from '../../plans/entitlements';
 import { LockNotice } from '../../plans/lock-notice';
@@ -23,6 +22,7 @@ import {
   UiListRow,
   UiSegmented,
 } from '../../ui';
+import { countStatus } from './count-status';
 
 @Component({
   selector: 'app-preview-step',
@@ -240,22 +240,9 @@ export class PreviewStep {
   );
   protected readonly teamValue = computed(() => String(this.store.teamCount()));
 
-  protected readonly status = computed(() => {
-    const { status } = this.t().preview;
-    const count = this.store.playerCount();
-    const teams = this.store.teamCount();
-    const { min, max } = playerRange(teams);
-    switch (this.store.countError()) {
-      case 'too-few':
-        return status.tooFew(min - count, min);
-      case 'too-many':
-        return status.tooMany(count - max, max);
-      case 'uneven':
-        return status.uneven(count, teams);
-      default:
-        return status.ok;
-    }
-  });
+  protected readonly status = computed(() =>
+    countStatus(this.t().preview.status, this.store.playerCount(), this.store.teamCount()),
+  );
 
   protected readonly notice = computed(() => {
     const mismatch = this.store.sizeMismatch();

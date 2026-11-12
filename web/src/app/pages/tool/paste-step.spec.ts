@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { DICTIONARIES } from '../../i18n/dictionaries';
 import { I18n } from '../../i18n/i18n';
+import { saveSession } from '../../preferences/testing';
 import { FriendlyStore } from '../../state/friendly.store';
 import { PasteStep } from './paste-step';
 
@@ -90,5 +91,135 @@ describe('PasteStep', () => {
         expect(el.textContent).toContain(paste.detected(1));
       },
     );
+  });
+
+  describe('drawing without going through the list', () => {
+    const players = (count: number) =>
+      Array.from({ length: count }, (_, i) => `Player ${i + 1}`).join('\n');
+    const drawButton = (el: HTMLElement) =>
+      Array.from(el.querySelectorAll('ui-button button')).find(
+        (b) => b.textContent?.trim() === T.preview.draw,
+      ) as HTMLButtonElement;
+    const note = (el: HTMLElement) => el.querySelector('[data-draw-note]')?.textContent?.trim();
+
+    it('offers a button to draw next to the one to continue', () => {
+      const { el, next } = setup();
+      expect(drawButton(el)).toBeDefined();
+      expect(drawButton(el).querySelector('i.fa-shuffle')).not.toBeNull();
+      expect(drawButton(el).closest('ui-button')?.parentElement).toBe(
+        next().closest('ui-button')?.parentElement,
+      );
+    });
+
+    it.each([[0], [8], [9], [11], [13], [23], [24]])(
+      'is disabled with %i players, which cannot be drawn into two teams',
+      (count) => {
+        const { el, type } = setup();
+        type(players(count));
+        expect(drawButton(el).disabled).toBe(true);
+      },
+    );
+
+    it.each([[10], [12], [20], [22]])('is enabled with %i players', (count) => {
+      const { el, type } = setup();
+      type(players(count));
+      expect(drawButton(el).disabled).toBe(false);
+    });
+
+    it('draws the list and goes straight to the teams', () => {
+      const { el, store, type, fixture } = setup();
+      type(players(12));
+      drawButton(el).click();
+      fixture.detectChanges();
+      expect(store.step()).toBe('result');
+      expect(store.players()).toHaveLength(12);
+      expect(store.teams()?.map((team) => team.length)).toEqual([6, 6]);
+      expect(store.isComplete()).toBe(true);
+    });
+
+    it('lets the person go back to the list from the teams it drew', () => {
+      const { el, store, type, fixture } = setup();
+      type(players(12));
+      drawButton(el).click();
+      fixture.detectChanges();
+      store.back();
+      expect(store.step()).toBe('preview');
+      expect(store.players()).toHaveLength(12);
+      expect(store.teams()).toBeNull();
+    });
+
+    it('does not draw when it is disabled', () => {
+      const { el, store, type, fixture } = setup();
+      type(players(11));
+      drawButton(el).click();
+      fixture.detectChanges();
+      expect(store.step()).toBe('paste');
+      expect(store.teams()).toBeNull();
+    });
+
+    it('does not change what the button to continue does', () => {
+      const { store, type, next, fixture } = setup();
+      type(players(12));
+      next().click();
+      fixture.detectChanges();
+      expect(store.step()).toBe('preview');
+      expect(store.teams()).toBeNull();
+    });
+
+    describe('says why it cannot draw yet', () => {
+      it('says nothing while there is nothing in the list', () => {
+        const { el } = setup();
+        expect(note(el)).toBeUndefined();
+      });
+
+      it('asks for an even number when it is odd', () => {
+        const { el, type } = setup();
+        type(players(11));
+        expect(note(el)).toBe(T.preview.status.uneven(11, 2));
+      });
+
+      it('asks for more players when there are too few', () => {
+        const { el, type } = setup();
+        type(players(8));
+        expect(note(el)).toBe(T.preview.status.tooFew(2, 10));
+      });
+
+      it('asks for fewer players when there are too many', () => {
+        const { el, type } = setup();
+        type(players(24));
+        expect(note(el)).toBe(T.preview.status.tooMany(2, 22));
+      });
+
+      it('says nothing once the list can be drawn', () => {
+        const { el, type } = setup();
+        type(players(11));
+        type(players(12));
+        expect(note(el)).toBeUndefined();
+      });
+    });
+
+    describe('with the number of teams of the person', () => {
+      beforeEach(() => saveSession());
+
+      it('asks for a multiple of three with three teams', () => {
+        const { el, store, type, fixture } = setup();
+        store.setTeamCount(3);
+        fixture.detectChanges();
+        type(players(16));
+        expect(drawButton(el).disabled).toBe(true);
+        expect(note(el)).toBe(T.preview.status.uneven(16, 3));
+      });
+
+      it('draws three teams when the list fits', () => {
+        const { el, store, type, fixture } = setup();
+        store.setTeamCount(3);
+        fixture.detectChanges();
+        type(players(15));
+        expect(drawButton(el).disabled).toBe(false);
+        drawButton(el).click();
+        fixture.detectChanges();
+        expect(store.teams()?.map((team) => team.length)).toEqual([5, 5, 5]);
+      });
+    });
   });
 });
