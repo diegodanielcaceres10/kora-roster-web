@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { DICTIONARIES } from '../../i18n/dictionaries';
 import { I18n } from '../../i18n/i18n';
+import { saveSession } from '../../preferences/testing';
 import { FriendlyStore } from '../../state/friendly.store';
 import { Tool } from './tool';
 
@@ -9,6 +10,7 @@ const list = (count: number) =>
 
 describe('Tool', () => {
   afterEach(() => {
+    localStorage.clear();
     document.title = '';
     document.documentElement.lang = 'en';
   });
@@ -53,6 +55,9 @@ describe('Tool', () => {
   });
 
   describe('the indicator of the steps', () => {
+    // Only people with an account go through the steps, so only they see it.
+    beforeEach(() => saveSession());
+
     // A step is the one in use (dark), already done (green) or still to come (plain).
     const states = (el: HTMLElement) =>
       Array.from(el.querySelectorAll('nav li > div')).map((badge) =>
@@ -114,6 +119,7 @@ describe('Tool', () => {
     it.each(['en', 'es', 'pt'] as const)(
       'shows the mode and the label of the progress in %s',
       (lang) => {
+        saveSession();
         const fixture = TestBed.createComponent(Tool);
         TestBed.inject(I18n).setLang(lang);
         fixture.detectChanges();
@@ -123,5 +129,31 @@ describe('Tool', () => {
         expect(el.querySelector('nav')?.getAttribute('aria-label')).toBe(tool.progressLabel);
       },
     );
+  });
+
+  describe('the indicator of the steps without an account', () => {
+    function open() {
+      const store = TestBed.inject(FriendlyStore);
+      const fixture = TestBed.createComponent(Tool);
+      const el = fixture.nativeElement as HTMLElement;
+      fixture.detectChanges();
+      return { store, el, refresh: () => fixture.detectChanges() };
+    }
+
+    it('is not shown, because there are no steps to go through', () => {
+      const { el } = open();
+      expect(el.querySelector('nav')).toBeNull();
+      expect(el.querySelector('h1')).not.toBeNull();
+    });
+
+    it('is not shown either after drawing straight to the final result', () => {
+      const { store, el, refresh } = open();
+      store.setRawText(list(12));
+      store.continueToPreview();
+      store.draw(() => 0.3);
+      store.confirm();
+      refresh();
+      expect(el.querySelector('nav')).toBeNull();
+    });
   });
 });

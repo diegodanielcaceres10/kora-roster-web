@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { I18n } from '../../i18n/i18n';
 import { PageMeta } from '../../i18n/page-meta';
+import { Entitlements } from '../../plans/entitlements';
 import { FriendlyStore } from '../../state/friendly.store';
 import { PasteStep } from './paste-step';
 import { PreviewStep } from './preview-step';
@@ -36,30 +37,32 @@ interface StepDef {
           </h1>
         </div>
 
-        <!-- Sporty Stepper Indicator -->
-        <nav [attr.aria-label]="i18n.t().tool.progressLabel" class="w-full sm:w-auto">
-          <ol
-            class="flex items-center gap-1 sm:gap-2 rounded-xl border border-secondary/15 bg-white p-1.5 shadow-xs"
-          >
-            @for (step of steps(); track step.key; let i = $index) {
-              <li class="flex items-center">
-                <div
-                  [class]="stepBadgeClass(step.key)"
-                  class="flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-bold transition-all duration-150"
-                >
-                  <span class="tabular-nums text-[11px]">{{ step.index }}</span>
-                  <span class="hidden md:inline">{{ step.label }}</span>
-                </div>
-                @if (i < steps().length - 1) {
-                  <i
-                    class="fa-solid fa-chevron-right mx-1 text-[10px] text-secondary/30"
-                    aria-hidden="true"
-                  ></i>
-                }
-              </li>
-            }
-          </ol>
-        </nav>
+        @if (showSteps()) {
+          <!-- Sporty Stepper Indicator -->
+          <nav [attr.aria-label]="i18n.t().tool.progressLabel" class="w-full sm:w-auto">
+            <ol
+              class="flex items-center gap-1 sm:gap-2 rounded-xl border border-secondary/15 bg-white p-1.5 shadow-xs"
+            >
+              @for (step of steps(); track step.key; let i = $index) {
+                <li class="flex items-center">
+                  <div
+                    [class]="stepBadgeClass(step.key)"
+                    class="flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-bold transition-all duration-150"
+                  >
+                    <span class="tabular-nums text-[11px]">{{ step.index }}</span>
+                    <span class="hidden md:inline">{{ step.label }}</span>
+                  </div>
+                  @if (i < steps().length - 1) {
+                    <i
+                      class="fa-solid fa-chevron-right mx-1 text-[10px] text-secondary/30"
+                      aria-hidden="true"
+                    ></i>
+                  }
+                </li>
+              }
+            </ol>
+          </nav>
+        }
       </div>
 
       <!-- Active Step Container with discrete entrance animation -->
@@ -82,6 +85,11 @@ interface StepDef {
 export class Tool {
   protected readonly i18n = inject(I18n);
   protected readonly store = inject(FriendlyStore);
+  private readonly entitlements = inject(Entitlements);
+
+  // The steps are for people who can go through them, which takes an account. Without one the
+  // list can only be drawn straight to the final result, so there is nothing to follow.
+  protected readonly showSteps = computed(() => this.entitlements.reviewLock() === null);
 
   protected readonly steps = computed<StepDef[]>(() => {
     const t = this.i18n.t().tool;
