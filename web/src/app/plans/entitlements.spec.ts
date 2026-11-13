@@ -113,4 +113,20 @@ describe('Entitlements', () => {
       expect(entitlements.manualLock()).toBe('sign-in');
     });
   });
+
+  describe('the lock on reviewing the list', () => {
+    it('asks for an account when there is none, and is open with one', async () => {
+      const { entitlements, signIn } = await setup();
+      expect(entitlements.reviewLock()).toBe('sign-in');
+      signIn();
+      expect(entitlements.reviewLock()).toBeNull();
+    });
+
+    it('goes back to asking for an account when they sign out', async () => {
+      const { entitlements, auth, signIn } = await setup();
+      signIn();
+      await auth.signOut();
+      expect(entitlements.reviewLock()).toBe('sign-in');
+    });
+  });
 });

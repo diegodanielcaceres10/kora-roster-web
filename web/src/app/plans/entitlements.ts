@@ -33,6 +33,11 @@ export class Entitlements {
     return this.accountLock();
   }
 
+  // Going on to review the list, and with it to edit the teams, needs an account.
+  reviewLock(): LockReason | null {
+    return this.accountLock();
+  }
+
   // What is open to any account, free or Premium, and closed to somebody who is not signed in.
   private accountLock(): LockReason | null {
     return this.plan() === 'anonymous' ? 'sign-in' : null;

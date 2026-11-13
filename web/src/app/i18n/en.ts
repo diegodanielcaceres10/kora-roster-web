@@ -116,6 +116,7 @@ export const en = {
     heading: 'Quick match',
     teamTitle: (n: number) => `Team ${n}`,
     paste: {
+      reviewSignIn: 'Sign in to review the list and edit the teams.',
       detected: (n: number) => (n === 1 ? '1 player detected' : `${n} players detected`),
       guide: {
         title: 'Quick loading guide',

@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 import { DICTIONARIES } from '../../i18n/dictionaries';
 import { I18n } from '../../i18n/i18n';
 import { saveSession } from '../../preferences/testing';
@@ -8,6 +9,7 @@ import { PasteStep } from './paste-step';
 const T = DICTIONARIES.es.tool;
 
 function setup(initialText = '') {
+  TestBed.configureTestingModule({ providers: [provideRouter([])] });
   TestBed.inject(I18n).setLang('es');
   const store = TestBed.inject(FriendlyStore);
   store.setRawText(initialText);
@@ -26,6 +28,7 @@ function setup(initialText = '') {
 
 describe('PasteStep', () => {
   afterEach(() => {
+    localStorage.clear();
     document.documentElement.lang = 'en';
   });
 
@@ -62,6 +65,7 @@ describe('PasteStep', () => {
   });
 
   it('moves to the preview with the players when Continue is pressed', () => {
+    saveSession();
     const { store, next, type, fixture } = setup();
     type('1. Diego 🧤\n2. Mati');
     next().click();
@@ -163,6 +167,7 @@ describe('PasteStep', () => {
     });
 
     it('does not change what the button to continue does', () => {
+      saveSession();
       const { store, type, next, fixture } = setup();
       type(players(12));
       next().click();
@@ -226,6 +231,59 @@ describe('PasteStep', () => {
         fixture.detectChanges();
         expect(store.teams()?.map((team) => team.length)).toEqual([5, 5, 5]);
         expect(store.confirmed()).toBe(true);
+      });
+    });
+  });
+
+  describe('continuing to review the list', () => {
+    const notice = (el: HTMLElement) =>
+      el
+        .querySelector('[data-review-notice] [role="status"]')
+        ?.textContent?.replace(/\s+/g, ' ')
+        .trim();
+
+    describe('without an account', () => {
+      it('shows a lock instead of an arrow, and says nothing until it is touched', () => {
+        const { el, next, type } = setup();
+        type('Diego\nMati');
+        expect(next().disabled).toBe(false);
+        expect(next().querySelector('i.fa-lock')).not.toBeNull();
+        expect(next().querySelector('i.fa-arrow-right')).toBeNull();
+        expect(notice(el) ?? '').toBe('');
+      });
+
+      it('does not move on when it is touched, and offers to sign in', () => {
+        const { el, store, next, type, fixture } = setup();
+        type('Diego\nMati');
+        next().click();
+        fixture.detectChanges();
+        expect(store.step()).toBe('paste');
+        expect(store.players()).toEqual([]);
+        expect(notice(el)).toContain(T.paste.reviewSignIn);
+        expect(el.querySelector('[data-review-notice] a')?.getAttribute('href')).toBe(
+          '/es/account',
+        );
+      });
+
+      it('stays disabled while there are no names, as before', () => {
+        const { next, type } = setup();
+        type('1.');
+        expect(next().disabled).toBe(true);
+      });
+    });
+
+    describe('with an account', () => {
+      beforeEach(() => saveSession());
+
+      it('shows an arrow, not a lock, and moves to the preview', () => {
+        const { el, store, next, type, fixture } = setup();
+        type('Diego\nMati');
+        expect(next().querySelector('i.fa-arrow-right')).not.toBeNull();
+        expect(next().querySelector('i.fa-lock')).toBeNull();
+        next().click();
+        fixture.detectChanges();
+        expect(store.step()).toBe('preview');
+        expect(notice(el) ?? '').toBe('');
       });
     });
   });

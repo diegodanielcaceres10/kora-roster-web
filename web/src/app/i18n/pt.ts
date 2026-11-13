@@ -120,6 +120,7 @@ export const pt: Dictionary = {
     heading: 'Amistoso rápido',
     teamTitle: (n) => `Time ${n}`,
     paste: {
+      reviewSignIn: 'Entre para revisar a lista e editar os times.',
       detected: (n) => (n === 1 ? '1 jogador detectado' : `${n} jogadores detectados`),
       guide: {
         title: 'Guia de carga rápida',

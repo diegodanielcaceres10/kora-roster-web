@@ -374,4 +374,14 @@ describe('dictionaries', () => {
       expect(result.imageHint.length).toBeGreaterThan(10);
     });
   });
+
+  describe('the lock on continuing to the list', () => {
+    it.each([
+      ['en', 'Sign in to review the list and edit the teams.'],
+      ['es', 'Inicia sesión para revisar la lista y editar los equipos.'],
+      ['pt', 'Entre para revisar a lista e editar os times.'],
+    ] as const)('explains it in %s', (lang, text) => {
+      expect(DICTIONARIES[lang].tool.paste.reviewSignIn).toBe(text);
+    });
+  });
 });

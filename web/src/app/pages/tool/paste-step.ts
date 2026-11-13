@@ -1,7 +1,9 @@
-import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { checkPlayerCount } from '../../core/draw-teams';
 import { parsePastedNames } from '../../core/parse-players';
 import { I18n } from '../../i18n/i18n';
+import { Entitlements, LockReason } from '../../plans/entitlements';
+import { LockNotice } from '../../plans/lock-notice';
 import { FriendlyStore } from '../../state/friendly.store';
 import { UiButton, UiCard, UiTextarea } from '../../ui';
 import { countStatus } from './count-status';
@@ -9,7 +11,7 @@ import { countStatus } from './count-status';
 @Component({
   selector: 'app-paste-step',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [UiButton, UiCard, UiTextarea],
+  imports: [LockNotice, UiButton, UiCard, UiTextarea],
   template: `
     <section class="space-y-4">
       <div class="grid grid-cols-1 items-start gap-6 lg:grid-cols-3">
@@ -43,14 +45,25 @@ import { countStatus } from './count-status';
                   <p data-draw-note class="text-right text-xs text-secondary/70">{{ note }}</p>
                 }
                 <div class="flex flex-wrap items-center justify-between gap-3">
-                  <ui-button size="lg" variant="outline" [disabled]="!hasNames()" (click)="store.continueToPreview()">
-                    <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                  <ui-button size="lg" variant="outline" [disabled]="!hasNames()" (click)="review()">
+                    <i
+                      class="fa-solid"
+                      [class.fa-lock]="reviewLocked()"
+                      [class.fa-arrow-right]="!reviewLocked()"
+                      aria-hidden="true"
+                    ></i>
                     {{ t().paste.continue }}
                   </ui-button>
                   <ui-button size="lg" [disabled]="!canDraw()" (click)="drawNow()">
                     <i class="fa-solid fa-shuffle" aria-hidden="true"></i>
                     {{ t().preview.draw }}
                   </ui-button>
+                </div>
+                <div data-review-notice>
+                  <app-lock-notice
+                    [reason]="reviewNotice()?.reason ?? null"
+                    [message]="reviewNotice()?.message ?? null"
+                  />
                 </div>
               </div>
             </div>
@@ -87,10 +100,15 @@ import { countStatus } from './count-status';
 export class PasteStep {
   protected readonly store = inject(FriendlyStore);
   private readonly i18n = inject(I18n);
+  private readonly entitlements = inject(Entitlements);
 
   protected readonly t = computed(() => this.i18n.t().tool);
   protected readonly detectedCount = computed(() => parsePastedNames(this.store.rawText()).length);
   protected readonly hasNames = computed(() => this.detectedCount() > 0);
+  // Going on to review the list is for people with an account. Without one the list can only be
+  // drawn right away, and it explains why when they try.
+  protected readonly reviewLocked = computed(() => this.entitlements.reviewLock() !== null);
+  protected readonly reviewNotice = signal<{ reason: LockReason; message: string } | null>(null);
   // The list can be drawn right away when it fits the teams, with no need to check it first.
   protected readonly canDraw = computed(
     () => checkPlayerCount(this.detectedCount(), this.store.teamCount()) === null,
@@ -100,6 +118,16 @@ export class PasteStep {
       ? countStatus(this.t().preview.status, this.detectedCount(), this.store.teamCount())
       : null,
   );
+
+  protected review(): void {
+    const lock = this.entitlements.reviewLock();
+    if (lock) {
+      this.reviewNotice.set({ reason: lock, message: this.t().paste.reviewSignIn });
+      return;
+    }
+    this.reviewNotice.set(null);
+    this.store.continueToPreview();
+  }
 
   // Draws and confirms in one go, so the person lands on the final result.
   protected drawNow(): void {

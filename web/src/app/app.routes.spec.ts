@@ -30,12 +30,8 @@ function confirmTeams(harness: { fixture: { detectChanges(): void } }, root: HTM
 }
 
 // The message for WhatsApp is not shown, so it is read from what the copy button puts in the
-// clipboard.
-async function copiedMessage(
-  harness: { fixture: { detectChanges(): void } },
-  root: HTMLElement,
-): Promise<string> {
-  confirmTeams(harness, root);
+// clipboard, which is only there once the teams are confirmed.
+async function copiedMessage(root: HTMLElement): Promise<string> {
   const writeText = vi.fn().mockResolvedValue(undefined);
   Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
   (
@@ -117,6 +113,7 @@ describe('app routes', () => {
   });
 
   it('keeps the pasted list when the language changes', async () => {
+    saveSession();
     const { harness, root, router } = await open('/es/friendly');
     const store = TestBed.inject(FriendlyStore);
     const field = root.querySelector('textarea') as HTMLTextAreaElement;
@@ -150,6 +147,7 @@ describe('app routes', () => {
   );
 
   it('brings the person back to the list they left when they return from the landing', async () => {
+    saveSession();
     const { harness, root, router } = await open('/es/friendly');
     const field = root.querySelector('textarea') as HTMLTextAreaElement;
     field.value = Array.from({ length: 12 }, (_, i) => `Player ${i + 1}`).join('\n');
@@ -317,28 +315,33 @@ describe('app routes', () => {
       ) as HTMLButtonElement;
       draw.click();
       harness.fixture.detectChanges();
-      const message = await copiedMessage(harness, root);
+      confirmTeams(harness, root);
+      const message = await copiedMessage(root);
       expect(message.startsWith('⚽ Amistoso\n\n🟢 Equipo 1')).toBe(true);
       expect(message).toContain('🟡 Equipo 2');
     });
 
-    it('is the plain tool for somebody who is not signed in', async () => {
+    it('is the plain tool for somebody who is not signed in: they can only draw straight away', async () => {
       const { harness, root } = await open('/es/friendly');
       const T = DICTIONARIES.es.tool;
       const field = root.querySelector('textarea') as HTMLTextAreaElement;
       field.value = Array.from({ length: 12 }, (_, i) => `Player ${i + 1}`).join('\n');
       field.dispatchEvent(new Event('input'));
       harness.fixture.detectChanges();
-      (root.querySelector('ui-button button') as HTMLButtonElement).click();
-      harness.fixture.detectChanges();
-      expect(root.textContent).not.toContain('Sueles jugar');
-      (
+      const button = (text: string) =>
         Array.from(root.querySelectorAll('ui-button button')).find(
-          (b) => b.textContent?.trim() === T.preview.draw,
-        ) as HTMLButtonElement
-      ).click();
+          (b) => b.textContent?.trim() === text,
+        ) as HTMLButtonElement;
+
+      button(T.paste.continue).click();
       harness.fixture.detectChanges();
-      expect(await copiedMessage(harness, root)).toContain('🔴 Equipo 1\n1. ');
+      expect(root.textContent).toContain(T.paste.reviewSignIn);
+      expect(root.querySelector('app-lock-notice a[href="/es/account"]')).not.toBeNull();
+      expect(root.textContent).not.toContain('Sueles jugar');
+
+      button(T.preview.draw).click();
+      harness.fixture.detectChanges();
+      expect(await copiedMessage(root)).toContain('🔴 Equipo 1\n1. ');
     });
   });
 
@@ -361,15 +364,6 @@ describe('app routes', () => {
       return opened;
     }
 
-    it('explains a locked option and offers to sign in, without an account', async () => {
-      const { harness, root } = await pasted(18);
-      teamRadio(root, '3').click();
-      harness.fixture.detectChanges();
-      expect(root.textContent).toContain(DICTIONARIES.es.tool.preview.teamsSignIn);
-      expect(teamRadio(root, '2').getAttribute('aria-checked')).toBe('true');
-      expect(root.querySelector('app-lock-notice a[href="/es/account"]')).not.toBeNull();
-    });
-
     it('starts at the number of teams the person prefers, and draws that many', async () => {
       saveSession({ ...TEST_PREFERENCES, teamCount: 4 });
       const { harness, root } = await pasted(20);
@@ -384,6 +378,7 @@ describe('app routes', () => {
     });
 
     it('lets somebody swap two players of different teams by tapping them', async () => {
+      saveSession();
       const { harness, root } = await pasted(12);
       (
         Array.from(root.querySelectorAll('ui-button button')).find(
@@ -402,23 +397,23 @@ describe('app routes', () => {
       const after = Array.from(root.querySelectorAll('ui-card'));
       expect(after[0].querySelector('li button')?.textContent).toBe(nameB);
       expect(after[1].querySelector('li button')?.textContent).toBe(nameA);
-      expect(await copiedMessage(harness, root)).toContain(nameB?.replace(/^\s*1\.\s*/, '').trim());
+      confirmTeams(harness, root);
+      expect(await copiedMessage(root)).toContain(nameB?.replace(/^\s*1\.\s*/, '').trim());
     });
 
     it('explains that the image needs an account, and offers to sign in', async () => {
-      const { harness, root } = await pasted(12);
-      (
-        Array.from(root.querySelectorAll('ui-button button')).find(
-          (b) => b.textContent?.trim() === DICTIONARIES.es.tool.preview.draw,
-        ) as HTMLButtonElement
-      ).click();
+      const { harness, root } = await open('/es/friendly');
+      const field = root.querySelector('textarea') as HTMLTextAreaElement;
+      field.value = Array.from({ length: 12 }, (_, i) => `Player ${i + 1}`).join('\n');
+      field.dispatchEvent(new Event('input'));
       harness.fixture.detectChanges();
-      confirmTeams(harness, root);
-      (
+      const button = (text: string) =>
         Array.from(root.querySelectorAll('ui-button button')).find(
-          (b) => b.textContent?.trim() === DICTIONARIES.es.tool.result.createImage,
-        ) as HTMLButtonElement
-      ).click();
+          (b) => b.textContent?.trim() === text,
+        ) as HTMLButtonElement;
+      button(DICTIONARIES.es.tool.preview.draw).click();
+      harness.fixture.detectChanges();
+      button(DICTIONARIES.es.tool.result.createImage).click();
       harness.fixture.detectChanges();
       expect(root.textContent).toContain(DICTIONARIES.es.tool.result.imageSignIn);
       expect(root.querySelector('app-lock-notice a[href="/es/account"]')).not.toBeNull();
@@ -437,7 +432,8 @@ describe('app routes', () => {
       ).click();
       harness.fixture.detectChanges();
       expect(root.querySelectorAll('ui-card')).toHaveLength(4);
-      expect(await copiedMessage(harness, root)).toContain('Equipo 4');
+      confirmTeams(harness, root);
+      expect(await copiedMessage(root)).toContain('Equipo 4');
     });
   });
 });
