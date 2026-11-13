@@ -195,22 +195,6 @@ const keyOf = (target: Target): string =>
       </div>
 
       @if (store.confirmed()) {
-        <!-- Tactical WhatsApp Text Panel -->
-        <div class="rounded-xl border border-secondary/12 bg-white p-4 sm:p-5 shadow-xs space-y-3">
-          <div class="flex items-center justify-between border-b border-secondary/10 pb-2.5">
-            <h3 class="text-sm font-bold uppercase tracking-wider text-secondary">
-              {{ t().result.whatsappTitle }}
-            </h3>
-            <span class="text-xs text-secondary/60">{{ t().result.shareFormat }}</span>
-          </div>
-
-          <pre
-            class="overflow-x-auto whitespace-pre-wrap rounded-xl border border-secondary/15 bg-secondary/[0.04] p-4 text-xs sm:text-sm font-mono text-secondary leading-relaxed shadow-inner"
-            >{{ store.whatsappText() }}</pre>
-        </div>
-      }
-
-      @if (store.confirmed()) {
         <!-- Final actions, with the story image generator -->
         <app-story-image-panel>
           <ui-button size="lg" (click)="copy()">

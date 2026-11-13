@@ -176,10 +176,8 @@ export const en = {
     },
     result: {
       balanced: (n: number) => `${n} balanced teams`,
-      shareFormat: 'Ready-to-share format',
       imageHint: 'Export a vertical 9:16 image for Instagram or WhatsApp',
       title: 'Teams',
-      whatsappTitle: 'Text for WhatsApp',
       copy: 'Copy text',
       copied: 'Copied',
       copyFailed: 'Could not copy. Select the text and copy it by hand.',

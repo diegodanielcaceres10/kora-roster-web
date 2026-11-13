@@ -180,10 +180,8 @@ export const pt: Dictionary = {
     },
     result: {
       balanced: (n) => `${n} times equilibrados`,
-      shareFormat: 'Formato pronto para compartilhar',
       imageHint: 'Exporte uma imagem em formato vertical 9:16 para Instagram ou WhatsApp',
       title: 'Times',
-      whatsappTitle: 'Texto para o WhatsApp',
       copy: 'Copiar texto',
       copied: 'Copiado',
       copyFailed: 'Não foi possível copiar. Selecione o texto e copie manualmente.',

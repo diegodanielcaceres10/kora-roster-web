@@ -75,10 +75,11 @@ describe('ResultStep', () => {
     expect(hidden).toEqual([T.preview.goalkeeper, T.preview.goalkeeper]);
   });
 
-  it('shows the text for WhatsApp exactly as it will be copied', () => {
-    const { el, store } = setup(undefined, true);
-    expect(el.querySelector('pre')?.textContent).toBe(store.whatsappText());
-    expect(el.querySelector('pre')?.textContent).toContain(`🔴 ${T.teamTitle(1)}`);
+  it('does not show a preview of the text for WhatsApp, but keeps the button to copy it', () => {
+    const { el, byText } = setup(undefined, true);
+    expect(el.querySelector('pre')).toBeNull();
+    expect(el.textContent).not.toContain('Texto para WhatsApp');
+    expect(byText(T.result.copy)).toBeDefined();
   });
 
   describe('copying', () => {
@@ -176,15 +177,6 @@ describe('ResultStep', () => {
       expect(titles).toEqual([`🟢 ${T.teamTitle(1)}`, `🟡 ${T.teamTitle(2)}`]);
     });
 
-    it('shows the message with their header, numbering and footer', () => {
-      const { el, store } = setup(TEST_PREFERENCES, true);
-      const text = el.querySelector('pre')?.textContent as string;
-      expect(text).toBe(store.whatsappText());
-      expect(text.startsWith('⚽ Amistoso\n\n🟢')).toBe(true);
-      expect(text).toContain('\n1) ');
-      expect(text.endsWith('\n\nConfirmen')).toBe(true);
-    });
-
     it('keeps the cards numbered whatever numbering the message uses', () => {
       const { el } = setup({ ...TEST_PREFERENCES, numbering: 'none' });
       const first = el.querySelector('ui-card li')?.textContent?.replace(/\s+/g, ' ').trim();
@@ -197,8 +189,10 @@ describe('ResultStep', () => {
       const { byText, toast } = setup(TEST_PREFERENCES, true);
       byText(T.result.copy).click();
       await vi.waitFor(() => expect(toast.message()).toBe(T.result.copied));
-      expect(writeText.mock.calls[0][0]).toContain('⚽ Amistoso');
-      expect(writeText.mock.calls[0][0]).toContain('Confirmen');
+      const text = writeText.mock.calls[0][0] as string;
+      expect(text.startsWith('⚽ Amistoso\n\n🟢')).toBe(true);
+      expect(text).toContain('\n1) ');
+      expect(text.endsWith('\n\nConfirmen')).toBe(true);
     });
   });
 
@@ -240,8 +234,8 @@ describe('ResultStep', () => {
     });
 
     it('writes every team in the text for WhatsApp', () => {
-      const { el } = setupMany(4, 20, true);
-      const text = el.querySelector('pre')?.textContent as string;
+      const { store } = setupMany(4, 20);
+      const text = store.whatsappText();
       for (let i = 1; i <= 4; i++) expect(text).toContain(T.teamTitle(i));
     });
   });
@@ -355,11 +349,7 @@ describe('ResultStep', () => {
       const { a, b } = trio(ctx);
       tap(ctx, a.id);
       tap(ctx, b.id);
-      ctx.store.confirm();
-      ctx.fixture.detectChanges();
-      const text = ctx.el.querySelector('pre')?.textContent as string;
-      expect(text).toBe(ctx.store.whatsappText());
-      expect(text.split('\n\n')[0]).toContain(b.name);
+      expect(ctx.store.whatsappText().split('\n\n')[0]).toContain(b.name);
     });
 
     it.each([
@@ -967,9 +957,9 @@ describe('ResultStep', () => {
       },
     );
 
-    it('shows the text for WhatsApp, the copy button and the image', () => {
-      const { el, store } = setup(undefined, true);
-      expect(el.querySelector('pre')?.textContent).toBe(store.whatsappText());
+    it('shows the copy button and the image, and no preview of the text for WhatsApp', () => {
+      const { el } = setup(undefined, true);
+      expect(el.querySelector('pre')).toBeNull();
       expect(named(el, T.result.copy)).toBeDefined();
       expect(el.querySelector('app-story-image-panel')?.textContent).toContain(
         T.result.createImage,
@@ -1003,13 +993,13 @@ describe('ResultStep', () => {
       fixture.detectChanges();
       const el = fixture.nativeElement as HTMLElement;
       expect(items(el)).toHaveLength(12);
-      expect(el.querySelector('pre')?.textContent).toBe(store.whatsappText());
+      expect(named(el, T.result.copy)).toBeDefined();
     });
   });
 
   describe('the texts that depend on the language', () => {
     it.each(['en', 'es', 'pt'] as const)(
-      'shows the balance of the teams, the format of the message and the hint of the image in %s',
+      'shows the balance of the teams and the hint of the image in %s',
       (lang) => {
         const { fixture, el } = setup(undefined, true);
         TestBed.inject(I18n).setLang(lang);
@@ -1017,7 +1007,6 @@ describe('ResultStep', () => {
         const { result } = DICTIONARIES[lang].tool;
         const text = el.textContent?.replace(/\s+/g, ' ') as string;
         expect(text).toContain(result.balanced(2));
-        expect(text).toContain(result.shareFormat);
         expect(text).toContain(result.imageHint);
       },
     );

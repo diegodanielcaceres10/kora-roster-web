@@ -29,6 +29,25 @@ function confirmTeams(harness: { fixture: { detectChanges(): void } }, root: HTM
   harness.fixture.detectChanges();
 }
 
+// The message for WhatsApp is not shown, so it is read from what the copy button puts in the
+// clipboard.
+async function copiedMessage(
+  harness: { fixture: { detectChanges(): void } },
+  root: HTMLElement,
+): Promise<string> {
+  confirmTeams(harness, root);
+  const writeText = vi.fn().mockResolvedValue(undefined);
+  Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
+  (
+    Array.from(root.querySelectorAll('ui-button button')).find(
+      (b) => b.textContent?.trim() === DICTIONARIES.es.tool.result.copy,
+    ) as HTMLButtonElement
+  ).click();
+  await vi.waitFor(() => expect(writeText).toHaveBeenCalled());
+  Reflect.deleteProperty(navigator, 'clipboard');
+  return writeText.mock.calls[0][0] as string;
+}
+
 describe('app routes', () => {
   afterEach(() => {
     Reflect.deleteProperty(navigator, 'languages');
@@ -298,8 +317,7 @@ describe('app routes', () => {
       ) as HTMLButtonElement;
       draw.click();
       harness.fixture.detectChanges();
-      confirmTeams(harness, root);
-      const message = root.querySelector('pre')?.textContent as string;
+      const message = await copiedMessage(harness, root);
       expect(message.startsWith('⚽ Amistoso\n\n🟢 Equipo 1')).toBe(true);
       expect(message).toContain('🟡 Equipo 2');
     });
@@ -320,8 +338,7 @@ describe('app routes', () => {
         ) as HTMLButtonElement
       ).click();
       harness.fixture.detectChanges();
-      confirmTeams(harness, root);
-      expect(root.querySelector('pre')?.textContent).toContain('🔴 Equipo 1\n1. ');
+      expect(await copiedMessage(harness, root)).toContain('🔴 Equipo 1\n1. ');
     });
   });
 
@@ -385,10 +402,7 @@ describe('app routes', () => {
       const after = Array.from(root.querySelectorAll('ui-card'));
       expect(after[0].querySelector('li button')?.textContent).toBe(nameB);
       expect(after[1].querySelector('li button')?.textContent).toBe(nameA);
-      confirmTeams(harness, root);
-      expect(root.querySelector('pre')?.textContent).toContain(
-        nameB?.replace(/^\s*1\.\s*/, '').trim(),
-      );
+      expect(await copiedMessage(harness, root)).toContain(nameB?.replace(/^\s*1\.\s*/, '').trim());
     });
 
     it('explains that the image needs an account, and offers to sign in', async () => {
@@ -423,8 +437,7 @@ describe('app routes', () => {
       ).click();
       harness.fixture.detectChanges();
       expect(root.querySelectorAll('ui-card')).toHaveLength(4);
-      confirmTeams(harness, root);
-      expect(root.querySelector('pre')?.textContent).toContain('Equipo 4');
+      expect(await copiedMessage(harness, root)).toContain('Equipo 4');
     });
   });
 });

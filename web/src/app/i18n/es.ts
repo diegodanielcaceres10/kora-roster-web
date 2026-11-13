@@ -181,10 +181,8 @@ export const es: Dictionary = {
     },
     result: {
       balanced: (n) => `${n} equipos equilibrados`,
-      shareFormat: 'Formato listo para compartir',
       imageHint: 'Exporta una imagen con formato vertical 9:16 para Instagram o WhatsApp',
       title: 'Equipos',
-      whatsappTitle: 'Texto para WhatsApp',
       copy: 'Copiar texto',
       copied: 'Copiado',
       copyFailed: 'No se pudo copiar. Selecciona el texto y cópialo a mano.',

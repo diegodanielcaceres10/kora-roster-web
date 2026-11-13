@@ -365,13 +365,12 @@ describe('dictionaries', () => {
     );
 
     it.each([
-      ['en', '2 balanced teams', 'Ready-to-share format'],
-      ['es', '2 equipos equilibrados', 'Formato listo para compartir'],
-      ['pt', '2 times equilibrados', 'Formato pronto para compartilhar'],
-    ] as const)('name the balance and the format of the result in %s', (lang, balanced, format) => {
+      ['en', '2 balanced teams'],
+      ['es', '2 equipos equilibrados'],
+      ['pt', '2 times equilibrados'],
+    ] as const)('name the balance of the result in %s', (lang, balanced) => {
       const { result } = DICTIONARIES[lang].tool;
       expect(result.balanced(2)).toBe(balanced);
-      expect(result.shareFormat).toBe(format);
       expect(result.imageHint.length).toBeGreaterThan(10);
     });
   });
