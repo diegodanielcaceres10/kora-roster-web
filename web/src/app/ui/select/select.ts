@@ -12,13 +12,13 @@ let nextId = 0;
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'block' },
   template: `
-    <label [attr.for]="fieldId" class="mb-1 block text-sm font-medium text-secondary">
+    <label [attr.for]="fieldId" class="mb-1.5 block font-mono text-[11px] font-bold uppercase tracking-wider text-ink-muted">
       {{ label() }}
     </label>
     <select
       [id]="fieldId"
       (change)="onChange($event)"
-      class="block min-h-11 w-full rounded-lg border border-secondary/30 bg-white px-3 py-2 text-base text-secondary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary"
+      class="block min-h-11 w-full rounded-lg border border-ink/30 bg-surface px-3 py-2 text-base text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
     >
       @for (option of options(); track option.value) {
         <option [value]="option.value" [selected]="option.value === value()">

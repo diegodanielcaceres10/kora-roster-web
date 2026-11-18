@@ -61,20 +61,17 @@ describe('index.html', () => {
       expect(isDark()).toBe(false);
     });
 
-    it('follows a dark system when nothing is saved', () => {
-      system('dark');
-      run();
-      expect(isDark()).toBe(true);
-    });
-
-    it('stays light when nothing is saved and the system is light', () => {
-      system('light');
-      run();
-      expect(isDark()).toBe(false);
-    });
+    // Same temporary rule as Theme: the system is not followed until the redesign is finished.
+    it.each<'light' | 'dark'>(['light', 'dark'])(
+      'stays light when nothing is saved, whatever the system (%s) prefers',
+      (scheme) => {
+        system(scheme);
+        run();
+        expect(isDark()).toBe(false);
+      },
+    );
 
     it('does not break the page when the browser blocks storage', () => {
-      system('dark');
       vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
         throw new Error('blocked');
       });
@@ -136,5 +133,9 @@ describe('color tokens', () => {
     expect(css).toContain('@custom-variant dark');
     expect(block('.dark')).toContain('color-scheme: dark');
     expect(block(':root')).toContain('color-scheme: light');
+  });
+
+  it('draws the focus ring with the ink token, so it shows in both modes', () => {
+    expect(css).toMatch(/\*:focus-visible\s*\{[^}]*outline:\s*2px solid var\(--ink\)/);
   });
 });

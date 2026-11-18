@@ -4,24 +4,21 @@ export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost';
 export type ButtonSize = 'md' | 'lg';
 
 const BASE =
-  'inline-flex w-full select-none items-center justify-center gap-2 rounded-lg font-semibold tracking-tight ' +
+  'inline-flex w-full select-none items-center justify-center gap-2 rounded-xl font-display font-bold uppercase tracking-wide ' +
   'transition-all duration-150 ease-out active:scale-[0.98] ' +
-  'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary ' +
+  'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink ' +
   'disabled:cursor-not-allowed disabled:opacity-45 disabled:active:scale-100 disabled:shadow-none';
 
 const VARIANTS: Record<ButtonVariant, string> = {
-  primary:
-    'bg-primary text-secondary font-bold shadow-xs hover:brightness-95 hover:shadow-sm',
-  secondary:
-    'bg-secondary text-white font-semibold shadow-xs hover:bg-secondary/90 hover:shadow-sm',
-  outline:
-    'border-2 border-secondary/25 bg-transparent text-secondary hover:border-secondary hover:bg-secondary/5',
-  ghost: 'bg-transparent text-secondary hover:bg-secondary/10',
+  primary: 'bg-primary text-secondary shadow-sm shadow-primary/25 hover:brightness-95 hover:shadow-md',
+  secondary: 'bg-ink text-canvas shadow-xs hover:bg-ink/90 hover:shadow-sm',
+  outline: 'border-2 border-ink/25 bg-surface text-ink hover:border-ink hover:bg-ink/5',
+  ghost: 'bg-transparent text-ink hover:bg-ink/10',
 };
 
 const SIZES: Record<ButtonSize, string> = {
-  md: 'min-h-11 px-4 text-sm sm:text-base',
-  lg: 'min-h-13 px-6 text-base sm:text-lg',
+  md: 'min-h-11 px-4 text-[13px] sm:text-sm',
+  lg: 'min-h-13 px-6 text-sm sm:text-base',
 };
 
 @Component({

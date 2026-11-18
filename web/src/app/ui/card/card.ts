@@ -4,7 +4,7 @@ export type CardAccent = 'primary' | 'secondary' | 'alternative';
 
 const ACCENTS: Record<CardAccent, string> = {
   primary: 'border-t-4 border-t-primary',
-  secondary: 'border-t-4 border-t-secondary',
+  secondary: 'border-t-4 border-t-slate-600 dark:border-t-slate-400',
   alternative: 'border-t-4 border-t-alternative',
 };
 
@@ -14,10 +14,10 @@ const ACCENTS: Record<CardAccent, string> = {
   host: { class: 'block' },
   template: `
     <section
-      class="overflow-hidden rounded-xl border border-secondary/12 bg-white shadow-[0_1px_3px_rgba(27,42,65,0.05),0_1px_2px_rgba(27,42,65,0.03)] transition-all duration-200 hover:border-secondary/20 hover:shadow-[0_4px_12px_rgba(27,42,65,0.06)]"
+      class="overflow-hidden rounded-2xl border border-line bg-surface shadow-xs transition-shadow duration-200 hover:shadow-md"
       [class]="accentClass()"
     >
-      <header class="px-4 pt-4 sm:px-5 sm:pt-5 empty:hidden"><ng-content select="[card-header]" /></header>
+      <header class="border-b border-line bg-surface-muted/60 px-4 py-3 sm:px-5 empty:hidden"><ng-content select="[card-header]" /></header>
       <div class="p-4 sm:p-5"><ng-content /></div>
     </section>
   `,

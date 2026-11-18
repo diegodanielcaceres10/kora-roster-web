@@ -20,11 +20,11 @@ export interface SegmentedOption {
 }
 
 const OPTION_BASE =
-  'min-h-9 min-w-11 select-none rounded-md px-3 text-sm font-bold tracking-tight transition-all duration-150 ease-out ' +
-  'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary';
-const SELECTED = 'bg-secondary text-white shadow-xs';
-const UNSELECTED = 'bg-transparent text-secondary/80 hover:bg-secondary/10 hover:text-secondary';
-const LOCKED = 'bg-transparent text-secondary/60 hover:bg-secondary/10';
+  'min-h-9 min-w-11 select-none rounded-lg px-3 font-display text-sm font-bold uppercase tracking-wide transition-all duration-150 ease-out ' +
+  'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink';
+const SELECTED = 'bg-primary text-secondary shadow-xs';
+const UNSELECTED = 'bg-transparent text-ink-muted hover:bg-ink/10 hover:text-ink';
+const LOCKED = 'bg-transparent text-ink-faint hover:bg-ink/10';
 
 @Component({
   selector: 'ui-segmented',
@@ -35,7 +35,7 @@ const LOCKED = 'bg-transparent text-secondary/60 hover:bg-secondary/10';
     <div
       role="radiogroup"
       [attr.aria-label]="label()"
-      class="inline-flex gap-1 rounded-lg border border-secondary/20 bg-secondary/[0.04] p-1 shadow-inner"
+      class="inline-flex gap-1 rounded-xl border border-line bg-surface-muted p-1 shadow-inner"
     >
       @for (option of options(); track option.value; let i = $index) {
         <button

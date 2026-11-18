@@ -38,37 +38,34 @@ describe('Theme', () => {
     vi.restoreAllMocks();
   });
 
+  // The system is not followed yet: until every screen uses the color tokens, dark would show
+  // up half done. When the redesign is finished, bring the "follows the system" tests back
+  // (see the history of this file) and read the preference again in Theme and index.html.
   describe('first mode', () => {
-    it.each<System>(['light', 'dark'])('follows the system (%s) when nothing is saved', (scheme) => {
-      setSystem(scheme);
-      expect(create().mode()).toBe(scheme);
-    });
+    it.each<System>(['light', 'dark', 'unknown'])(
+      'is light when nothing is saved, whatever the system (%s) prefers',
+      (scheme) => {
+        setSystem(scheme);
+        expect(create().mode()).toBe('light');
+      },
+    );
 
-    it('is light when the browser cannot tell the preferred scheme', () => {
-      setSystem('unknown');
-      expect(create().mode()).toBe('light');
-    });
-
-    it.each<['light' | 'dark', System]>([
-      ['light', 'dark'],
-      ['dark', 'light'],
-    ])('uses the saved choice (%s) over the system (%s)', (saved, scheme) => {
+    it.each<'light' | 'dark'>(['light', 'dark'])('uses the saved choice (%s)', (saved) => {
       localStorage.setItem(THEME_STORAGE_KEY, saved);
-      setSystem(scheme);
       expect(create().mode()).toBe(saved);
     });
 
     it('ignores a saved value it does not know', () => {
       localStorage.setItem(THEME_STORAGE_KEY, 'sepia');
-      setSystem('dark');
-      expect(create().mode()).toBe('dark');
+      expect(create().mode()).toBe('light');
     });
   });
 
   describe('the page', () => {
     it('carries the dark class on <html> only in dark mode', () => {
-      setSystem('dark');
       const theme = create();
+      expect(isDarkPage()).toBe(false);
+      theme.set('dark');
       expect(isDarkPage()).toBe(true);
       theme.set('light');
       expect(isDarkPage()).toBe(false);
@@ -92,7 +89,6 @@ describe('Theme', () => {
     it('remembers the choice for the next visit', () => {
       create().set('dark');
       expect(localStorage.getItem(THEME_STORAGE_KEY)).toBe('dark');
-      setSystem('light');
       expect(create().mode()).toBe('dark');
     });
 

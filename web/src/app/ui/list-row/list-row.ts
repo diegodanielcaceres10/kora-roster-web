@@ -6,7 +6,7 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
   host: {
     role: 'listitem',
     class:
-      'flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors duration-150 hover:bg-secondary/[0.03] border border-transparent hover:border-secondary/10',
+      'flex items-center gap-3 rounded-lg border border-transparent px-3 py-2.5 transition-colors duration-150 hover:border-line hover:bg-surface-muted',
     '[class]': 'stateClasses()',
   },
   template: `
@@ -19,6 +19,6 @@ export class UiListRow {
   readonly highlight = input(false);
 
   protected readonly stateClasses = computed(() =>
-    this.highlight() ? 'border-l-4 border-primary bg-primary/15 border-secondary/10' : '',
+    this.highlight() ? 'border-l-4 border-primary bg-primary/15 border-line' : '',
   );
 }

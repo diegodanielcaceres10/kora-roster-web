@@ -11,12 +11,19 @@ and `index.ts` disagree.
   `OnPush`, and use the `ui-` selector prefix.
 - No text lives inside a component. Pass labels as content or inputs; the texts themselves
   belong in `web/src/app/i18n/`.
-- Colors are Tailwind utilities backed by the tokens in `styles.css`: `bg-primary`,
-  `text-secondary`, `border-alternative`, and so on.
-  - `primary` is amber `#ffb627`. Text on it is `secondary`; white on amber fails contrast.
-  - `secondary` is navy `#1b2a41`.
-  - `alternative` is green `#0b8457`. White text on it passes.
-  - Neutrals and the danger red come from Tailwind's default palette.
+- Colors are Tailwind utilities backed by the tokens in `styles.css`.
+  - Brand colors never change with the mode: `primary` is amber `#ffb627` (text on it is
+    `secondary`; white on amber fails contrast), `secondary` is navy `#1b2a41` and
+    `alternative` is green `#0b8457` (white text on it passes).
+  - Everything else follows the mode: `bg-canvas` (the page), `bg-surface` (cards, fields),
+    `bg-surface-muted` (rows, trays), `border-line`, `text-ink`, `text-ink-muted`,
+    `text-ink-faint`. For a tint of any of them use an opacity (`bg-ink/5`).
+  - Never use `bg-white`, `text-secondary` or `border-secondary` in a shared component: they
+    stay light in dark mode. `tokens.spec.ts` fails when one slips in.
+  - The danger red comes from Tailwind's palette, with its own `dark:` shades.
+- Dark mode is the `dark` class on `<html>`, set by `Theme` (`theme/theme.ts`). Use `dark:`
+  only for colors that have no token, such as the danger red.
+- Labels and tags use `font-mono`, titles `font-display`, the rest the default sans (Inter).
 - Icons are `UiIcon` (see below): `<ui-icon name="pencil" />`. They are inline SVG, so there is
   no font and no CDN, and they take the size and the color of the text around them.
 - Touch targets are at least 44 px and every control shows a `focus-visible` outline.
@@ -104,7 +111,7 @@ A labelled native drop-down list.
 
 ### `UiCard` · `<ui-card>`
 
-A bordered surface.
+A bordered surface. Its `card-header` sits on a muted band with a line below it.
 
 - `accent`: `primary`, `secondary` or `alternative` (a 4 px bar on top); none by default
 - Slots: `card-header` (optional) and the default content
@@ -157,7 +164,7 @@ Do these by extending the catalog, not by copying:
 
 - A link that looks like a button: the landing call to action is an `<a>` with button classes
   (`pages/landing/landing.ts`). If a second one is needed, add a link mode to `UiButton`.
-- Not built yet: modal, tabs, color picker, dark mode.
+- Not built yet: modal, tabs, color picker.
 
 ## Other reusable pieces
 

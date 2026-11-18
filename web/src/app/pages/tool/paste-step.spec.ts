@@ -126,7 +126,7 @@ describe('PasteStep', () => {
       const { el, next } = setup();
       expect(drawButton(el).className).toContain('bg-primary');
       expect(next().className).not.toContain('bg-primary');
-      expect(next().className).toContain('bg-transparent');
+      expect(next().className).toContain('bg-surface');
     });
 
     it.each([[0], [8], [9], [11], [13], [23], [24]])(

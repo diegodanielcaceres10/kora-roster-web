@@ -13,7 +13,7 @@ import { UiIcon } from '../icon/icon';
     >
       @if (toast.message(); as text) {
         <p
-          class="animate-toast inline-flex items-center gap-2.5 rounded-xl border border-white/15 bg-secondary/95 px-5 py-3 text-sm font-semibold tracking-tight text-white shadow-2xl backdrop-blur-md"
+          class="animate-toast inline-flex items-center gap-2.5 rounded-xl border border-canvas/15 bg-ink/95 px-5 py-3 text-sm font-semibold tracking-tight text-canvas shadow-2xl backdrop-blur-md"
         >
           <ui-icon name="circle-check" class="text-primary" />
           <span>{{ text }}</span>
