@@ -1,17 +1,17 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { I18n } from '../../i18n/i18n';
 import { LockNotice } from '../../plans/lock-notice';
-import { UiCard } from '../../ui';
+import { UiCard, UiIcon } from '../../ui';
 
 @Component({
   selector: 'app-premium-card',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [UiCard, LockNotice],
+  imports: [UiCard, LockNotice, UiIcon],
   template: `
     <ui-card accent="primary">
       <div card-header class="border-b border-secondary/10 pb-3">
         <h2 class="flex items-center gap-2 text-lg font-bold text-secondary">
-          <i class="fa-solid fa-lock text-primary" aria-hidden="true"></i>
+          <ui-icon name="lock" class="text-primary" />
           {{ t().title }}
         </h2>
       </div>
@@ -27,7 +27,7 @@ import { UiCard } from '../../ui';
                 class="flex w-full items-center gap-2.5 rounded-lg border border-secondary/10 bg-secondary/[0.02] px-3 py-2.5 text-left text-sm font-medium text-secondary transition hover:bg-secondary/5 hover:border-secondary/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary"
                 (click)="touch()"
               >
-                <i class="fa-solid fa-lock text-secondary/40 text-xs shrink-0" aria-hidden="true"></i>
+                <ui-icon name="lock" class="text-secondary/40 text-xs shrink-0" />
                 <span>{{ item }}</span>
               </button>
             </li>

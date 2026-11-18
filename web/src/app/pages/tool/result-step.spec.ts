@@ -70,7 +70,7 @@ describe('ResultStep', () => {
 
   it('marks the goalkeepers with the glove and a hidden label', () => {
     const { el } = setup();
-    expect(el.querySelectorAll('li i.fa-mitten')).toHaveLength(2);
+    expect(el.querySelectorAll('li ui-icon[data-icon="glove"]')).toHaveLength(2);
     const hidden = Array.from(el.querySelectorAll('li .sr-only')).map((s) => s.textContent?.trim());
     expect(hidden).toEqual([T.preview.goalkeeper, T.preview.goalkeeper]);
   });
@@ -129,7 +129,7 @@ describe('ResultStep', () => {
       const { el } = setup();
       const back = backIn(el);
       expect(back).toBeDefined();
-      expect(back.querySelector('i.fa-arrow-left')).not.toBeNull();
+      expect(back.querySelector('ui-icon[data-icon="arrow-left"]')).not.toBeNull();
     });
 
     it('returns to the preview with the same players, and the teams are gone', () => {
@@ -591,11 +591,9 @@ describe('ResultStep', () => {
       it('lists everybody without a team, goalkeepers first', () => {
         const ctx = manual();
         expect(poolButtons(ctx)).toHaveLength(12);
-        expect(poolButtons(ctx).map((b) => b.querySelector('.fa-mitten') !== null)).toEqual([
-          true,
-          true,
-          ...Array(10).fill(false),
-        ]);
+        expect(
+          poolButtons(ctx).map((b) => b.querySelector('ui-icon[data-icon="glove"]') !== null),
+        ).toEqual([true, true, ...Array(10).fill(false)]);
       });
 
       it('shows every team empty, with a free place for each missing player', () => {
@@ -929,7 +927,7 @@ describe('ResultStep', () => {
         const [teamA] = store.teams() ?? [[]];
         expect(items(el)).toHaveLength(12);
         expect(items(el)[0]).toMatch(new RegExp(`^1\\.\\s*${teamA[0].name}`));
-        expect(el.querySelectorAll('li i.fa-mitten')).toHaveLength(2);
+        expect(el.querySelectorAll('li ui-icon[data-icon="glove"]')).toHaveLength(2);
       },
     );
 

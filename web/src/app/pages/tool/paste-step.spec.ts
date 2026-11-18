@@ -109,7 +109,7 @@ describe('PasteStep', () => {
     it('offers a button to draw next to the one to continue', () => {
       const { el, next } = setup();
       expect(drawButton(el)).toBeDefined();
-      expect(drawButton(el).querySelector('i.fa-shuffle')).not.toBeNull();
+      expect(drawButton(el).querySelector('ui-icon[data-icon="arrows-shuffle"]')).not.toBeNull();
       expect(drawButton(el).closest('ui-button')?.parentElement).toBe(
         next().closest('ui-button')?.parentElement,
       );
@@ -247,8 +247,8 @@ describe('PasteStep', () => {
         const { el, next, type } = setup();
         type('Diego\nMati');
         expect(next().disabled).toBe(false);
-        expect(next().querySelector('i.fa-lock')).not.toBeNull();
-        expect(next().querySelector('i.fa-arrow-right')).toBeNull();
+        expect(next().querySelector('ui-icon[data-icon="lock"]')).not.toBeNull();
+        expect(next().querySelector('ui-icon[data-icon="arrow-right"]')).toBeNull();
         expect(notice(el) ?? '').toBe('');
       });
 
@@ -278,8 +278,8 @@ describe('PasteStep', () => {
       it('shows an arrow, not a lock, and moves to the preview', () => {
         const { el, store, next, type, fixture } = setup();
         type('Diego\nMati');
-        expect(next().querySelector('i.fa-arrow-right')).not.toBeNull();
-        expect(next().querySelector('i.fa-lock')).toBeNull();
+        expect(next().querySelector('ui-icon[data-icon="arrow-right"]')).not.toBeNull();
+        expect(next().querySelector('ui-icon[data-icon="lock"]')).toBeNull();
         next().click();
         fixture.detectChanges();
         expect(store.step()).toBe('preview');

@@ -30,7 +30,7 @@ describe('PremiumCard', () => {
     const { el } = setup();
     const title = el.querySelector('h2') as HTMLElement;
     expect(title.textContent).toContain(T.premiumCard.title);
-    expect(title.querySelector('i.fa-lock')).not.toBeNull();
+    expect(title.querySelector('ui-icon[data-icon="lock"]')).not.toBeNull();
     expect(el.textContent).toContain(T.premiumCard.intro);
   });
 
@@ -45,7 +45,7 @@ describe('PremiumCard', () => {
       card.signUps,
     ]);
     for (const item of items()) {
-      expect(item.querySelector('i.fa-lock')).not.toBeNull();
+      expect(item.querySelector('ui-icon[data-icon="lock"]')).not.toBeNull();
       expect(item.getAttribute('aria-disabled')).toBe('true');
     }
   });

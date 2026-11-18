@@ -171,8 +171,8 @@ describe('PreviewStep', () => {
       it('shows an arrow, not a lock, and says nothing', () => {
         const { el, byText } = setup(list(12));
         const button = byText(T.preview.continue);
-        expect(button.querySelector('i.fa-arrow-right')).not.toBeNull();
-        expect(button.querySelector('i.fa-lock')).toBeNull();
+        expect(button.querySelector('ui-icon[data-icon="arrow-right"]')).not.toBeNull();
+        expect(button.querySelector('ui-icon[data-icon="lock"]')).toBeNull();
         expect(manualNotice(el) ?? '').toBe('');
       });
     });
@@ -182,8 +182,8 @@ describe('PreviewStep', () => {
         const { el, byText } = setup(list(12));
         const button = byText(T.preview.continue);
         expect(button.disabled).toBe(false);
-        expect(button.querySelector('i.fa-lock')).not.toBeNull();
-        expect(button.querySelector('i.fa-arrow-right')).toBeNull();
+        expect(button.querySelector('ui-icon[data-icon="lock"]')).not.toBeNull();
+        expect(button.querySelector('ui-icon[data-icon="arrow-right"]')).toBeNull();
         expect(manualNotice(el) ?? '').toBe('');
       });
 

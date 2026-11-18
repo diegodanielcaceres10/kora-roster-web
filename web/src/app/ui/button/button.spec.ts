@@ -1,9 +1,10 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { UiIcon } from '../icon/icon';
 import { ButtonVariant, UiButton } from './button';
 
 @Component({
-  imports: [UiButton],
+  imports: [UiButton, UiIcon],
   template: `
     <ui-button
       [variant]="variant()"
@@ -12,7 +13,7 @@ import { ButtonVariant, UiButton } from './button';
       [ariaLabel]="ariaLabel()"
       (click)="clicks.set(clicks() + 1)"
     >
-      <i class="fa-solid fa-shuffle"></i> Sortear
+      <ui-icon name="arrows-shuffle" /> Sortear
     </ui-button>
   `,
 })
@@ -43,7 +44,7 @@ describe('UiButton', () => {
   it('projects its content into the native button', () => {
     const { button } = setup();
     expect(button().textContent).toContain('Sortear');
-    expect(button().querySelector('i.fa-shuffle')).not.toBeNull();
+    expect(button().querySelector('ui-icon[data-icon="arrows-shuffle"]')).not.toBeNull();
   });
 
   it('renders a different look for every variant', () => {

@@ -2,12 +2,12 @@ import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/c
 import { RouterLink } from '@angular/router';
 import { I18n } from '../../i18n/i18n';
 import { PageMeta } from '../../i18n/page-meta';
-import { UiCard } from '../../ui';
+import { UiCard, UiIcon } from '../../ui';
 
 @Component({
   selector: 'app-landing',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, UiCard],
+  imports: [RouterLink, UiCard, UiIcon],
   host: { class: 'block' },
   template: `
     <!-- Hero Section -->
@@ -16,7 +16,7 @@ import { UiCard } from '../../ui';
         <div
           class="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3.5 py-1 text-xs font-bold uppercase tracking-widest text-primary backdrop-blur-md"
         >
-          <i class="fa-solid fa-bolt" aria-hidden="true"></i>
+          <ui-icon name="bolt" />
           <span>{{ t().eyebrow }}</span>
         </div>
 
@@ -33,7 +33,7 @@ import { UiCard } from '../../ui';
             [routerLink]="['/', i18n.lang(), 'friendly']"
             class="inline-flex min-h-13 items-center justify-center gap-2.5 rounded-xl bg-primary px-8 text-base sm:text-lg font-black tracking-wide text-secondary shadow-lg transition-all duration-150 ease-out hover:brightness-95 hover:shadow-xl active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
           >
-            <i class="fa-solid fa-futbol" aria-hidden="true"></i>
+            <ui-icon name="ball-football" />
             {{ t().hero.cta }}
           </a>
         </div>

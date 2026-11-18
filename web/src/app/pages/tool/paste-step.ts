@@ -5,13 +5,13 @@ import { I18n } from '../../i18n/i18n';
 import { Entitlements, LockReason } from '../../plans/entitlements';
 import { LockNotice } from '../../plans/lock-notice';
 import { FriendlyStore } from '../../state/friendly.store';
-import { UiButton, UiCard, UiTextarea } from '../../ui';
+import { UiButton, UiCard, UiTextarea, UiIcon } from '../../ui';
 import { countStatus } from './count-status';
 
 @Component({
   selector: 'app-paste-step',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [LockNotice, UiButton, UiCard, UiTextarea],
+  imports: [LockNotice, UiButton, UiCard, UiTextarea, UiIcon],
   template: `
     <section class="space-y-4">
       <div class="grid grid-cols-1 items-start gap-6 lg:grid-cols-3">
@@ -24,7 +24,7 @@ import { countStatus } from './count-status';
                 <span
                   class="inline-flex items-center gap-1.5 rounded-full bg-secondary/8 px-3 py-1 text-xs font-bold text-secondary tabular-nums"
                 >
-                  <i class="fa-solid fa-users text-primary" aria-hidden="true"></i>
+                  <ui-icon name="users" class="text-primary" />
                   {{ t().paste.detected(count) }}
                 </span>
               }
@@ -46,16 +46,11 @@ import { countStatus } from './count-status';
                 }
                 <div class="flex flex-wrap items-center justify-between gap-3">
                   <ui-button size="lg" variant="outline" [disabled]="!hasNames()" (click)="review()">
-                    <i
-                      class="fa-solid"
-                      [class.fa-lock]="reviewLocked()"
-                      [class.fa-arrow-right]="!reviewLocked()"
-                      aria-hidden="true"
-                    ></i>
+                    <ui-icon [name]="reviewLocked() ? 'lock' : 'arrow-right'" />
                     {{ t().paste.continue }}
                   </ui-button>
                   <ui-button size="lg" [disabled]="!canDraw()" (click)="drawNow()">
-                    <i class="fa-solid fa-shuffle" aria-hidden="true"></i>
+                    <ui-icon name="arrows-shuffle" />
                     {{ t().preview.draw }}
                   </ui-button>
                 </div>
@@ -74,7 +69,7 @@ import { countStatus } from './count-status';
         <div class="space-y-4 lg:col-span-1">
           <div class="rounded-xl border border-secondary/15 bg-white p-5 shadow-xs">
             <h3 class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-secondary/80">
-              <i class="fa-solid fa-clipboard-check text-primary" aria-hidden="true"></i>
+              <ui-icon name="clipboard-check" class="text-primary" />
               {{ t().paste.guide.title }}
             </h3>
             <ul class="mt-4 space-y-3.5 text-xs text-secondary/80">

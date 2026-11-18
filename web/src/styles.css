@@ -1,24 +1,69 @@
 /* You can add global styles to this file, and also import other style files */
 
 @import 'tailwindcss';
+@import '@fontsource-variable/inter';
+@import '@fontsource-variable/space-grotesk';
+@import '@fontsource-variable/jetbrains-mono';
+
+/* The dark look is on whenever <html> carries the `dark` class (see theme/theme.ts). */
+@custom-variant dark (&:where(.dark, .dark *));
 
 @theme static {
   --color-primary: #ffb627;
   --color-secondary: #1b2a41;
   --color-alternative: #0b8457;
+
+  --font-sans: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Space Grotesk Variable', 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-mono:
+    'JetBrains Mono Variable', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+}
+
+/* Colors that change with the mode. Utilities: bg-canvas, bg-surface, bg-surface-muted,
+   border-line, text-ink, text-ink-muted, text-ink-faint. */
+@theme inline {
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-line: var(--line);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-ink-faint: var(--ink-faint);
 }
 
 @layer base {
   :root {
-    --sports-canvas: #f8fafc;
-    --sports-surface: #ffffff;
-    --sports-border: rgba(27, 42, 65, 0.12);
+    color-scheme: light;
+    --canvas: #f9fafc;
+    --surface: #ffffff;
+    --surface-muted: #f4f6fa;
+    --line: rgb(27 42 65 / 0.12);
+    --ink: #1b2a41;
+    --ink-muted: rgb(27 42 65 / 0.7);
+    --ink-faint: rgb(27 42 65 / 0.65);
+  }
+
+  .dark {
+    color-scheme: dark;
+    --canvas: #0a0e11;
+    --surface: #15181d;
+    --surface-muted: #101417;
+    --line: rgb(255 255 255 / 0.1);
+    --ink: #f1f5f9;
+    --ink-muted: rgb(241 245 249 / 0.7);
+    --ink-faint: rgb(241 245 249 / 0.65);
   }
 
   body {
     @apply bg-[#f8fafc] text-secondary antialiased;
     font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11', 'tnum';
     min-height: 100vh;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
   }
 
   h1 {

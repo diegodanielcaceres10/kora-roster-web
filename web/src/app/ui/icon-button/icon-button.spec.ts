@@ -1,9 +1,10 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { UiIcon } from '../icon/icon';
 import { UiIconButton } from './icon-button';
 
 @Component({
-  imports: [UiIconButton],
+  imports: [UiIconButton, UiIcon],
   template: `
     <ui-icon-button
       [label]="label()"
@@ -12,7 +13,7 @@ import { UiIconButton } from './icon-button';
       [disabled]="disabled()"
       (click)="clicks.set(clicks() + 1)"
     >
-      <i class="fa-solid fa-mitten" aria-hidden="true"></i>
+      <ui-icon name="glove" />
     </ui-icon-button>
   `,
 })
@@ -46,7 +47,7 @@ describe('UiIconButton', () => {
 
   it('projects the icon into the native button', () => {
     const { button } = setup();
-    expect(button().querySelector('i.fa-mitten')).not.toBeNull();
+    expect(button().querySelector('ui-icon[data-icon="glove"]')).not.toBeNull();
   });
 
   it('is not announced as a toggle unless pressed is defined', () => {

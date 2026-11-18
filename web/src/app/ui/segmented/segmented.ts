@@ -8,6 +8,7 @@ import {
   output,
   viewChildren,
 } from '@angular/core';
+import { UiIcon } from '../icon/icon';
 
 export interface SegmentedOption {
   value: string;
@@ -27,6 +28,7 @@ const LOCKED = 'bg-transparent text-secondary/60 hover:bg-secondary/10';
 
 @Component({
   selector: 'ui-segmented',
+  imports: [UiIcon],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'inline-block' },
   template: `
@@ -49,7 +51,7 @@ const LOCKED = 'bg-transparent text-secondary/60 hover:bg-secondary/10';
         >
           {{ option.label }}
           @if (option.locked) {
-            <i class="fa-solid fa-lock ml-1 text-xs" aria-hidden="true"></i>
+            <ui-icon name="lock" class="ml-1 text-xs" />
             @if (option.lockedLabel) {
               <span class="ml-1 text-xs font-bold uppercase">{{ option.lockedLabel }}</span>
             }

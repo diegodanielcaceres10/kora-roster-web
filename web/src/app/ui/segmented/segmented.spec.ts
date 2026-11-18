@@ -153,7 +153,7 @@ function setupLocked() {
 describe('UiSegmented with locked options', () => {
   it('draws a lock on every locked option, and the lock label only where there is one', () => {
     const { radios } = setupLocked();
-    const locks = radios().map((r) => r.querySelector('i.fa-lock') !== null);
+    const locks = radios().map((r) => r.querySelector('ui-icon[data-icon="lock"]') !== null);
     expect(locks).toEqual([false, false, true, true]);
     expect(radios()[2].textContent?.replace(/\s+/g, ' ').trim()).toBe('4');
     expect(radios()[3].textContent).toContain('Premium');

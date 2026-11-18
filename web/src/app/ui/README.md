@@ -17,9 +17,8 @@ and `index.ts` disagree.
   - `secondary` is navy `#1b2a41`.
   - `alternative` is green `#0b8457`. White text on it passes.
   - Neutrals and the danger red come from Tailwind's default palette.
-- Icons are Font Awesome Free, solid only, loaded from the CDN in `index.html`:
-  `<i class="fa-solid fa-pencil" aria-hidden="true"></i>`. Check the icon exists in the free set
-  first (there is no goalkeeper glove, so `fa-mitten` stands in for it).
+- Icons are `UiIcon` (see below): `<ui-icon name="pencil" />`. They are inline SVG, so there is
+  no font and no CDN, and they take the size and the color of the text around them.
 - Touch targets are at least 44 px and every control shows a `focus-visible` outline.
 
 ## Components
@@ -35,9 +34,28 @@ Any action the person triggers. Wraps a native `<button>`.
 
 ```html
 <ui-button size="lg" [disabled]="!ready()" (click)="go()">
-  <i class="fa-solid fa-shuffle" aria-hidden="true"></i>
+  <ui-icon name="arrows-shuffle" />
   {{ t().draw }}
 </ui-button>
+```
+
+### `UiIcon` · `<ui-icon>`
+
+An inline SVG icon. It is decorative (`aria-hidden`), so put the meaning in the label of the
+button or the text next to it.
+
+- `name` (required): one of the names below. A wrong name does not compile.
+- Size: it is `1em`, so change it with a text-size class on the element (`class="text-xl"`).
+  Color: it is `currentColor`, so use a text color class (`class="text-primary"`).
+- To add an icon, copy its markup from [Tabler Icons](https://tabler.io/icons) (MIT, outline set)
+  into `icon/icons.ts` in alphabetical order, and add its name to the list here.
+
+Names: `adjustments-horizontal`, `alert-circle`, `arrow-back-up`, `arrow-left`, `arrow-right`, `arrows-shuffle`, `ball-football`, `bolt`, `book`, `camera`, `check`, `chevron-right`, `circle-check`, `clipboard`, `clipboard-check`, `copy`, `crown`, `device-mobile`, `download`, `flame`, `glove`, `grip-vertical`, `id`, `info-circle`, `lock`, `logout`, `message`, `moon`, `pencil`, `photo`, `plus`, `refresh`, `share`, `shield`, `skull`, `star`, `sun`, `trash`, `user`, `user-minus`, `user-plus`, `users`, `world`, `x`.
+
+`glove` is drawn for this project (it stands for the goalkeeper); the rest come from Tabler.
+
+```html
+<ui-icon name="lock" class="text-xs" />
 ```
 
 ### `UiIconButton` · `<ui-icon-button>`
@@ -52,7 +70,7 @@ A 44 × 44 px button with only an icon.
 
 ```html
 <ui-icon-button [label]="t().remove(name)" variant="danger" (click)="remove()">
-  <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+  <ui-icon name="x" />
 </ui-icon-button>
 ```
 

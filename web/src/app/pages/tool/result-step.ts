@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@a
 import { I18n } from '../../i18n/i18n';
 import { Entitlements } from '../../plans/entitlements';
 import { FriendlyStore, Player } from '../../state/friendly.store';
-import { ToastService, UiButton, UiCard } from '../../ui';
+import { ToastService, UiButton, UiCard, UiIcon } from '../../ui';
 import { StoryImagePanel } from './story-image-panel';
 
 const ROW =
@@ -24,7 +24,7 @@ const keyOf = (target: Target): string =>
 @Component({
   selector: 'app-result-step',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [StoryImagePanel, UiButton, UiCard],
+  imports: [StoryImagePanel, UiButton, UiCard, UiIcon],
   template: `
     <section class="space-y-6">
       <!-- Result Step Header & Swap Guidance -->
@@ -38,7 +38,7 @@ const keyOf = (target: Target): string =>
 
         @if (!store.confirmed()) {
           <div class="flex items-center gap-2.5 rounded-xl border border-secondary/12 bg-white p-3 text-xs text-secondary/80 shadow-xs">
-            <i class="fa-solid fa-arrows-rotate text-primary text-sm shrink-0" aria-hidden="true"></i>
+            <ui-icon name="refresh" class="text-primary text-sm shrink-0" />
             <p class="text-sm text-secondary/80">
               {{ manual() ? t().result.manualHint : t().result.swapHint }}
             </p>
@@ -67,7 +67,7 @@ const keyOf = (target: Target): string =>
               }}</span>
             </h3>
             <ui-button variant="outline" [disabled]="pool().length === 0" (click)="drawRemaining()">
-              <i class="fa-solid fa-shuffle" aria-hidden="true"></i>
+              <ui-icon name="arrows-shuffle" />
               {{ t().result.drawRemaining }}
             </ui-button>
           </div>
@@ -96,7 +96,7 @@ const keyOf = (target: Target): string =>
                   >
                     <span class="flex-1 font-medium text-secondary">{{ player.name }}</span>
                     @if (player.isGoalkeeper) {
-                      <i class="fa-solid fa-mitten text-alternative" aria-hidden="true"></i>
+                      <ui-icon name="glove" class="text-alternative" />
                       <span class="sr-only">{{ t().preview.goalkeeper }}</span>
                     }
                   </button>
@@ -140,7 +140,7 @@ const keyOf = (target: Target): string =>
                     <span class="w-6 text-right font-bold text-secondary/50 tabular-nums">{{ n + 1 }}.</span>
                     <span class="flex-1 font-medium text-secondary">{{ player.name }}</span>
                     @if (player.isGoalkeeper) {
-                      <i class="fa-solid fa-mitten text-alternative" aria-hidden="true"></i>
+                      <ui-icon name="glove" class="text-alternative" />
                       <span class="sr-only">{{ t().preview.goalkeeper }}</span>
                     }
                   </li>
@@ -163,7 +163,7 @@ const keyOf = (target: Target): string =>
                       <span class="w-6 text-right font-bold text-secondary/50 tabular-nums">{{ n + 1 }}.</span>
                       <span class="flex-1 font-medium text-secondary">{{ player.name }}</span>
                       @if (player.isGoalkeeper) {
-                        <i class="fa-solid fa-mitten text-alternative" aria-hidden="true"></i>
+                        <ui-icon name="glove" class="text-alternative" />
                         <span class="sr-only">{{ t().preview.goalkeeper }}</span>
                       }
                     </button>
@@ -183,7 +183,7 @@ const keyOf = (target: Target): string =>
                       (dragleave)="dragLeave($event, teamTarget(i))"
                       (drop)="drop($event, teamTarget(i))"
                     >
-                      <i class="fa-solid fa-plus w-6 text-center text-xs" aria-hidden="true"></i>
+                      <ui-icon name="plus" class="w-6 text-center text-xs" />
                       <span class="flex-1">{{ t().result.freeSlot }}</span>
                     </button>
                   </li>
@@ -198,11 +198,11 @@ const keyOf = (target: Target): string =>
         <!-- Final actions, with the story image generator -->
         <app-story-image-panel>
           <ui-button size="lg" (click)="copy()">
-            <i class="fa-solid fa-copy" aria-hidden="true"></i>
+            <ui-icon name="copy" />
             {{ t().result.copy }}
           </ui-button>
           <ui-button variant="ghost" (click)="store.reset()">
-            <i class="fa-solid fa-rotate-left" aria-hidden="true"></i>
+            <ui-icon name="arrow-back-up" />
             {{ t().result.startOver }}
           </ui-button>
         </app-story-image-panel>
@@ -210,21 +210,21 @@ const keyOf = (target: Target): string =>
         <!-- Quick Actions Bar -->
         <div class="flex flex-wrap items-center gap-3 rounded-xl border border-secondary/10 bg-white p-4 shadow-xs">
           <ui-button size="lg" [disabled]="!store.isComplete()" (click)="confirm()">
-            <i class="fa-solid fa-check" aria-hidden="true"></i>
+            <ui-icon name="check" />
             {{ t().result.confirm }}
           </ui-button>
           <ui-button variant="outline" (click)="store.draw()">
-            <i class="fa-solid fa-shuffle" aria-hidden="true"></i>
+            <ui-icon name="arrows-shuffle" />
             {{ t().result.redraw }}
           </ui-button>
           @if (manual()) {
             <ui-button variant="outline" [disabled]="allWaiting()" (click)="clearTeams()">
-              <i class="fa-solid fa-user-minus" aria-hidden="true"></i>
+              <ui-icon name="user-minus" />
               {{ t().result.clearTeams }}
             </ui-button>
           }
           <ui-button variant="outline" (click)="store.back()">
-            <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+            <ui-icon name="arrow-left" />
             {{ t().preview.back }}
           </ui-button>
         </div>

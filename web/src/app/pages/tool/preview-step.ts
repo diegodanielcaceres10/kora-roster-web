@@ -20,14 +20,13 @@ import {
   UiIconButton,
   UiInput,
   UiListRow,
-  UiSegmented,
-} from '../../ui';
+  UiSegmented, UiIcon } from '../../ui';
 import { countStatus } from './count-status';
 
 @Component({
   selector: 'app-preview-step',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [LockNotice, UiBadge, UiButton, UiCard, UiIconButton, UiInput, UiListRow, UiSegmented],
+  imports: [LockNotice, UiBadge, UiButton, UiCard, UiIconButton, UiInput, UiListRow, UiSegmented, UiIcon],
   template: `
     <section class="space-y-6">
       <div class="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
@@ -35,7 +34,7 @@ import { countStatus } from './count-status';
         <aside class="space-y-5 lg:col-span-4 lg:sticky lg:top-20">
           <ui-card accent="primary">
             <h3 card-header class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-secondary/80">
-              <i class="fa-solid fa-sliders text-primary" aria-hidden="true"></i>
+              <ui-icon name="adjustments-horizontal" class="text-primary" />
               {{ t().preview.settings }}
             </h3>
 
@@ -97,15 +96,10 @@ import { countStatus } from './count-status';
                 <div data-secondary-actions class="grid grid-cols-2 gap-2.5">
                   <ui-button variant="secondary" [disabled]="!store.canDraw()" (click)="continueByHand()">
                     {{ t().preview.continue }}
-                    <i
-                      class="fa-solid"
-                      [class.fa-lock]="manualLocked()"
-                      [class.fa-arrow-right]="!manualLocked()"
-                      aria-hidden="true"
-                    ></i>
+                    <ui-icon [name]="manualLocked() ? 'lock' : 'arrow-right'" />
                   </ui-button>
                   <ui-button variant="outline" (click)="store.back()">
-                    <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+                    <ui-icon name="arrow-left" />
                     {{ t().preview.back }}
                   </ui-button>
                 </div>
@@ -116,7 +110,7 @@ import { countStatus } from './count-status';
                   />
                 </div>
                 <ui-button size="lg" [disabled]="!store.canDraw()" (click)="store.draw()">
-                  <i class="fa-solid fa-shuffle" aria-hidden="true"></i>
+                  <ui-icon name="arrows-shuffle" />
                   {{ t().preview.draw }}
                 </ui-button>
               </div>
@@ -173,14 +167,14 @@ import { countStatus } from './count-status';
                       [pressed]="player.isGoalkeeper"
                       (click)="store.toggleGoalkeeper(player.id)"
                     >
-                      <i class="fa-solid fa-mitten" aria-hidden="true"></i>
+                      <ui-icon name="glove" />
                     </ui-icon-button>
                     <ui-icon-button
                       row-end
                       [label]="t().preview.edit(player.name)"
                       (click)="startEdit(player)"
                     >
-                      <i class="fa-solid fa-pencil" aria-hidden="true"></i>
+                      <ui-icon name="pencil" />
                     </ui-icon-button>
                     <ui-icon-button
                       row-end
@@ -188,7 +182,7 @@ import { countStatus } from './count-status';
                       [label]="t().preview.remove(player.name)"
                       (click)="store.removePlayer(player.id)"
                     >
-                      <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                      <ui-icon name="x" />
                     </ui-icon-button>
                   </ui-list-row>
                 }

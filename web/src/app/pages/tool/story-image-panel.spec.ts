@@ -105,8 +105,8 @@ describe('StoryImagePanel', () => {
     it('shows the button with a lock', () => {
       const { button } = setup();
       const create = button(T.result.createImage) as HTMLButtonElement;
-      expect(create.querySelector('i.fa-lock')).not.toBeNull();
-      expect(create.querySelector('i.fa-image')).toBeNull();
+      expect(create.querySelector('ui-icon[data-icon="lock"]')).not.toBeNull();
+      expect(create.querySelector('ui-icon[data-icon="photo"]')).toBeNull();
     });
 
     it('explains it and offers to sign in, instead of creating anything', () => {
@@ -123,8 +123,8 @@ describe('StoryImagePanel', () => {
     it('shows the button with an image icon and no lock', () => {
       const { button } = setup({ signedIn: true });
       const create = button(T.result.createImage) as HTMLButtonElement;
-      expect(create.querySelector('i.fa-image')).not.toBeNull();
-      expect(create.querySelector('i.fa-lock')).toBeNull();
+      expect(create.querySelector('ui-icon[data-icon="photo"]')).not.toBeNull();
+      expect(create.querySelector('ui-icon[data-icon="lock"]')).toBeNull();
     });
 
     it('shows nothing else until the image is created', () => {

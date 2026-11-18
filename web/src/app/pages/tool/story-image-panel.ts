@@ -14,7 +14,7 @@ import { STORY_BLOB } from '../../image/story-image';
 import { Entitlements, LockReason } from '../../plans/entitlements';
 import { LockNotice } from '../../plans/lock-notice';
 import { FriendlyStore } from '../../state/friendly.store';
-import { ToastService, UiButton, UiCard } from '../../ui';
+import { ToastService, UiButton, UiCard, UiIcon } from '../../ui';
 
 interface MadeImage {
   url: string;
@@ -27,18 +27,13 @@ interface MadeImage {
 @Component({
   selector: 'app-story-image-panel',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [LockNotice, UiButton, UiCard],
+  imports: [LockNotice, UiButton, UiCard, UiIcon],
   template: `
     <div class="space-y-4">
       <div class="flex flex-wrap items-center gap-3 rounded-xl border border-secondary/10 bg-white p-4 shadow-xs">
         <ng-content />
         <ui-button variant="outline" [disabled]="busy()" (click)="create()">
-          <i
-            class="fa-solid"
-            [class.fa-lock]="locked()"
-            [class.fa-image]="!locked()"
-            aria-hidden="true"
-          ></i>
+          <ui-icon [name]="locked() ? 'lock' : 'photo'" />
           {{ t().createImage }}
         </ui-button>
       </div>
@@ -49,11 +44,11 @@ interface MadeImage {
         <ui-card accent="alternative">
           <div card-header class="flex items-center justify-between border-b border-secondary/10 pb-3">
             <h3 class="flex items-center gap-2 text-base font-bold text-secondary">
-              <i class="fa-solid fa-mobile-screen-button text-alternative" aria-hidden="true"></i>
+              <ui-icon name="device-mobile" class="text-alternative" />
               {{ t().imageTitle }}
             </h3>
             <ui-button variant="ghost" (click)="close()">
-              <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+              <ui-icon name="x" />
               {{ t().closeImage }}
             </ui-button>
           </div>
@@ -68,12 +63,12 @@ interface MadeImage {
             </div>
             <div class="flex flex-wrap items-center gap-3">
               <ui-button (click)="download()">
-                <i class="fa-solid fa-download" aria-hidden="true"></i>
+                <ui-icon name="download" />
                 {{ t().download }}
               </ui-button>
               @if (made.canShare) {
                 <ui-button variant="outline" (click)="share()">
-                  <i class="fa-solid fa-share-nodes" aria-hidden="true"></i>
+                  <ui-icon name="share" />
                   {{ t().share }}
                 </ui-button>
               }

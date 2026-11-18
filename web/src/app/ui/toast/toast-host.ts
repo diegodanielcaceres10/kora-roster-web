@@ -1,8 +1,10 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { ToastService } from './toast-service';
+import { UiIcon } from '../icon/icon';
 
 @Component({
   selector: 'ui-toast-host',
+  imports: [UiIcon],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div
@@ -13,7 +15,7 @@ import { ToastService } from './toast-service';
         <p
           class="animate-toast inline-flex items-center gap-2.5 rounded-xl border border-white/15 bg-secondary/95 px-5 py-3 text-sm font-semibold tracking-tight text-white shadow-2xl backdrop-blur-md"
         >
-          <i class="fa-solid fa-circle-check text-primary" aria-hidden="true"></i>
+          <ui-icon name="circle-check" class="text-primary" />
           <span>{{ text }}</span>
         </p>
       }

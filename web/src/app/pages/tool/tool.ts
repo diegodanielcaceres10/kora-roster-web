@@ -6,6 +6,7 @@ import { FriendlyStore } from '../../state/friendly.store';
 import { PasteStep } from './paste-step';
 import { PreviewStep } from './preview-step';
 import { ResultStep } from './result-step';
+import { UiIcon } from '../../ui';
 
 interface StepDef {
   key: 'paste' | 'preview' | 'result';
@@ -16,7 +17,7 @@ interface StepDef {
 @Component({
   selector: 'app-tool',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [PasteStep, PreviewStep, ResultStep],
+  imports: [PasteStep, PreviewStep, ResultStep, UiIcon],
   template: `
     <section class="mx-auto max-w-5xl space-y-6 px-4 py-6 sm:py-8">
       <!-- Header with minimal sports utility identity -->
@@ -53,10 +54,7 @@ interface StepDef {
                     <span class="hidden md:inline">{{ step.label }}</span>
                   </div>
                   @if (i < steps().length - 1) {
-                    <i
-                      class="fa-solid fa-chevron-right mx-1 text-[10px] text-secondary/30"
-                      aria-hidden="true"
-                    ></i>
+                    <ui-icon name="chevron-right" class="mx-1 text-[10px] text-secondary/30" />
                   }
                 </li>
               }

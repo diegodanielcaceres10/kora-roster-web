@@ -13,19 +13,19 @@ import { Auth } from '../../auth/auth';
 import { UserAvatar } from '../../auth/user-avatar';
 import { I18n } from '../../i18n/i18n';
 import { PageMeta } from '../../i18n/page-meta';
-import { UiButton } from '../../ui';
+import { UiButton, UiIcon } from '../../ui';
 import { PreferencesEditor } from './preferences-editor';
 import { PremiumCard } from './premium-card';
 
 @Component({
   selector: 'app-account',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [UiButton, UserAvatar, PreferencesEditor, PremiumCard],
+  imports: [UiButton, UserAvatar, PreferencesEditor, PremiumCard, UiIcon],
   template: `
     <section class="mx-auto max-w-4xl space-y-8 px-4 py-8">
       <div class="border-b border-secondary/10 pb-4">
         <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-secondary/60">
-          <i class="fa-solid fa-id-card text-primary" aria-hidden="true"></i>
+          <ui-icon name="id" class="text-primary" />
           <span>{{ t().eyebrow }}</span>
         </div>
         <h1 class="mt-1 text-2xl font-black tracking-tight text-secondary sm:text-3xl">
@@ -56,7 +56,7 @@ import { PremiumCard } from './premium-card';
 
           <div>
             <ui-button variant="outline" (click)="signOut()">
-              <i class="fa-solid fa-arrow-right-from-bracket mr-1" aria-hidden="true"></i>
+              <ui-icon name="logout" class="mr-1" />
               {{ t().signOut }}
             </ui-button>
           </div>
@@ -71,7 +71,7 @@ import { PremiumCard } from './premium-card';
         <!-- Signed Out State Card -->
         <div class="rounded-xl border border-secondary/15 bg-white p-6 sm:p-8 shadow-xs space-y-5 text-center max-w-md mx-auto">
           <div class="mx-auto flex size-12 items-center justify-center rounded-full bg-secondary/8 text-secondary">
-            <i class="fa-solid fa-user text-xl" aria-hidden="true"></i>
+            <ui-icon name="user" class="text-xl" />
           </div>
 
           <p class="text-sm text-secondary/80 leading-relaxed">{{ t().signInPrompt }}</p>
