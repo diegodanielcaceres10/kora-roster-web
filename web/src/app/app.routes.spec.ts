@@ -17,6 +17,20 @@ async function open(url: string, providers: Provider[] = []) {
   return { harness, root, router: TestBed.inject(Router), i18n: TestBed.inject(I18n) };
 }
 
+// The language menu is closed until its globe button is pressed.
+function chooseLanguage(
+  harness: { fixture: { detectChanges(): void } },
+  root: HTMLElement,
+  name: string,
+) {
+  (root.querySelector('header app-language-menu button') as HTMLButtonElement).click();
+  harness.fixture.detectChanges();
+  const option = Array.from(root.querySelectorAll('header app-language-menu ul button')).find(
+    (button) => button.textContent?.trim() === name,
+  ) as HTMLButtonElement;
+  option.click();
+}
+
 const heading = (root: HTMLElement) => root.querySelector('h1')?.textContent;
 
 // The text for WhatsApp, the copy button and the image come with the confirmed teams.
@@ -69,7 +83,7 @@ describe('app routes', () => {
 
   it('wraps both pages in the shared header with the language selector', async () => {
     const { root } = await open('/es/friendly');
-    expect(root.querySelector('header app-language-selector')).not.toBeNull();
+    expect(root.querySelector('header app-language-menu')).not.toBeNull();
     expect(root.querySelector('footer')).not.toBeNull();
   });
 
@@ -103,10 +117,7 @@ describe('app routes', () => {
 
   it('changes language from the header and lands on the same page in the new language', async () => {
     const { harness, root, router } = await open('/es/friendly');
-    const portuguese = Array.from(root.querySelectorAll('[role="radio"]')).find(
-      (r) => r.textContent?.trim() === 'PT',
-    ) as HTMLButtonElement;
-    portuguese.click();
+    chooseLanguage(harness, root, 'Português');
     await harness.fixture.whenStable();
     expect(router.url).toBe('/pt/friendly');
     expect(heading(root)).toContain(DICTIONARIES.pt.tool.heading);
@@ -124,10 +135,7 @@ describe('app routes', () => {
     harness.fixture.detectChanges();
     expect(root.textContent).toContain(DICTIONARIES.es.tool.preview.count(12));
 
-    const portuguese = Array.from(root.querySelectorAll('[role="radio"]')).find(
-      (r) => r.textContent?.trim() === 'PT',
-    ) as HTMLButtonElement;
-    portuguese.click();
+    chooseLanguage(harness, root, 'Português');
     await harness.fixture.whenStable();
 
     expect(router.url).toBe('/pt/friendly');
@@ -226,10 +234,7 @@ describe('app routes', () => {
       const { harness, root, router } = await open('/es/account', google.providers);
       await pickAccount(google.fake, harness);
 
-      const portuguese = Array.from(root.querySelectorAll('[role="radio"]')).find(
-        (r) => r.textContent?.trim() === 'PT',
-      ) as HTMLButtonElement;
-      portuguese.click();
+      chooseLanguage(harness, root, 'Português');
       await harness.fixture.whenStable();
       harness.fixture.detectChanges();
 
@@ -251,7 +256,7 @@ describe('app routes', () => {
       harness.fixture.detectChanges();
 
       expect(root.querySelector('header app-user-avatar')).toBeNull();
-      expect(root.querySelector('header a[href="/es/account"]')?.textContent?.trim()).toBe(
+      expect(root.querySelector('header a[href="/es/account"]')?.getAttribute('aria-label')).toBe(
         DICTIONARIES.es.account.signInLink,
       );
     });

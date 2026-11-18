@@ -55,7 +55,9 @@
   }
 
   body {
-    @apply bg-[#f8fafc] text-secondary antialiased;
+    @apply bg-canvas text-ink antialiased;
+    background-image: radial-gradient(var(--line) 1px, transparent 1px);
+    background-size: 24px 24px;
     font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11', 'tnum';
     min-height: 100vh;
   }

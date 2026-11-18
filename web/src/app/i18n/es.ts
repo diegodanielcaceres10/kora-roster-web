@@ -4,6 +4,10 @@ export const es: Dictionary = {
   language: {
     label: 'Idioma',
   },
+  theme: {
+    toDark: 'Cambiar a modo oscuro',
+    toLight: 'Cambiar a modo claro',
+  },
   meta: {
     landing: {
       title: 'Kora Roster – Arma los equipos del partido en segundos',
@@ -78,6 +82,8 @@ export const es: Dictionary = {
   },
   footer: {
     tagline: 'Sorteador táctico de equipos para fútbol entre amigos',
+    developedBy: 'Desarrollado por',
+    rights: 'Todos los derechos reservados.',
   },
   landing: {
     eyebrow: 'Utilidad deportiva de armado rápido',

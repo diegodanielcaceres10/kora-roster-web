@@ -4,6 +4,10 @@ export const pt: Dictionary = {
   language: {
     label: 'Idioma',
   },
+  theme: {
+    toDark: 'Mudar para o modo escuro',
+    toLight: 'Mudar para o modo claro',
+  },
   meta: {
     landing: {
       title: 'Kora Roster – Monte os times da partida em segundos',
@@ -77,6 +81,8 @@ export const pt: Dictionary = {
   },
   footer: {
     tagline: 'Sorteador tático de times para futebol entre amigos',
+    developedBy: 'Desenvolvido por',
+    rights: 'Todos os direitos reservados.',
   },
   landing: {
     eyebrow: 'Utilitário esportivo de montagem rápida',

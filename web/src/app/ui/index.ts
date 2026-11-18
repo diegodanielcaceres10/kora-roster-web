@@ -4,6 +4,7 @@ export { UiCard, type CardAccent } from './card/card';
 export { UiIcon } from './icon/icon';
 export type { IconName } from './icon/icons';
 export { UiIconButton, type IconButtonVariant } from './icon-button/icon-button';
+export { UiIconLink, type IconLinkVariant } from './icon-link/icon-link';
 export { UiInput } from './input/input';
 export { UiListRow } from './list-row/list-row';
 export { UiSegmented, type SegmentedOption } from './segmented/segmented';

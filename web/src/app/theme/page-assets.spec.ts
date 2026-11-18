@@ -138,4 +138,11 @@ describe('color tokens', () => {
   it('draws the focus ring with the ink token, so it shows in both modes', () => {
     expect(css).toMatch(/\*:focus-visible\s*\{[^}]*outline:\s*2px solid var\(--ink\)/);
   });
+
+  it('paints the page with the canvas and ink tokens over a faint dot grid', () => {
+    const body = block('  body');
+    expect(body).toContain('bg-canvas');
+    expect(body).toContain('text-ink');
+    expect(body).toContain('radial-gradient(var(--line)');
+  });
 });

@@ -73,12 +73,30 @@ A 44 × 44 px button with only an icon.
 - `variant`: `default` or `danger`
 - `pressed`: leave it out for a plain action; give `true` or `false` to make it a toggle
   (it then exposes `aria-pressed` and turns amber when on)
+- `expanded`: for a button that opens something (a menu); give `true` or `false` and it exposes
+  `aria-expanded`
 - `disabled`
+- `focus()`: moves the focus to the button, for example when a menu closes
 
 ```html
 <ui-icon-button [label]="t().remove(name)" variant="danger" (click)="remove()">
   <ui-icon name="x" />
 </ui-icon-button>
+```
+
+### `UiIconLink` · `<ui-icon-link>`
+
+A link that looks exactly like `UiIconButton`. It renders a real `<a>`, so it opens in a new tab
+and is read as a link.
+
+- `link` (required): where it goes, the same as `routerLink` (a path or the list of its parts)
+- `label` (required): the accessible name, because the content is only an icon
+- `variant`: `default` or `primary` (amber tint, for the one link that should stand out)
+
+```html
+<ui-icon-link [link]="['/', lang, 'account']" [label]="t().account.title">
+  <ui-icon name="user" />
+</ui-icon-link>
 ```
 
 ### `UiTextarea` · `<ui-textarea>`
@@ -186,7 +204,9 @@ Not components, but just as easy to duplicate by accident:
   limits), `formatTeamsForWhatsApp` and `DEFAULT_TEAM_ICONS`.
 - `i18n/`: the `I18n` service (`lang()`, `t()`), the dictionaries (`en.ts` defines the type,
   `es.ts` and `pt.ts` must match), `PageMeta` (title, description, canonical and hreflang),
-  `SITE_URL`, `LanguageSelector` and `switchLanguageUrl`.
+  `SITE_URL`, `LanguageMenu` (the globe button in the header) and `switchLanguageUrl`.
+- `theme/`: `Theme` (`mode()`, `set()`, `toggle()`; saves the choice and puts the `dark` class on
+  `<html>`) and `ThemeToggle`, the moon and sun button of the header.
 - `auth/`: `Auth` (`user()`, `enabled`, `renderButton`, `signOut`) knows who signed in with
   Google; `GOOGLE_CLIENT_ID` turns sign in on (empty means off); `UserAvatar` shows a person's
   photo or initial; `browserStorage` reads the page storage safely. Talk to Google only through

@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { UiIcon } from '../icon/icon';
 import { UiIconButton } from './icon-button';
@@ -10,6 +10,7 @@ import { UiIconButton } from './icon-button';
       [label]="label()"
       [variant]="variant()"
       [pressed]="pressed()"
+      [expanded]="expanded()"
       [disabled]="disabled()"
       (click)="clicks.set(clicks() + 1)"
     >
@@ -21,6 +22,8 @@ class Host {
   readonly label = signal('Marcar como arquero');
   readonly variant = signal<'default' | 'danger'>('default');
   readonly pressed = signal<boolean | undefined>(undefined);
+  readonly expanded = signal<boolean | undefined>(undefined);
+  readonly control = viewChild.required(UiIconButton);
   readonly disabled = signal(false);
   readonly clicks = signal(0);
 }
@@ -57,6 +60,21 @@ describe('UiIconButton', () => {
     expect(button().getAttribute('aria-pressed')).toBe('false');
     update((h) => h.pressed.set(true));
     expect(button().getAttribute('aria-pressed')).toBe('true');
+  });
+
+  it('is not announced as expandable unless expanded is defined', () => {
+    const { button, update } = setup();
+    expect(button().hasAttribute('aria-expanded')).toBe(false);
+    update((h) => h.expanded.set(false));
+    expect(button().getAttribute('aria-expanded')).toBe('false');
+    update((h) => h.expanded.set(true));
+    expect(button().getAttribute('aria-expanded')).toBe('true');
+  });
+
+  it('takes the focus when asked to', () => {
+    const { button, host } = setup();
+    host.control().focus();
+    expect(document.activeElement).toBe(button());
   });
 
   it('looks different when pressed', () => {

@@ -1,21 +1,34 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { RouterLink, RouterOutlet } from '@angular/router';
 import { Auth } from '../auth/auth';
 import { UserAvatar } from '../auth/user-avatar';
 import { I18n } from '../i18n/i18n';
-import { LanguageSelector } from '../i18n/language-selector';
+import { LanguageMenu } from '../i18n/language-menu';
+import { ThemeToggle } from '../theme/theme-toggle';
+import { UiBadge, UiIcon, UiIconLink } from '../ui';
 
 @Component({
   selector: 'app-shell',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, RouterOutlet, LanguageSelector, UserAvatar],
+  imports: [
+    RouterLink,
+    RouterOutlet,
+    LanguageMenu,
+    ThemeToggle,
+    UserAvatar,
+    UiBadge,
+    UiIcon,
+    UiIconLink,
+  ],
   host: { class: 'flex min-h-screen flex-col' },
   template: `
-    <header class="sticky top-0 z-40 border-b border-secondary/10 bg-white/95 backdrop-blur-md">
-      <div class="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
+    <header class="sticky top-0 z-40 px-4 pt-3 sm:px-6">
+      <div
+        class="mx-auto flex max-w-6xl items-center justify-between gap-3 rounded-2xl border border-line bg-surface/90 px-4 py-2.5 shadow-xs backdrop-blur-md"
+      >
         <a
           [routerLink]="['/', i18n.lang()]"
-          class="group inline-flex items-center gap-2.5 font-bold tracking-tight text-secondary transition hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary"
+          class="group inline-flex items-center gap-2.5 rounded-lg text-ink transition hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
         >
           <img
             src="favicon.png"
@@ -24,49 +37,60 @@ import { LanguageSelector } from '../i18n/language-selector';
             height="32"
             class="size-8 transition group-hover:scale-105"
           />
-          <div class="flex items-baseline gap-1.5">
-            <span class="text-xl font-black tracking-tight">Kora</span>
-            <span
-              class="rounded bg-secondary/8 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-secondary/70"
-            >
-              Roster
-            </span>
-          </div>
+          <span class="font-display text-xl font-black uppercase tracking-tight">Kora</span>
+          <ui-badge tone="primary">Roster</ui-badge>
         </a>
-        <div class="flex items-center gap-3 sm:gap-4">
+        <div class="flex items-center gap-2">
+          <app-theme-toggle />
+          <app-language-menu />
           @if (auth.enabled) {
             @if (auth.user(); as user) {
               <a
                 [routerLink]="['/', i18n.lang(), 'account']"
                 [attr.aria-label]="i18n.t().account.title"
-                class="inline-flex rounded-full transition hover:ring-2 hover:ring-secondary/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary"
+                class="relative inline-flex rounded-full p-0.5 ring-2 ring-primary/60 transition hover:ring-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
               >
                 <app-user-avatar [user]="user" />
+                <span
+                  aria-hidden="true"
+                  class="absolute -bottom-0.5 -right-0.5 size-3 rounded-full border-2 border-surface bg-alternative"
+                ></span>
               </a>
             } @else {
-              <a
-                [routerLink]="['/', i18n.lang(), 'account']"
-                class="rounded-md px-2.5 py-1 text-sm font-semibold text-secondary transition hover:bg-secondary/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary"
-                >{{ i18n.t().account.signInLink }}</a
+              <ui-icon-link
+                variant="primary"
+                [link]="['/', i18n.lang(), 'account']"
+                [label]="i18n.t().account.signInLink"
               >
+                <ui-icon name="user" />
+              </ui-icon-link>
             }
           }
-          <div class="h-4 w-px bg-secondary/15" aria-hidden="true"></div>
-          <app-language-selector />
         </div>
       </div>
     </header>
     <main class="flex-1"><router-outlet /></main>
-    <footer
-      class="border-t border-secondary/10 bg-white py-6 text-center text-xs text-secondary/60"
-    >
+    <footer class="px-4 pb-6 pt-10 sm:px-6">
       <div
-        class="mx-auto flex max-w-6xl flex-col items-center justify-between gap-2 px-4 sm:flex-row"
+        class="mx-auto max-w-6xl rounded-2xl border border-line bg-surface p-5 shadow-xs sm:p-6"
       >
-        <p class="font-medium">Kora Roster</p>
-        <p class="text-[11px] text-secondary/50">
-          {{ i18n.t().footer.tagline }}
-        </p>
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+          <div class="inline-flex items-center gap-2.5 text-ink">
+            <img src="favicon.png" alt="" width="32" height="32" class="size-8" />
+            <span class="font-display text-xl font-black uppercase tracking-tight">Kora</span>
+            <ui-badge tone="primary">Roster</ui-badge>
+          </div>
+          <p class="text-sm text-ink-muted">{{ i18n.t().footer.tagline }}</p>
+        </div>
+        <div
+          class="mt-4 flex flex-col gap-1 border-t border-line pt-4 font-mono text-xs text-ink-faint sm:flex-row sm:items-center sm:justify-between"
+        >
+          <p>
+            {{ i18n.t().footer.developedBy }}
+            <span class="font-bold text-ink">{{ author }}</span>
+          </p>
+          <p>{{ copyright() }}</p>
+        </div>
       </div>
     </footer>
   `,
@@ -74,4 +98,10 @@ import { LanguageSelector } from '../i18n/language-selector';
 export class Shell {
   protected readonly i18n = inject(I18n);
   protected readonly auth = inject(Auth);
+
+  protected readonly author = 'Diego Daniel Cáceres';
+  private readonly year = new Date().getFullYear();
+  protected readonly copyright = computed(
+    () => `© ${this.year} Kora Roster. ${this.i18n.t().footer.rights}`,
+  );
 }

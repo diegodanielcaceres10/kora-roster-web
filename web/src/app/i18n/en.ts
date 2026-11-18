@@ -2,6 +2,10 @@ export const en = {
   language: {
     label: 'Language',
   },
+  theme: {
+    toDark: 'Switch to dark mode',
+    toLight: 'Switch to light mode',
+  },
   meta: {
     landing: {
       title: 'Kora Roster – Build match teams in seconds',
@@ -73,6 +77,8 @@ export const en = {
   },
   footer: {
     tagline: 'Tactical team picker for friendly football',
+    developedBy: 'Developed by',
+    rights: 'All rights reserved.',
   },
   landing: {
     eyebrow: 'Quick team-building sports utility',
