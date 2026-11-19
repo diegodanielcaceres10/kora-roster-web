@@ -17,180 +17,239 @@ import {
   UiBadge,
   UiButton,
   UiCard,
+  UiIcon,
   UiIconButton,
   UiInput,
   UiListRow,
-  UiSegmented, UiIcon } from '../../ui';
+  UiSegmented,
+  UiStat,
+} from '../../ui';
 import { countStatus } from './count-status';
+
+const TEAM_LETTERS = 'ABCDEF';
 
 @Component({
   selector: 'app-preview-step',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [LockNotice, UiBadge, UiButton, UiCard, UiIconButton, UiInput, UiListRow, UiSegmented, UiIcon],
+  imports: [
+    LockNotice,
+    UiBadge,
+    UiButton,
+    UiCard,
+    UiIcon,
+    UiIconButton,
+    UiInput,
+    UiListRow,
+    UiSegmented,
+    UiStat,
+  ],
   template: `
-    <section class="space-y-6">
-      <div class="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
-        <!-- Match Setup & Status Control Panel (Desktop Sticky Sidebar) -->
-        <aside class="space-y-5 lg:col-span-4 lg:sticky lg:top-20">
-          <ui-card accent="primary">
-            <h3 card-header class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-secondary/80">
-              <ui-icon name="adjustments-horizontal" class="text-primary" />
-              {{ t().preview.settings }}
-            </h3>
+    <section class="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
+      <ui-card class="lg:col-span-7">
+        <div card-header class="flex items-center gap-3">
+          <span
+            class="inline-flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-xl text-amber-700 dark:text-primary"
+          >
+            <ui-icon name="users" />
+          </span>
+          <div class="min-w-0">
+            <h2 class="font-display text-base font-black uppercase tracking-tight text-ink">
+              {{ t().preview.listTitle }}
+            </h2>
+            <p class="font-mono text-xs text-ink-muted">
+              {{ t().preview.listSubtitle(store.playerCount()) }}
+            </p>
+          </div>
+        </div>
 
-            <div class="space-y-4">
-              <!-- Team Count Selector -->
-              <div class="space-y-2">
-                <span class="block text-xs font-bold uppercase tracking-wider text-secondary/70">
-                  {{ t().preview.teamsLabel }}
-                </span>
-                <ui-segmented
-                  [label]="t().preview.teamsLabel"
-                  [options]="teamOptions()"
-                  [value]="teamValue()"
-                  (valueChange)="chooseTeams($event)"
-                  (lockedSelect)="touchLocked($event)"
+        <div role="list" class="space-y-2">
+          @for (player of store.players(); track player.id; let i = $index) {
+            <ui-list-row tile>
+              <span row-start class="inline-block w-6 font-mono text-xs text-ink-faint">
+                {{ (i + 1).toString().padStart(2, '0') }}
+              </span>
+              @if (editingId() === player.id) {
+                <ui-input
+                  [label]="t().preview.nameLabel"
+                  [labelHidden]="true"
+                  [value]="draftName()"
+                  (valueChange)="draftName.set($event)"
+                  (keydown.enter)="save(player.id)"
+                  (keydown.escape)="cancel()"
+                  (focusout)="save(player.id)"
                 />
-                <app-lock-notice [reason]="lock()?.reason ?? null" [message]="lock()?.message ?? null" />
-              </div>
-
-              <!-- Status Banner -->
-              <div class="rounded-xl border border-secondary/10 bg-secondary/[0.03] p-3.5 space-y-2">
-                <div class="flex items-center justify-between">
-                  <p class="font-black text-lg text-secondary">{{ t().preview.count(store.playerCount()) }}</p>
-                  <span class="text-xs font-semibold text-secondary/60 tabular-nums">
-                    {{ t().preview.teamsCount(store.teamCount()) }}
-                  </span>
+              } @else {
+                <div class="flex flex-wrap items-center gap-2">
+                  <span class="font-display font-bold text-ink">{{ player.name }}</span>
+                  @if (player.isGoalkeeper) {
+                    <ui-badge tone="primary">
+                      <ui-icon name="glove" />
+                      {{ t().preview.goalkeeper }}
+                    </ui-badge>
+                  }
                 </div>
+              }
+              <ui-icon-button
+                row-end
+                [label]="
+                  player.isGoalkeeper
+                    ? t().preview.unmarkGoalkeeper(player.name)
+                    : t().preview.markGoalkeeper(player.name)
+                "
+                [pressed]="player.isGoalkeeper"
+                (click)="store.toggleGoalkeeper(player.id)"
+              >
+                <ui-icon name="glove" />
+              </ui-icon-button>
+              <ui-icon-button
+                row-end
+                [label]="t().preview.edit(player.name)"
+                (click)="startEdit(player)"
+              >
+                <ui-icon name="pencil" />
+              </ui-icon-button>
+              <ui-icon-button
+                row-end
+                variant="danger"
+                [label]="t().preview.remove(player.name)"
+                (click)="store.removePlayer(player.id)"
+              >
+                <ui-icon name="trash" />
+              </ui-icon-button>
+            </ui-list-row>
+          }
+        </div>
+      </ui-card>
 
-                <div class="flex items-center gap-2">
-                  <span
-                    class="size-2 rounded-full"
-                    [class.bg-alternative]="store.canDraw()"
-                    [class.bg-red-600]="!store.canDraw()"
-                  ></span>
-                  <p role="status" [class]="statusClass()" class="text-xs font-bold uppercase tracking-wide">
+      <aside class="space-y-5 lg:col-span-5 lg:sticky lg:top-24">
+        <ui-card>
+          <div card-header class="flex items-center gap-3">
+            <span
+              class="inline-flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-xl text-amber-700 dark:text-primary"
+            >
+              <ui-icon name="adjustments-horizontal" />
+            </span>
+            <h2
+              class="mr-auto font-display text-base font-black uppercase tracking-tight text-ink"
+            >
+              {{ t().preview.settings }}
+            </h2>
+            <ui-badge>{{ t().preview.settingsTag }}</ui-badge>
+          </div>
+
+          <div class="space-y-4">
+            <div class="space-y-2">
+              <span
+                class="block font-mono text-[11px] font-bold uppercase tracking-wider text-ink-muted"
+              >
+                {{ t().preview.teamsLabel }}
+              </span>
+              <ui-segmented
+                stretch
+                [label]="t().preview.teamsLabel"
+                [options]="teamOptions()"
+                [value]="teamValue()"
+                (valueChange)="chooseTeams($event)"
+                (lockedSelect)="touchLocked($event)"
+              />
+              <app-lock-notice
+                [reason]="lock()?.reason ?? null"
+                [message]="lock()?.message ?? null"
+              />
+            </div>
+
+            <div class="grid grid-cols-3 gap-2">
+              <ui-stat
+                [label]="t().preview.teamsTile"
+                [value]="String(store.teamCount())"
+                [note]="teamNames()"
+              />
+              <ui-stat
+                [label]="t().preview.perTeam"
+                [value]="playersPerTeam()"
+                valueTone="primary"
+                [note]="evenNote()"
+                [noteTone]="isEven() ? 'muted' : 'warning'"
+              />
+              <ui-stat
+                [label]="t().preview.goalkeepers"
+                [value]="String(goalkeeperCount())"
+                [note]="goalkeeperNote()"
+              />
+            </div>
+
+            <div
+              class="flex items-start justify-between gap-3 rounded-xl border p-3.5"
+              [class]="
+                store.canDraw()
+                  ? 'border-primary/30 bg-primary/10'
+                  : 'border-red-200 bg-red-50 dark:border-red-500/30 dark:bg-red-500/10'
+              "
+            >
+              <div class="flex items-start gap-2.5">
+                <span
+                  aria-hidden="true"
+                  class="mt-1.5 size-2.5 shrink-0 rounded-full"
+                  [class]="store.canDraw() ? 'bg-primary' : 'bg-red-600'"
+                ></span>
+                <div class="space-y-1">
+                  <p
+                    role="status"
+                    [class]="statusClass()"
+                    class="font-display text-sm font-bold uppercase tracking-wide"
+                  >
                     {{ status() }}
                   </p>
-                </div>
-
-                @if (notice(); as message) {
-                  <p class="mt-1 rounded bg-secondary/8 p-2 text-xs text-secondary/80">{{ message }}</p>
-                }
-              </div>
-
-              <!-- Tactical Metrics Summary -->
-              <div class="grid grid-cols-2 gap-2 text-center">
-                <div class="rounded-lg border border-secondary/10 bg-white p-2.5 shadow-xs">
-                  <span class="block text-[10px] font-bold uppercase tracking-wider text-secondary/60">{{ t().preview.perTeam }}</span>
-                  <span class="text-base font-black text-secondary tabular-nums">{{ playersPerTeam() }}</span>
-                </div>
-                <div class="rounded-lg border border-secondary/10 bg-white p-2.5 shadow-xs">
-                  <span class="block text-[10px] font-bold uppercase tracking-wider text-secondary/60">{{ t().preview.goalkeepers }}</span>
-                  <span class="text-base font-black text-alternative tabular-nums">{{ goalkeeperCount() }}</span>
+                  @if (store.canDraw()) {
+                    <p class="text-sm text-ink-muted">
+                      {{ t().preview.readyDetail(store.playerCount()) }}
+                    </p>
+                  }
+                  @if (notice(); as message) {
+                    <p class="rounded-lg bg-ink/5 p-2 text-xs text-ink-muted">{{ message }}</p>
+                  }
                 </div>
               </div>
-
-              <!-- Action Controls -->
-              <div class="space-y-2.5 pt-2">
-                <div data-secondary-actions class="grid grid-cols-2 gap-2.5">
-                  <ui-button variant="secondary" [disabled]="!store.canDraw()" (click)="continueByHand()">
-                    {{ t().preview.continue }}
-                    <ui-icon [name]="manualLocked() ? 'lock' : 'arrow-right'" />
-                  </ui-button>
-                  <ui-button variant="outline" (click)="store.back()">
-                    <ui-icon name="arrow-left" />
-                    {{ t().preview.back }}
-                  </ui-button>
-                </div>
-                <div data-manual-notice>
-                  <app-lock-notice
-                    [reason]="manualNotice()?.reason ?? null"
-                    [message]="manualNotice()?.message ?? null"
-                  />
-                </div>
-                <ui-button size="lg" [disabled]="!store.canDraw()" (click)="store.draw()">
-                  <ui-icon name="arrows-shuffle" />
-                  {{ t().preview.draw }}
-                </ui-button>
-              </div>
+              <ui-icon
+                [name]="store.canDraw() ? 'circle-check' : 'alert-circle'"
+                [class]="
+                  'shrink-0 text-xl ' +
+                  (store.canDraw() ? 'text-amber-700 dark:text-primary' : 'text-red-700 dark:text-red-300')
+                "
+              />
             </div>
-          </ui-card>
-        </aside>
+          </div>
+        </ui-card>
 
-        <!-- Player Roster List Panel -->
-        <main class="lg:col-span-8">
-          <ui-card>
-            <div card-header class="flex flex-wrap items-center justify-between gap-2 border-b border-secondary/10 pb-3">
-              <div class="flex items-center gap-2.5">
-                <h2>{{ t().preview.title }}</h2>
-                <ui-badge tone="neutral">{{ store.playerCount() }}</ui-badge>
-              </div>
-              <span class="text-xs text-secondary/60">{{ t().preview.editHint }}</span>
+        <ui-card>
+          <div class="space-y-3">
+            <ui-button size="lg" [disabled]="!store.canDraw()" (click)="store.draw()">
+              <ui-icon name="bolt" />
+              {{ t().preview.drawTeams }}
+              <ui-icon name="arrow-right" class="ml-auto" />
+            </ui-button>
+            <ui-button
+              size="lg"
+              variant="outline"
+              [disabled]="!store.canDraw()"
+              (click)="continueByHand()"
+            >
+              {{ t().preview.continue }}
+              <ui-icon [name]="manualLocked() ? 'lock' : 'arrow-right'" />
+            </ui-button>
+            <div data-manual-notice>
+              <app-lock-notice
+                [reason]="manualNotice()?.reason ?? null"
+                [message]="manualNotice()?.message ?? null"
+              />
             </div>
-
-            <div class="space-y-3 pt-2">
-              <div class="flex items-center justify-between px-3 text-[11px] font-bold uppercase tracking-wider text-secondary/50">
-                <span>{{ t().preview.columnPlayer }}</span>
-                <span>{{ t().preview.columnActions }}</span>
-              </div>
-
-              <div role="list" class="divide-y divide-secondary/8 space-y-1">
-                @for (player of store.players(); track player.id; let i = $index) {
-                  <ui-list-row>
-                    <span row-start class="inline-block w-6 text-right font-semibold">{{ i + 1 }}</span>
-                    @if (editingId() === player.id) {
-                      <ui-input
-                        [label]="t().preview.nameLabel"
-                        [labelHidden]="true"
-                        [value]="draftName()"
-                        (valueChange)="draftName.set($event)"
-                        (keydown.enter)="save(player.id)"
-                        (keydown.escape)="cancel()"
-                        (focusout)="save(player.id)"
-                      />
-                    } @else {
-                      <div class="flex flex-wrap items-center gap-2">
-                        <span class="font-medium text-secondary">{{ player.name }}</span>
-                        @if (player.isGoalkeeper) {
-                          <ui-badge tone="alternative">{{ t().preview.goalkeeper }}</ui-badge>
-                        }
-                      </div>
-                    }
-                    <ui-icon-button
-                      row-end
-                      [label]="
-                        player.isGoalkeeper
-                          ? t().preview.unmarkGoalkeeper(player.name)
-                          : t().preview.markGoalkeeper(player.name)
-                      "
-                      [pressed]="player.isGoalkeeper"
-                      (click)="store.toggleGoalkeeper(player.id)"
-                    >
-                      <ui-icon name="glove" />
-                    </ui-icon-button>
-                    <ui-icon-button
-                      row-end
-                      [label]="t().preview.edit(player.name)"
-                      (click)="startEdit(player)"
-                    >
-                      <ui-icon name="pencil" />
-                    </ui-icon-button>
-                    <ui-icon-button
-                      row-end
-                      variant="danger"
-                      [label]="t().preview.remove(player.name)"
-                      (click)="store.removePlayer(player.id)"
-                    >
-                      <ui-icon name="x" />
-                    </ui-icon-button>
-                  </ui-list-row>
-                }
-              </div>
-            </div>
-          </ui-card>
-        </main>
-      </div>
+            <ui-button size="sm" variant="ghost" (click)="store.back()">
+              <ui-icon name="arrow-left" />
+              {{ t().preview.backToList }}
+            </ui-button>
+          </div>
+        </ui-card>
+      </aside>
     </section>
   `,
 })
@@ -213,13 +272,39 @@ export class PreviewStep {
     () => this.store.players().filter((p) => p.isGoalkeeper).length,
   );
 
+  // Sizes of the teams as they would come out: "6 vs 6", "5 vs 6" with two teams, a single figure
+  // or a range with more.
   protected readonly playersPerTeam = computed(() => {
     const count = this.store.playerCount();
     const teams = this.store.teamCount();
     if (teams <= 0) return '0';
-    const per = count / teams;
-    return Number.isInteger(per) ? String(per) : per.toFixed(1);
+    const low = Math.floor(count / teams);
+    const high = Math.ceil(count / teams);
+    if (low === high) return teams === 2 ? `${low} vs ${low}` : String(low);
+    return teams === 2 ? `${low} vs ${high}` : `${low}–${high}`;
   });
+
+  protected readonly isEven = computed(() => {
+    const teams = this.store.teamCount();
+    return teams > 0 && this.store.playerCount() % teams === 0;
+  });
+  protected readonly evenNote = computed(() =>
+    this.isEven() ? this.t().preview.evenTeams : this.t().preview.unevenTeams,
+  );
+
+  // "A y B", "A, B y C": the letters that name the teams, joined the way the language does.
+  protected readonly teamNames = computed(() =>
+    new Intl.ListFormat(this.i18n.lang(), { style: 'long', type: 'conjunction' }).format(
+      TEAM_LETTERS.slice(0, this.store.teamCount()).split(''),
+    ),
+  );
+
+  // Only said when it is exactly one goalkeeper for each team; anything else is not a promise.
+  protected readonly goalkeeperNote = computed(() =>
+    this.goalkeeperCount() === this.store.teamCount() ? this.t().preview.onePerTeam : '',
+  );
+
+  protected readonly String = String;
 
   protected readonly teamOptions = computed<SegmentedOption[]>(() =>
     [2, 3, 4, 5, 6].map((count) => {

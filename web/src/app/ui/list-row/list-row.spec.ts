@@ -5,7 +5,7 @@ import { UiListRow } from './list-row';
 @Component({
   imports: [UiListRow],
   template: `
-    <ui-list-row [highlight]="highlight()">
+    <ui-list-row [highlight]="highlight()" [tile]="tile()">
       <span row-start>7</span>
       <span>Diego</span>
       <button row-end type="button">Quitar</button>
@@ -14,6 +14,7 @@ import { UiListRow } from './list-row';
 })
 class Host {
   readonly highlight = signal(false);
+  readonly tile = signal(false);
 }
 
 function setup() {
@@ -43,6 +44,18 @@ describe('UiListRow', () => {
     fixture.componentInstance.highlight.set(true);
     fixture.detectChanges();
     expect(row.className).not.toBe(normal);
+  });
+
+  it('can be a tile of its own, with a border and a muted background', () => {
+    const { fixture, row } = setup();
+    const flat = row.className;
+    fixture.componentInstance.tile.set(true);
+    fixture.detectChanges();
+    expect(row.className).not.toBe(flat);
+    expect(row.classList.contains('bg-surface-muted/60')).toBe(true);
+    fixture.componentInstance.tile.set(false);
+    fixture.detectChanges();
+    expect(row.className).toBe(flat);
   });
 
   it('keeps the same look when highlight goes back to false', () => {

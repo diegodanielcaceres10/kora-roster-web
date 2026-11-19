@@ -37,16 +37,6 @@ describe('dictionaries', () => {
 
   describe('tool texts with numbers and names', () => {
     it.each([
-      ['en', '1 player', '12 players'],
-      ['es', '1 jugador', '12 jugadores'],
-      ['pt', '1 jogador', '12 jogadores'],
-    ] as const)('counts players in %s', (lang, one, many) => {
-      const { count } = DICTIONARIES[lang].tool.preview;
-      expect(count(1)).toBe(one);
-      expect(count(12)).toBe(many);
-    });
-
-    it.each([
       ['en', '1 more player needed to reach 10.', '3 more players needed to reach 10.'],
       ['es', 'Falta 1 jugador para llegar a 10.', 'Faltan 3 jugadores para llegar a 10.'],
       ['pt', 'Falta 1 jogador para chegar a 10.', 'Faltam 3 jogadores para chegar a 10.'],
@@ -370,28 +360,32 @@ describe('dictionaries', () => {
     );
 
     it.each([
-      ['en', 'Match settings', '3 teams', 'Per team', 'Goalkeepers', '# Player', 'Actions'],
-      [
-        'es',
-        'Configuración de partido',
-        '3 equipos',
-        'Por equipo',
-        'Arqueros',
-        '# Jugador',
-        'Acciones',
-      ],
-      ['pt', 'Configuração da partida', '3 times', 'Por time', 'Goleiros', '# Jogador', 'Ações'],
+      ['en', 'Match settings', 'Teams', 'Per team', 'Goalkeepers', 'Even', 'Uneven'],
+      ['es', 'Ajustes del partido', 'Equipos', 'Por equipo', 'Arqueros', 'Parejos', 'Desparejos'],
+      ['pt', 'Ajustes da partida', 'Times', 'Por time', 'Goleiros', 'Parelhos', 'Desiguais'],
     ] as const)(
-      'name the settings, the figures and the columns of the preview in %s',
-      (lang, settings, teams, perTeam, goalkeepers, player, actions) => {
+      'name the settings and the figures of the preview in %s',
+      (lang, settings, teams, perTeam, goalkeepers, even, uneven) => {
         const { preview } = DICTIONARIES[lang].tool;
         expect(preview.settings).toBe(settings);
-        expect(preview.teamsCount(3)).toBe(teams);
+        expect(preview.teamsTile).toBe(teams);
         expect(preview.perTeam).toBe(perTeam);
         expect(preview.goalkeepers).toBe(goalkeepers);
-        expect(preview.columnPlayer).toBe(player);
-        expect(preview.columnActions).toBe(actions);
-        expect(preview.editHint.length).toBeGreaterThan(10);
+        expect(preview.evenTeams).toBe(even);
+        expect(preview.unevenTeams).toBe(uneven);
+        expect(preview.onePerTeam).toContain('1');
+      },
+    );
+
+    it.each([['en'], ['es'], ['pt']] as const)(
+      'introduce the list and say it is ready in %s, with the number of players',
+      (lang) => {
+        const { preview } = DICTIONARIES[lang].tool;
+        expect(preview.listTitle.length).toBeGreaterThan(5);
+        expect(preview.listSubtitle(11)).toContain('11');
+        expect(preview.readyDetail(12)).toContain('12');
+        expect(preview.drawTeams.length).toBeGreaterThan(4);
+        expect(preview.backToList.length).toBeGreaterThan(4);
       },
     );
 

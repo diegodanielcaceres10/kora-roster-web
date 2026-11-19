@@ -10,9 +10,10 @@ const OPTIONS: SegmentedOption[] = [
 
 @Component({
   imports: [UiSegmented],
-  template: `<ui-segmented label="Idioma" [options]="options" [(value)]="lang" />`,
+  template: `<ui-segmented label="Idioma" [options]="options" [stretch]="stretch()" [(value)]="lang" />`,
 })
 class Host {
+  readonly stretch = signal(false);
   readonly options = OPTIONS;
   readonly lang = signal('en');
 }
@@ -218,5 +219,23 @@ describe('UiSegmented with locked options', () => {
     press(0, 'End');
     expect(document.activeElement).toBe(radios()[3]);
     expect(host.teams()).toBe('2');
+  });
+
+  describe('stretch', () => {
+    it('takes only the room it needs by default', () => {
+      const { el, radios } = setup();
+      const group = el.querySelector('[role="radiogroup"]') as HTMLElement;
+      expect(group.classList.contains('w-full')).toBe(false);
+      expect(radios().some((r) => r.classList.contains('flex-1'))).toBe(false);
+    });
+
+    it('fills the whole width with options of the same size', () => {
+      const { fixture, host, el, radios } = setup();
+      host.stretch.set(true);
+      fixture.detectChanges();
+      const group = el.querySelector('[role="radiogroup"]') as HTMLElement;
+      expect(group.classList.contains('w-full')).toBe(true);
+      expect(radios().every((r) => r.classList.contains('flex-1'))).toBe(true);
+    });
   });
 });

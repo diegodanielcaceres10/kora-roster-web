@@ -166,7 +166,7 @@ describe('PasteStep', () => {
     it('offers a button to draw next to the one to continue', () => {
       const { el, next } = setup();
       expect(drawButton(el)).toBeDefined();
-      expect(drawButton(el).querySelector('ui-icon[data-icon="arrows-shuffle"]')).not.toBeNull();
+      expect(drawButton(el).querySelector('ui-icon[data-icon="bolt"]')).not.toBeNull();
       expect(drawButton(el).closest('ui-button')?.parentElement).toBe(
         next().closest('ui-button')?.parentElement,
       );

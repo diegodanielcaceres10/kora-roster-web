@@ -159,6 +159,7 @@ A small label.
 One row of a list, with room for a number, content and actions.
 
 - `highlight`: marks the row (amber background and left border)
+- `tile`: draws the row as a bordered tile on a muted background, for lists with space between rows
 - Slots: `row-start`, the default content, and `row-end` (each `row-end` child is a separate action)
 - It has `role="listitem"`, so wrap the rows in an element with `role="list"`
 
@@ -167,6 +168,7 @@ One row of a list, with room for a number, content and actions.
 A radio group shown as segments, for choosing one of a few options (the language selector uses it).
 
 - `options` (required): `{ value, label }[]`; `label` (required): the group's accessible name
+- `stretch`: fills the whole width, with options of the same size (by default it takes only the room it needs)
 - Two-way value: `[(value)]`
 - Arrow keys move and select, with wrap-around; Home and End jump; only the selected option is
   reachable with Tab
@@ -174,6 +176,18 @@ A radio group shown as segments, for choosing one of a few options (the language
   "Premium". It shows a lock, reads as `aria-disabled`, never becomes the value, and touching it
   emits `(lockedSelect)` with the option so the screen can explain why (see `LockNotice`). The
   arrow keys still reach it without selecting it.
+
+### `UiStat` · `<ui-stat>`
+
+A small tile with one figure, for a summary of numbers (players per team, goalkeepers...).
+
+- `label` (required) and `value` (required): both are text, so format the figure before passing it
+- `note`: a line under the figure; leave it out for none
+- `valueTone`: `default` or `primary` (amber); `noteTone`: `muted` or `warning`
+
+```html
+<ui-stat [label]="t().perTeam" [value]="'5 vs 5'" note="Even" />
+```
 
 ### `UiStepHeader` · `<ui-step-header>`
 

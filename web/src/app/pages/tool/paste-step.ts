@@ -60,7 +60,7 @@ import { countStatus } from './count-status';
                 {{ t().paste.continue }}
               </ui-button>
               <ui-button size="lg" [disabled]="!canDraw()" (click)="drawNow()">
-                <ui-icon name="arrows-shuffle" />
+                <ui-icon name="bolt" />
                 {{ t().preview.draw }}
               </ui-button>
             </div>

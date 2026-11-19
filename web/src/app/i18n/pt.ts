@@ -169,15 +169,17 @@ export const pt: Dictionary = {
       continue: 'Continuar',
     },
     preview: {
-      settings: 'Configuração da partida',
-      teamsCount: (n) => `${n} times`,
+      settings: 'Ajustes da partida',
+      settingsTag: 'Distribuição',
+      listTitle: 'Jogadores detectados',
+      listSubtitle: (n) => `Total processado: ${n} na lista ativa`,
+      teamsTile: 'Times',
       perTeam: 'Por time',
       goalkeepers: 'Goleiros',
-      editHint: 'Edite os nomes ou defina os goleiros',
-      columnPlayer: '# Jogador',
-      columnActions: 'Ações',
-      title: 'Confira os nomes',
-      count: (n) => (n === 1 ? '1 jogador' : `${n} jogadores`),
+      evenTeams: 'Parelhos',
+      unevenTeams: 'Desiguais',
+      onePerTeam: '1 por time 🧤',
+      readyDetail: (n) => `${n} jogadores prontos para um sorteio equilibrado`,
       status: {
         ok: 'Pronto para sortear',
         tooFew: (missing, min) =>
@@ -194,7 +196,9 @@ export const pt: Dictionary = {
             : `São ${count} jogadores e com ${teams} times o número precisa ser múltiplo de ${teams}.`,
       },
       back: 'Voltar',
+      backToList: 'Voltar à lista colada',
       draw: 'Sortear',
+      drawTeams: 'Sortear times',
       continue: 'Continuar',
       goalkeeper: 'Goleiro',
       nameLabel: 'Nome do jogador',
@@ -206,7 +210,7 @@ export const pt: Dictionary = {
         teams === 2
           ? `Você costuma jogar ${perTeam} contra ${perTeam}, mas esta lista tem ${count === 1 ? '1 jogador' : `${count} jogadores`}.`
           : `Você costuma jogar com ${perTeam} por time: ${teams} times precisam de ${perTeam * teams} jogadores, mas esta lista tem ${count}.`,
-      teamsLabel: 'Times',
+      teamsLabel: 'Quantidade de times a sortear',
       teamsSignIn: 'Entre para usar 3 e 4 times.',
       teamsPremium: '5 e 6 times chegam com o Premium, em breve.',
       manualSignIn: 'Entre para montar os times à mão.',

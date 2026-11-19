@@ -61,9 +61,9 @@ describe('PreviewStep', () => {
     it('shows every player in order with its number', () => {
       const { rows } = setup('Diego\nMati\nNico');
       expect(rows().map((r) => r.textContent?.replace(/\s+/g, ' ').trim())).toEqual([
-        expect.stringMatching(/^1\s*Diego/),
-        expect.stringMatching(/^2\s*Mati/),
-        expect.stringMatching(/^3\s*Nico/),
+        expect.stringMatching(/^01\s*Diego/),
+        expect.stringMatching(/^02\s*Mati/),
+        expect.stringMatching(/^03\s*Nico/),
       ]);
     });
 
@@ -75,10 +75,17 @@ describe('PreviewStep', () => {
   });
 
   describe('count and status', () => {
-    it('shows the count and that the list is ready', () => {
+    it('shows the total of the list and that it is ready', () => {
       const { el } = setup(list(12));
-      expect(el.textContent).toContain(T.preview.count(12));
+      expect(el.textContent).toContain(T.preview.listSubtitle(12));
       expect(el.querySelector('p[role="status"]')?.textContent).toContain(T.preview.status.ok);
+      expect(el.textContent).toContain(T.preview.readyDetail(12));
+    });
+
+    it('does not say the list is ready when it is not', () => {
+      const { el } = setup(list(11));
+      expect(el.textContent).toContain(T.preview.listSubtitle(11));
+      expect(el.textContent).not.toContain(T.preview.readyDetail(11));
     });
 
     it.each([
@@ -98,43 +105,105 @@ describe('PreviewStep', () => {
     });
   });
 
+  describe('the figures', () => {
+    const stats = (el: HTMLElement) =>
+      Object.fromEntries(
+        Array.from(el.querySelectorAll('ui-stat')).map((stat) => [
+          stat.querySelector('[data-label]')?.textContent?.trim(),
+          {
+            value: stat.querySelector('[data-value]')?.textContent?.trim(),
+            note: stat.querySelector('[data-note]')?.textContent?.trim() ?? '',
+          },
+        ]),
+      );
+
+    it('names the teams by their letters', () => {
+      const { el } = setup(list(12));
+      expect(stats(el)[T.preview.teamsTile]).toEqual({ value: '2', note: 'A y B' });
+    });
+
+    it('shows the size of each team when they come out even', () => {
+      const { el } = setup(list(12));
+      expect(stats(el)[T.preview.perTeam]).toEqual({
+        value: '6 vs 6',
+        note: T.preview.evenTeams,
+      });
+    });
+
+    it('shows the two sizes when they would come out uneven', () => {
+      const { el } = setup(list(11));
+      expect(stats(el)[T.preview.perTeam]).toEqual({
+        value: '5 vs 6',
+        note: T.preview.unevenTeams,
+      });
+    });
+
+    it('follows the number of teams chosen', () => {
+      saveSession(); // more than two teams are for people with an account
+      const { fixture, el, store } = setup(list(18));
+      store.setTeamCount(3);
+      fixture.detectChanges();
+      expect(stats(el)[T.preview.teamsTile]).toEqual({ value: '3', note: 'A, B y C' });
+      expect(stats(el)[T.preview.perTeam]).toEqual({ value: '6', note: T.preview.evenTeams });
+    });
+
+    it('shows a range of sizes with more than two teams that do not divide', () => {
+      saveSession(); // more than two teams are for people with an account
+      const { fixture, el, store } = setup(list(17));
+      store.setTeamCount(3);
+      fixture.detectChanges();
+      expect(stats(el)[T.preview.perTeam]).toEqual({ value: '5–6', note: T.preview.unevenTeams });
+    });
+
+    it('counts the goalkeepers, and says there is one for each team when it is so', () => {
+      const { el } = setup(`Diego 🧤\nMati (gk)\n${list(10)}`);
+      expect(stats(el)[T.preview.goalkeepers]).toEqual({
+        value: '2',
+        note: T.preview.onePerTeam,
+      });
+    });
+
+    it('says nothing about goalkeepers per team when the numbers do not match', () => {
+      const { el } = setup(`Diego 🧤\n${list(11)}`);
+      expect(stats(el)[T.preview.goalkeepers]).toEqual({ value: '1', note: '' });
+    });
+  });
+
   describe('buttons', () => {
     it('keeps Draw disabled while the count is not valid', () => {
       const { byText } = setup(list(11));
-      expect(byText(T.preview.draw).disabled).toBe(true);
+      expect(byText(T.preview.drawTeams).disabled).toBe(true);
     });
 
     it('draws the teams and moves to the result when the count is valid', () => {
       const { store, byText, click } = setup(list(12));
-      expect(byText(T.preview.draw).disabled).toBe(false);
-      click(byText(T.preview.draw));
+      expect(byText(T.preview.drawTeams).disabled).toBe(false);
+      click(byText(T.preview.drawTeams));
       expect(store.step()).toBe('result');
       expect(store.teams()).not.toBeNull();
     });
 
     it('goes back to the pasted text', () => {
       const { store, byText, click } = setup(list(12));
-      click(byText(T.preview.back));
+      click(byText(T.preview.backToList));
       expect(store.step()).toBe('paste');
     });
   });
 
   describe('continuing without drawing', () => {
-    const pair = (el: HTMLElement) => el.querySelector('[data-secondary-actions]') as HTMLElement;
     const manualNotice = (el: HTMLElement) =>
       el
         .querySelector('[data-manual-notice] [role="status"]')
         ?.textContent?.replace(/\s+/g, ' ')
         .trim();
 
-    it('puts Continue and Back on one row, with Draw below them', () => {
-      const { el, byText } = setup(list(12));
-      expect(pair(el).contains(byText(T.preview.continue))).toBe(true);
-      expect(pair(el).contains(byText(T.preview.back))).toBe(true);
-      expect(pair(el).contains(byText(T.preview.draw))).toBe(false);
-      expect(pair(el).compareDocumentPosition(byText(T.preview.draw))).toBe(
-        Node.DOCUMENT_POSITION_FOLLOWING,
-      );
+    it('stacks Draw teams, Continue and Back, in that order', () => {
+      const { byText } = setup(list(12));
+      const draw = byText(T.preview.drawTeams);
+      const next = byText(T.preview.continue);
+      const back = byText(T.preview.backToList);
+      expect(draw.compareDocumentPosition(next)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+      expect(next.compareDocumentPosition(back)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
     });
 
     it.each([[true], [false]])(
@@ -201,7 +270,7 @@ describe('PreviewStep', () => {
 
       it('still draws', () => {
         const { store, byText, click } = setup(list(12));
-        click(byText(T.preview.draw));
+        click(byText(T.preview.drawTeams));
         expect(store.step()).toBe('result');
         expect(store.isComplete()).toBe(true);
       });
@@ -313,7 +382,7 @@ describe('PreviewStep', () => {
 
     it('does not stop them from drawing a list that is valid', () => {
       const { byText } = setup(list(12), TEST_PREFERENCES);
-      expect(byText(T.preview.draw).disabled).toBe(false);
+      expect(byText(T.preview.drawTeams).disabled).toBe(false);
     });
 
     it('appears next to the problem when the list is not valid either', () => {
@@ -443,20 +512,20 @@ describe('PreviewStep', () => {
       saveSession();
       const { el, store, click, byText } = setup(list(18));
       click(radios(el)[1]);
-      click(byText(T.preview.draw));
+      click(byText(T.preview.drawTeams));
       expect(store.teams()).toHaveLength(3);
     });
 
     it('still draws 2 teams for somebody who is not signed in', () => {
       const { store, click, byText } = setup(list(18));
-      click(byText(T.preview.draw));
+      click(byText(T.preview.drawTeams));
       expect(store.teams()).toHaveLength(2);
     });
   });
 
   describe('the texts that depend on the language', () => {
     it.each(['en', 'es', 'pt'] as const)(
-      'shows the settings, the figures and the headers of the list in %s',
+      'shows the settings, the figures and the headings of the list in %s',
       (lang) => {
         const { fixture, el } = setup(list(12));
         TestBed.inject(I18n).setLang(lang);
@@ -465,12 +534,17 @@ describe('PreviewStep', () => {
         const text = el.textContent?.replace(/\s+/g, ' ') as string;
         for (const expected of [
           preview.settings,
-          preview.teamsCount(2),
+          preview.settingsTag,
+          preview.listTitle,
+          preview.listSubtitle(12),
+          preview.teamsLabel,
+          preview.teamsTile,
           preview.perTeam,
           preview.goalkeepers,
-          preview.editHint,
-          preview.columnPlayer,
-          preview.columnActions,
+          preview.readyDetail(12),
+          preview.drawTeams,
+          preview.continue,
+          preview.backToList,
         ]) {
           expect(text).toContain(expected);
         }

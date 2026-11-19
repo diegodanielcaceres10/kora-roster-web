@@ -13,3 +13,4 @@ export { UiTextarea } from './textarea/textarea';
 export { ToastService } from './toast/toast-service';
 export { UiToastHost } from './toast/toast-host';
 export { UiStepHeader, type StepHeaderStep, type StepState } from './step-header/step-header';
+export { UiStat, type StatNoteTone, type StatTone } from './stat/stat';

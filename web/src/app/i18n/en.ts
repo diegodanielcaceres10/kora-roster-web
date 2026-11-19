@@ -166,14 +166,16 @@ export const en = {
     },
     preview: {
       settings: 'Match settings',
-      teamsCount: (n: number) => `${n} teams`,
+      settingsTag: 'Distribution',
+      listTitle: 'Players found',
+      listSubtitle: (n: number) => `Total processed: ${n} in the active list`,
+      teamsTile: 'Teams',
       perTeam: 'Per team',
       goalkeepers: 'Goalkeepers',
-      editHint: 'Edit names or assign goalkeepers',
-      columnPlayer: '# Player',
-      columnActions: 'Actions',
-      title: 'Check the names',
-      count: (n: number) => (n === 1 ? '1 player' : `${n} players`),
+      evenTeams: 'Even',
+      unevenTeams: 'Uneven',
+      onePerTeam: '1 per team 🧤',
+      readyDetail: (n: number) => `${n} players ready for a balanced draw`,
       status: {
         ok: 'Ready to draw',
         tooFew: (missing: number, min: number) =>
@@ -190,7 +192,9 @@ export const en = {
             : `${count} players: with ${teams} teams the number has to be a multiple of ${teams}.`,
       },
       back: 'Back',
+      backToList: 'Back to the pasted list',
       draw: 'Draw teams',
+      drawTeams: 'Draw teams',
       continue: 'Continue',
       goalkeeper: 'Goalkeeper',
       nameLabel: 'Player name',
@@ -202,7 +206,7 @@ export const en = {
         teams === 2
           ? `You usually play ${perTeam} vs ${perTeam}, but this list has ${count === 1 ? '1 player' : `${count} players`}.`
           : `You usually play with ${perTeam} per team: ${teams} teams need ${perTeam * teams} players, but this list has ${count}.`,
-      teamsLabel: 'Teams',
+      teamsLabel: 'Number of teams to draw',
       teamsSignIn: 'Sign in to use 3 and 4 teams.',
       teamsPremium: '5 and 6 teams come with Premium, coming soon.',
       manualSignIn: 'Sign in to build the teams by hand.',

@@ -135,14 +135,14 @@ describe('app routes', () => {
       root.querySelector('app-paste-step footer ui-button button') as HTMLButtonElement
     ).click();
     harness.fixture.detectChanges();
-    expect(root.textContent).toContain(DICTIONARIES.es.tool.preview.count(12));
+    expect(root.textContent).toContain(DICTIONARIES.es.tool.preview.listSubtitle(12));
 
     chooseLanguage(harness, root, 'Português');
     await harness.fixture.whenStable();
 
     expect(router.url).toBe('/pt/friendly');
     expect(store.players()).toHaveLength(12);
-    expect(root.textContent).toContain(DICTIONARIES.pt.tool.preview.count(12));
+    expect(root.textContent).toContain(DICTIONARIES.pt.tool.preview.listSubtitle(12));
   });
 
   it.each(['en', 'es', 'pt'] as const)(
@@ -167,7 +167,7 @@ describe('app routes', () => {
       root.querySelector('app-paste-step footer ui-button button') as HTMLButtonElement
     ).click();
     harness.fixture.detectChanges();
-    expect(root.textContent).toContain(DICTIONARIES.es.tool.preview.count(12));
+    expect(root.textContent).toContain(DICTIONARIES.es.tool.preview.listSubtitle(12));
 
     (root.querySelector('header a') as HTMLAnchorElement).click();
     await harness.fixture.whenStable();
@@ -177,7 +177,7 @@ describe('app routes', () => {
     (root.querySelector('main a[href="/es/friendly"]') as HTMLAnchorElement).click();
     await harness.fixture.whenStable();
     expect(router.url).toBe('/es/friendly');
-    expect(root.textContent).toContain(DICTIONARIES.es.tool.preview.count(12));
+    expect(root.textContent).toContain(DICTIONARIES.es.tool.preview.listSubtitle(12));
   });
 
   describe('the account', () => {
@@ -322,7 +322,7 @@ describe('app routes', () => {
       expect(root.textContent).toContain(T.preview.sizeNotice(7, 2, 12));
 
       const draw = Array.from(root.querySelectorAll('ui-button button')).find(
-        (b) => b.textContent?.trim() === T.preview.draw,
+        (b) => b.textContent?.trim() === T.preview.drawTeams,
       ) as HTMLButtonElement;
       draw.click();
       harness.fixture.detectChanges();
@@ -361,7 +361,9 @@ describe('app routes', () => {
 
     const teamRadio = (root: HTMLElement, label: string) =>
       Array.from(
-        root.querySelectorAll(`[role="radiogroup"][aria-label="Equipos"] [role="radio"]`),
+        root.querySelectorAll(
+          `[role="radiogroup"][aria-label="${DICTIONARIES.es.tool.preview.teamsLabel}"] [role="radio"]`,
+        ),
       ).find((r) => r.textContent?.trim().startsWith(label)) as HTMLButtonElement;
 
     async function pasted(count: number) {
@@ -383,7 +385,7 @@ describe('app routes', () => {
       expect(teamRadio(root, '4').getAttribute('aria-checked')).toBe('true');
       (
         Array.from(root.querySelectorAll('ui-button button')).find(
-          (b) => b.textContent?.trim() === DICTIONARIES.es.tool.preview.draw,
+          (b) => b.textContent?.trim() === DICTIONARIES.es.tool.preview.drawTeams,
         ) as HTMLButtonElement
       ).click();
       harness.fixture.detectChanges();
@@ -395,7 +397,7 @@ describe('app routes', () => {
       const { harness, root } = await pasted(12);
       (
         Array.from(root.querySelectorAll('ui-button button')).find(
-          (b) => b.textContent?.trim() === DICTIONARIES.es.tool.preview.draw,
+          (b) => b.textContent?.trim() === DICTIONARIES.es.tool.preview.drawTeams,
         ) as HTMLButtonElement
       ).click();
       harness.fixture.detectChanges();
@@ -440,7 +442,7 @@ describe('app routes', () => {
       harness.fixture.detectChanges();
       (
         Array.from(root.querySelectorAll('ui-button button')).find(
-          (b) => b.textContent?.trim() === DICTIONARIES.es.tool.preview.draw,
+          (b) => b.textContent?.trim() === DICTIONARIES.es.tool.preview.drawTeams,
         ) as HTMLButtonElement
       ).click();
       harness.fixture.detectChanges();

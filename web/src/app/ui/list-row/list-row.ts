@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import {
+  booleanAttribute,
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  input,
+} from '@angular/core';
 
 @Component({
   selector: 'ui-list-row',
@@ -17,8 +23,11 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
 })
 export class UiListRow {
   readonly highlight = input(false);
+  // A row that stands as a tile of its own: always bordered, on a muted background.
+  readonly tile = input(false, { transform: booleanAttribute });
 
-  protected readonly stateClasses = computed(() =>
-    this.highlight() ? 'border-l-4 border-primary bg-primary/15 border-line' : '',
-  );
+  protected readonly stateClasses = computed(() => {
+    if (this.highlight()) return 'border-l-4 border-primary bg-primary/15 border-line';
+    return this.tile() ? 'border-line bg-surface-muted/60' : '';
+  });
 }
