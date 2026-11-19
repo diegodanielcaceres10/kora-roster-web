@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { UiTextarea } from './textarea';
 
@@ -10,11 +10,16 @@ import { UiTextarea } from './textarea';
       [placeholder]="placeholder()"
       [rows]="rows()"
       [hint]="hint()"
+      [numbered]="numbered()"
+      [hideLabel]="hideLabel()"
       [(value)]="text"
     />
   `,
 })
 class Host {
+  readonly control = viewChild.required(UiTextarea);
+  readonly numbered = signal(false);
+  readonly hideLabel = signal(false);
   readonly text = signal('');
   readonly placeholder = signal('Pegá la lista acá');
   readonly rows = signal<number | undefined>(undefined);
@@ -95,5 +100,75 @@ describe('UiTextarea', () => {
     update((h) => h.hint.set('Una línea por jugador'));
     const hintId = field().getAttribute('aria-describedby') as string;
     expect(el.querySelector(`#${hintId}`)?.textContent).toContain('Una línea por jugador');
+  });
+
+  describe('numbered', () => {
+    const numbers = (el: HTMLElement) =>
+      Array.from(el.querySelectorAll('[data-gutter] > div')).map((n) => n.textContent?.trim());
+
+    it('shows no line numbers by default', () => {
+      const { el } = setup();
+      expect(el.querySelector('[data-gutter]')).toBeNull();
+    });
+
+    it('numbers the lines with two digits, at least as many as the rows', () => {
+      const { el, update } = setup();
+      update((h) => {
+        h.numbered.set(true);
+        h.rows.set(4);
+        h.text.set('Diego\nMati');
+      });
+      expect(numbers(el)).toEqual(['01', '02', '03', '04']);
+    });
+
+    it('keeps numbering as the list grows past the rows', () => {
+      const { el, update } = setup();
+      update((h) => {
+        h.numbered.set(true);
+        h.rows.set(3);
+        h.text.set(Array.from({ length: 11 }, (_, i) => `Jugador ${i + 1}`).join('\n'));
+      });
+      expect(numbers(el)).toHaveLength(11);
+      expect(numbers(el)[10]).toBe('11');
+    });
+
+    it('grows the field with its lines, so the numbers always match them', () => {
+      const { field, update } = setup();
+      update((h) => {
+        h.numbered.set(true);
+        h.rows.set(3);
+        h.text.set('a\nb\nc\nd\ne');
+      });
+      expect(field().rows).toBe(5);
+    });
+
+    it('does not wrap lines, so one line is one number', () => {
+      const { field, update } = setup();
+      update((h) => h.numbered.set(true));
+      expect(field().getAttribute('wrap')).toBe('off');
+    });
+
+    it('keeps the numbers out of assistive technology', () => {
+      const { el, update } = setup();
+      update((h) => h.numbered.set(true));
+      expect(el.querySelector('[data-gutter]')?.getAttribute('aria-hidden')).toBe('true');
+    });
+  });
+
+  describe('hidden label', () => {
+    it('keeps the label for assistive technology but not for the eyes', () => {
+      const { el, field, update } = setup();
+      const label = el.querySelector('label') as HTMLLabelElement;
+      expect(label.classList.contains('sr-only')).toBe(false);
+      update((h) => h.hideLabel.set(true));
+      expect(label.classList.contains('sr-only')).toBe(true);
+      expect(label.control).toBe(field());
+    });
+  });
+
+  it('takes the focus when asked to', () => {
+    const { host, field } = setup();
+    host.control().focus();
+    expect(document.activeElement).toBe(field());
   });
 });

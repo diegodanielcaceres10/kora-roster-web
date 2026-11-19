@@ -121,25 +121,51 @@ export const pt: Dictionary = {
     },
   },
   tool: {
-    mode: 'Modo Amistoso',
     progressLabel: 'Progresso do sorteio',
-    heading: 'Amistoso rápido',
+    stepDone: 'concluído',
+    steps: { list: 'Lista', review: 'Revisão', teams: 'Times' },
+    stepHeader: {
+      paste: {
+        title: 'Cole a lista de jogadores',
+        subtitle:
+          'Cole o texto do WhatsApp ou das suas notas e o Kora limpa os nomes e detecta os goleiros.',
+      },
+      preview: {
+        title: 'Confira os nomes',
+        subtitle: 'Confira os nomes e os goleiros detectados e escolha quantos times sortear.',
+      },
+      result: {
+        title: 'Edite os times',
+        subtitle: 'Troque jogadores, coloque quem ficou de fora e confirme os times.',
+      },
+      confirmed: {
+        title: 'Times confirmados',
+        subtitle: 'Copie a mensagem para o seu grupo ou crie a imagem para compartilhar.',
+      },
+    },
     teamTitle: (n) => `Time ${n}`,
     paste: {
       reviewSignIn: 'Entre para revisar a lista e editar os times.',
       detected: (n) => (n === 1 ? '1 jogador detectado' : `${n} jogadores detectados`),
       guide: {
         title: 'Guia de carga rápida',
-        step1: 'Copie e cole a lista exatamente como sai do seu grupo de WhatsApp.',
-        step2: 'Números, marcadores, hifens e emojis são limpos automaticamente.',
-        step3Before: 'Adicione o emoji de luva ou a palavra',
-        step3Word: '(goleiro)',
-        step3After: 'para distribuir os goleiros de forma equilibrada.',
+        tag: 'Passo a passo',
+        step1Title: 'Cole a lista como veio',
+        step1:
+          'Copie a mensagem do WhatsApp, do Telegram ou das suas notas. Um nome por linha ou separados por vírgula.',
+        step2Title: 'Limpeza automática',
+        step2:
+          'Números, marcadores e hifens do início são removidos, e um nome repetido conta uma vez só. Observações entre parênteses e emojis são mantidos.',
+        step3Title: 'Como marcar goleiros',
+        step3Before: 'Escreva',
+        step3Words: ['(goleiro)', '(goleira)', '(gk)'],
+        step3After:
+          'ao lado do nome ou adicione o emoji de luva 🧤. Eles são distribuídos de forma equilibrada entre os times.',
       },
-      title: 'Cole a lista',
+      title: 'Entrada da lista // Área de transferência',
+      clear: 'Limpar',
       label: 'Lista do WhatsApp',
       placeholder: 'Cole aqui a lista do seu grupo do WhatsApp',
-      hint: 'Um nome por linha ou separados por vírgula. Números, marcadores e emojis não atrapalham.',
       continue: 'Continuar',
     },
     preview: {

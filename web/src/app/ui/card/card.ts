@@ -19,6 +19,7 @@ const ACCENTS: Record<CardAccent, string> = {
     >
       <header class="border-b border-line bg-surface-muted/60 px-4 py-3 sm:px-5 empty:hidden"><ng-content select="[card-header]" /></header>
       <div class="p-4 sm:p-5"><ng-content /></div>
+      <footer class="border-t border-line bg-surface-muted/60 px-4 py-3 sm:px-5 empty:hidden"><ng-content select="[card-footer]" /></footer>
     </section>
   `,
 })

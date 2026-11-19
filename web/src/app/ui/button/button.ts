@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost';
-export type ButtonSize = 'md' | 'lg';
+export type ButtonSize = 'sm' | 'md' | 'lg';
 
 const BASE =
   'inline-flex w-full select-none items-center justify-center gap-2 rounded-xl font-display font-bold uppercase tracking-wide ' +
@@ -17,6 +17,7 @@ const VARIANTS: Record<ButtonVariant, string> = {
 };
 
 const SIZES: Record<ButtonSize, string> = {
+  sm: 'min-h-11 px-3 text-xs sm:min-h-9',
   md: 'min-h-11 px-4 text-[13px] sm:text-sm',
   lg: 'min-h-13 px-6 text-sm sm:text-base',
 };

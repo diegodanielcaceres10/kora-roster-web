@@ -35,7 +35,8 @@ and `index.ts` disagree.
 Any action the person triggers. Wraps a native `<button>`.
 
 - `variant`: `primary` (default), `secondary`, `outline`, `ghost`
-- `size`: `md` (default, 44 px), `lg` (52 px)
+- `size`: `sm` (for a secondary action inside a card: 44 px on a phone, 36 px from `sm` up), `md`
+  (default, 44 px), `lg` (52 px)
 - `type`: `button` (default) or `submit`; `disabled`; `ariaLabel`
 - Content: text and icons. `(click)` works on the `<ui-button>` itself.
 
@@ -104,6 +105,11 @@ and is read as a link.
 A labelled multi-line field.
 
 - `label` (required), `placeholder`, `rows` (default 6), `hint` (linked with `aria-describedby`)
+- `numbered`: shows a two-digit number beside every line, in a monospace field that grows with its
+  lines (up to a height, then it scrolls) and does not wrap them, so a number is always one line
+- `hideLabel`: keeps the label for assistive technology only, when the screen already names the
+  field (the header of a card, say)
+- `focus()`: moves the focus into the field
 - Two-way value: `[(value)]`, or `[value]` with `(valueChange)`
 
 ### `UiInput` · `<ui-input>`
@@ -129,10 +135,11 @@ A labelled native drop-down list.
 
 ### `UiCard` · `<ui-card>`
 
-A bordered surface. Its `card-header` sits on a muted band with a line below it.
+A bordered surface. Its `card-header` sits on a muted band with a line below it, and a
+`card-footer` (for the actions of the card) on one with a line above it. Both are hidden when empty.
 
 - `accent`: `primary`, `secondary` or `alternative` (a 4 px bar on top); none by default
-- Slots: `card-header` (optional) and the default content
+- Slots: `card-header` (optional), `card-footer` (optional) and the default content
 
 ```html
 <ui-card accent="alternative">
@@ -167,6 +174,28 @@ A radio group shown as segments, for choosing one of a few options (the language
   "Premium". It shows a lock, reads as `aria-disabled`, never becomes the value, and touching it
   emits `(lockedSelect)` with the option so the screen can explain why (see `LockNotice`). The
   arrow keys still reach it without selecting it.
+
+### `UiStepHeader` · `<ui-step-header>`
+
+The top of a page that goes through steps: the title of the current step (it is the `h1`), a line
+that explains it, and the steps with where the person stands. On a phone the steps go under the
+title and take the full width.
+
+- `title` (required), `subtitle`
+- `steps`: a list of `{ label, state }` where `state` is `done` (green, with a check), `current`
+  (amber, and `aria-current="step"`) or `todo`; leave it out for a plain title
+- `stepsLabel`: the accessible name of the list of steps; `doneLabel`: what to read after a done
+  step (for example "completed")
+
+```html
+<ui-step-header
+  [title]="t().stepHeader.review.title"
+  [subtitle]="t().stepHeader.review.subtitle"
+  [steps]="steps()"
+  [stepsLabel]="t().progressLabel"
+  [doneLabel]="t().stepDone"
+/>
+```
 
 ### `ToastService` and `UiToastHost` · `<ui-toast-host>`
 

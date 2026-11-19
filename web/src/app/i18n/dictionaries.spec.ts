@@ -1,3 +1,4 @@
+import { parsePastedNames } from '../core/parse-players';
 import { DICTIONARIES } from './dictionaries';
 import { SUPPORTED_LANGS } from './languages';
 
@@ -304,14 +305,26 @@ describe('dictionaries', () => {
     });
 
     it.each([
-      ['en', 'Friendly mode', 'Draw progress'],
-      ['es', 'Modo Amistoso', 'Progreso del sorteo'],
-      ['pt', 'Modo Amistoso', 'Progresso do sorteio'],
-    ] as const)('name the mode and the progress of the tool in %s', (lang, mode, progress) => {
+      ['en', 'Draw progress', ['List', 'Review', 'Teams'], 'completed'],
+      ['es', 'Progreso del sorteo', ['Lista', 'Revisión', 'Equipos'], 'completado'],
+      ['pt', 'Progresso do sorteio', ['Lista', 'Revisão', 'Times'], 'concluído'],
+    ] as const)('name the progress and the steps of the tool in %s', (lang, progress, steps, done) => {
       const { tool } = DICTIONARIES[lang];
-      expect(tool.mode).toBe(mode);
       expect(tool.progressLabel).toBe(progress);
+      expect([tool.steps.list, tool.steps.review, tool.steps.teams]).toEqual(steps);
+      expect(tool.stepDone).toBe(done);
     });
+
+    it.each([['en'], ['es'], ['pt']] as const)(
+      'title and explain every step of the tool in %s',
+      (lang) => {
+        const { stepHeader } = DICTIONARIES[lang].tool;
+        for (const step of [stepHeader.paste, stepHeader.preview, stepHeader.result, stepHeader.confirmed]) {
+          expect(step.title.trim().length).toBeGreaterThan(5);
+          expect(step.subtitle.trim().length).toBeGreaterThan(20);
+        }
+      },
+    );
 
     it.each([
       ['en', '1 player detected', '5 players detected', 'Quick loading guide'],
@@ -328,13 +341,31 @@ describe('dictionaries', () => {
     );
 
     it.each([['en'], ['es'], ['pt']] as const)(
-      'write the three steps of the guide in %s, with the word of the goalkeeper between brackets',
+      'write the three steps of the guide in %s, each with a title',
       (lang) => {
         const { guide } = DICTIONARIES[lang].tool.paste;
-        for (const text of [guide.step1, guide.step2, guide.step3Before, guide.step3After]) {
-          expect(text.trim().length).toBeGreaterThan(10);
+        for (const title of [guide.step1Title, guide.step2Title, guide.step3Title, guide.tag]) {
+          expect(title.trim().length).toBeGreaterThan(3);
         }
-        expect(guide.step3Word).toMatch(/^\(\p{L}+\)$/u);
+        for (const text of [guide.step1, guide.step2, guide.step3Before, guide.step3After]) {
+          expect(text.trim().length).toBeGreaterThan(3);
+        }
+      },
+    );
+
+    // The guide tells people which words mark a goalkeeper, so every one of them must be
+    // understood by the parser that reads the list. Do not promise a word it does not know.
+    it.each([['en'], ['es'], ['pt']] as const)(
+      'only show goalkeeper words that the parser understands in %s',
+      (lang) => {
+        const { step3Words } = DICTIONARIES[lang].tool.paste.guide;
+        expect(step3Words.length).toBeGreaterThan(0);
+        for (const word of step3Words) {
+          expect(word).toMatch(/^\(\p{L}+\)$/u);
+          expect(parsePastedNames(`Diego ${word}`), word).toEqual([
+            { name: 'Diego', isGoalkeeper: true },
+          ]);
+        }
       },
     );
 

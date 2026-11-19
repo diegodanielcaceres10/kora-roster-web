@@ -16,13 +16,13 @@ describe('Tool', () => {
   });
 
   it.each(['en', 'es', 'pt'] as const)(
-    'shows its headline and sets the page title in %s',
+    'shows the title of the first step and sets the page title in %s',
     (lang) => {
       TestBed.inject(I18n).setLang(lang);
       const fixture = TestBed.createComponent(Tool);
       fixture.detectChanges();
       expect(fixture.nativeElement.querySelector('h1')?.textContent).toContain(
-        DICTIONARIES[lang].tool.heading,
+        DICTIONARIES[lang].tool.stepHeader.paste.title,
       );
       expect(document.title).toBe(DICTIONARIES[lang].meta.tool.title);
     },
@@ -54,16 +54,46 @@ describe('Tool', () => {
     expect(shown()).toEqual(['app-paste-step']);
   });
 
+  describe('the title of the page', () => {
+    it('follows the step the person is on, with its explanation', () => {
+      const store = TestBed.inject(FriendlyStore);
+      const fixture = TestBed.createComponent(Tool);
+      const el = fixture.nativeElement as HTMLElement;
+      TestBed.inject(I18n).setLang('es');
+      const { stepHeader } = DICTIONARIES.es.tool;
+      const shown = () => [
+        el.querySelector('h1')?.textContent?.trim(),
+        el.querySelector('header p')?.textContent?.trim(),
+      ];
+
+      fixture.detectChanges();
+      expect(shown()).toEqual([stepHeader.paste.title, stepHeader.paste.subtitle]);
+
+      store.setRawText(list(12));
+      store.continueToPreview();
+      fixture.detectChanges();
+      expect(shown()).toEqual([stepHeader.preview.title, stepHeader.preview.subtitle]);
+
+      store.draw(() => 0.3);
+      fixture.detectChanges();
+      expect(shown()).toEqual([stepHeader.result.title, stepHeader.result.subtitle]);
+
+      store.confirm();
+      fixture.detectChanges();
+      expect(shown()).toEqual([stepHeader.confirmed.title, stepHeader.confirmed.subtitle]);
+    });
+  });
+
   describe('the indicator of the steps', () => {
     // Only people with an account go through the steps, so only they see it.
     beforeEach(() => saveSession());
 
-    // A step is the one in use (dark), already done (green) or still to come (plain).
+    // A step is the one in use (amber), already done (with a check) or still to come (plain).
     const states = (el: HTMLElement) =>
-      Array.from(el.querySelectorAll('nav li > div')).map((badge) =>
-        badge.className.includes('bg-secondary')
+      Array.from(el.querySelectorAll('nav li [data-step]')).map((step) =>
+        step.getAttribute('aria-current') === 'step'
           ? 'active'
-          : badge.className.includes('bg-alternative')
+          : step.querySelector('ui-icon[data-icon="check"]')
             ? 'done'
             : 'pending',
       );
@@ -117,7 +147,7 @@ describe('Tool', () => {
 
   describe('the texts that depend on the language', () => {
     it.each(['en', 'es', 'pt'] as const)(
-      'shows the mode and the label of the progress in %s',
+      'names the steps and the progress in %s',
       (lang) => {
         saveSession();
         const fixture = TestBed.createComponent(Tool);
@@ -125,8 +155,11 @@ describe('Tool', () => {
         fixture.detectChanges();
         const el = fixture.nativeElement as HTMLElement;
         const { tool } = DICTIONARIES[lang];
-        expect(el.textContent).toContain(tool.mode);
         expect(el.querySelector('nav')?.getAttribute('aria-label')).toBe(tool.progressLabel);
+        const text = el.querySelector('nav')?.textContent?.replace(/\s+/g, ' ') as string;
+        expect(text).toContain(`1 ${tool.steps.list}`);
+        expect(text).toContain(`2 ${tool.steps.review}`);
+        expect(text).toContain(`3 ${tool.steps.teams}`);
       },
     );
   });

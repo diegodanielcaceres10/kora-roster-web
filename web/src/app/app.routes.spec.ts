@@ -77,7 +77,7 @@ describe('app routes', () => {
     async (lang) => {
       const { root, i18n } = await open(`/${lang}/friendly`);
       expect(i18n.lang()).toBe(lang);
-      expect(heading(root)).toContain(DICTIONARIES[lang].tool.heading);
+      expect(heading(root)).toContain(DICTIONARIES[lang].tool.stepHeader.paste.title);
     },
   );
 
@@ -120,7 +120,7 @@ describe('app routes', () => {
     chooseLanguage(harness, root, 'Português');
     await harness.fixture.whenStable();
     expect(router.url).toBe('/pt/friendly');
-    expect(heading(root)).toContain(DICTIONARIES.pt.tool.heading);
+    expect(heading(root)).toContain(DICTIONARIES.pt.tool.stepHeader.paste.title);
   });
 
   it('keeps the pasted list when the language changes', async () => {
@@ -131,7 +131,9 @@ describe('app routes', () => {
     field.value = Array.from({ length: 12 }, (_, i) => `Player ${i + 1}`).join('\n');
     field.dispatchEvent(new Event('input'));
     harness.fixture.detectChanges();
-    (root.querySelector('ui-button button') as HTMLButtonElement).click();
+    (
+      root.querySelector('app-paste-step footer ui-button button') as HTMLButtonElement
+    ).click();
     harness.fixture.detectChanges();
     expect(root.textContent).toContain(DICTIONARIES.es.tool.preview.count(12));
 
@@ -150,7 +152,7 @@ describe('app routes', () => {
       (root.querySelector(`main a[href="/${lang}/friendly"]`) as HTMLAnchorElement).click();
       await harness.fixture.whenStable();
       expect(router.url).toBe(`/${lang}/friendly`);
-      expect(heading(root)).toContain(DICTIONARIES[lang].tool.heading);
+      expect(heading(root)).toContain(DICTIONARIES[lang].tool.stepHeader.paste.title);
     },
   );
 
@@ -161,7 +163,9 @@ describe('app routes', () => {
     field.value = Array.from({ length: 12 }, (_, i) => `Player ${i + 1}`).join('\n');
     field.dispatchEvent(new Event('input'));
     harness.fixture.detectChanges();
-    (root.querySelector('ui-button button') as HTMLButtonElement).click();
+    (
+      root.querySelector('app-paste-step footer ui-button button') as HTMLButtonElement
+    ).click();
     harness.fixture.detectChanges();
     expect(root.textContent).toContain(DICTIONARIES.es.tool.preview.count(12));
 
@@ -311,7 +315,9 @@ describe('app routes', () => {
       field.value = Array.from({ length: 12 }, (_, i) => `Player ${i + 1}`).join('\n');
       field.dispatchEvent(new Event('input'));
       harness.fixture.detectChanges();
-      (root.querySelector('ui-button button') as HTMLButtonElement).click();
+      (
+      root.querySelector('app-paste-step footer ui-button button') as HTMLButtonElement
+    ).click();
       harness.fixture.detectChanges();
       expect(root.textContent).toContain(T.preview.sizeNotice(7, 2, 12));
 
@@ -364,7 +370,9 @@ describe('app routes', () => {
       field.value = Array.from({ length: count }, (_, i) => `Player ${i + 1}`).join('\n');
       field.dispatchEvent(new Event('input'));
       opened.harness.fixture.detectChanges();
-      (opened.root.querySelector('ui-button button') as HTMLButtonElement).click();
+      (
+        opened.root.querySelector('app-paste-step footer ui-button button') as HTMLButtonElement
+      ).click();
       opened.harness.fixture.detectChanges();
       return opened;
     }

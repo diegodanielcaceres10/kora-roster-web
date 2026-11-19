@@ -17,13 +17,17 @@ function setup(initialText = '') {
   fixture.detectChanges();
   const el = fixture.nativeElement as HTMLElement;
   const textarea = () => el.querySelector('textarea') as HTMLTextAreaElement;
-  const next = () => el.querySelector('ui-button button') as HTMLButtonElement;
+  const buttons = () => Array.from(el.querySelectorAll('ui-button button')) as HTMLButtonElement[];
+  const named = (text: string) =>
+    buttons().find((b) => b.textContent?.trim() === text) as HTMLButtonElement;
+  const next = () => named(T.paste.continue);
+  const clear = () => named(T.paste.clear);
   const type = (text: string) => {
     textarea().value = text;
     textarea().dispatchEvent(new Event('input'));
     fixture.detectChanges();
   };
-  return { fixture, el, store, textarea, next, type };
+  return { fixture, el, store, textarea, next, clear, type };
 }
 
 describe('PasteStep', () => {
@@ -37,7 +41,41 @@ describe('PasteStep', () => {
     expect(el.querySelector('h2')?.textContent).toContain(T.paste.title);
     expect(el.querySelector('label')?.textContent).toContain(T.paste.label);
     expect(textarea().placeholder).toBe(T.paste.placeholder);
-    expect(el.textContent).toContain(T.paste.hint);
+  });
+
+  describe('the editor', () => {
+    it('numbers the lines of the list', () => {
+      const { el, type } = setup();
+      type(Array.from({ length: 12 }, (_, i) => `Jugador ${i + 1}`).join('\n'));
+      const numbers = Array.from(el.querySelectorAll('[data-gutter] > div')).map((n) =>
+        n.textContent?.trim(),
+      );
+      expect(numbers).toHaveLength(12);
+      expect(numbers[0]).toBe('01');
+      expect(numbers[11]).toBe('12');
+    });
+
+    it('is named by the card header, so its own label is only for assistive technology', () => {
+      const { el } = setup();
+      expect(el.querySelector('label')?.classList.contains('sr-only')).toBe(true);
+    });
+
+    it('leaves the list empty and the cursor in the field when Clear is pressed', () => {
+      const { clear, store, textarea, type, fixture } = setup();
+      type('Diego\nMati');
+      clear().click();
+      fixture.detectChanges();
+      expect(store.rawText()).toBe('');
+      expect(textarea().value).toBe('');
+      expect(document.activeElement).toBe(textarea());
+    });
+
+    it('has nothing to clear while the list is empty', () => {
+      const { clear, type } = setup();
+      expect(clear().disabled).toBe(true);
+      type('Diego');
+      expect(clear().disabled).toBe(false);
+    });
   });
 
   it('writes what is typed into the store', () => {
@@ -86,15 +124,34 @@ describe('PasteStep', () => {
         const text = el.textContent?.replace(/\s+/g, ' ') as string;
         expect(text).toContain(paste.detected(2));
         expect(text).toContain(paste.guide.title);
-        expect(text).toContain(paste.guide.step1);
-        expect(text).toContain(paste.guide.step2);
-        expect(text).toContain(
-          `${paste.guide.step3Before} ${paste.guide.step3Word} ${paste.guide.step3After}`,
+        expect(text).toContain(paste.guide.tag);
+        for (const part of [
+          paste.guide.step1Title,
+          paste.guide.step1,
+          paste.guide.step2Title,
+          paste.guide.step2,
+          paste.guide.step3Title,
+          paste.guide.step3Before,
+          paste.guide.step3After,
+        ]) {
+          expect(text).toContain(part);
+        }
+        const chips = Array.from(el.querySelectorAll('[data-guide] code')).map((c) =>
+          c.textContent?.trim(),
         );
+        expect(chips).toEqual([...paste.guide.step3Words]);
         type('Diego');
         expect(el.textContent).toContain(paste.detected(1));
       },
     );
+  });
+
+  it('numbers the three steps of the guide', () => {
+    const { el } = setup();
+    const tiles = Array.from(el.querySelectorAll('[data-guide] [data-step-number]')).map((n) =>
+      n.textContent?.trim(),
+    );
+    expect(tiles).toEqual(['01', '02', '03']);
   });
 
   describe('drawing without going through the list', () => {

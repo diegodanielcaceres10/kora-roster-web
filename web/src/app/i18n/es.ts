@@ -122,25 +122,50 @@ export const es: Dictionary = {
     },
   },
   tool: {
-    mode: 'Modo Amistoso',
     progressLabel: 'Progreso del sorteo',
-    heading: 'Amistoso rápido',
+    stepDone: 'completado',
+    steps: { list: 'Lista', review: 'Revisión', teams: 'Equipos' },
+    stepHeader: {
+      paste: {
+        title: 'Pega la lista de jugadores',
+        subtitle:
+          'Pega el texto desde WhatsApp o tus notas y Kora limpia los nombres y detecta a los arqueros.',
+      },
+      preview: {
+        title: 'Revisa los nombres',
+        subtitle: 'Verifica los nombres y los arqueros detectados y elige cuántos equipos sortear.',
+      },
+      result: {
+        title: 'Edita los equipos',
+        subtitle: 'Intercambia jugadores, ubica a los que faltan y confirma los equipos.',
+      },
+      confirmed: {
+        title: 'Equipos confirmados',
+        subtitle: 'Copia el mensaje para tu grupo o crea la imagen para compartir.',
+      },
+    },
     teamTitle: (n) => `Equipo ${n}`,
     paste: {
       reviewSignIn: 'Inicia sesión para revisar la lista y editar los equipos.',
       detected: (n) => (n === 1 ? '1 jugador detectado' : `${n} jugadores detectados`),
       guide: {
         title: 'Guía de carga rápida',
-        step1: 'Copia y pega la lista tal cual sale de tu grupo de WhatsApp.',
-        step2: 'Los números, viñetas, guiones y emojis se limpian de manera automática.',
-        step3Before: 'Agrega el emoji de guante o la palabra',
-        step3Word: '(arquero)',
-        step3After: 'para repartir arqueros parejos.',
+        tag: 'Paso a paso',
+        step1Title: 'Pega la lista tal cual',
+        step1:
+          'Copia el mensaje desde WhatsApp, Telegram o tus notas. Un nombre por línea o separados por comas.',
+        step2Title: 'Limpieza automática',
+        step2:
+          'Se quitan solos los números, viñetas y guiones del inicio, y un nombre repetido cuenta una sola vez. Las aclaraciones y los emojis se conservan.',
+        step3Title: 'Cómo marcar arqueros',
+        step3Before: 'Escribe',
+        step3Words: ['(arquero)', '(portero)', '(gk)'],
+        step3After: 'junto al nombre o añade el emoji 🧤. Se reparten parejos entre los equipos.',
       },
-      title: 'Pega la lista',
+      title: 'Entrada de lista // Portapapeles',
+      clear: 'Limpiar',
       label: 'Lista de WhatsApp',
       placeholder: 'Pega aquí la lista de tu grupo de WhatsApp',
-      hint: 'Un nombre por línea o separados por comas. Los números, viñetas y emojis no molestan.',
       continue: 'Continuar',
     },
     preview: {

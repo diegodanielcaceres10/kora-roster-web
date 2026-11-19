@@ -1,13 +1,14 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { UiIcon } from '../icon/icon';
-import { ButtonVariant, UiButton } from './button';
+import { ButtonSize, ButtonVariant, UiButton } from './button';
 
 @Component({
   imports: [UiButton, UiIcon],
   template: `
     <ui-button
       [variant]="variant()"
+      [size]="size()"
       [type]="type()"
       [disabled]="disabled()"
       [ariaLabel]="ariaLabel()"
@@ -19,6 +20,7 @@ import { ButtonVariant, UiButton } from './button';
 })
 class Host {
   readonly variant = signal<ButtonVariant>('primary');
+  readonly size = signal<ButtonSize>('md');
   readonly type = signal<'button' | 'submit'>('button');
   readonly disabled = signal(false);
   readonly ariaLabel = signal<string | undefined>(undefined);
@@ -55,6 +57,16 @@ describe('UiButton', () => {
       looks.add(button().className);
     }
     expect(looks.size).toBe(4);
+  });
+
+  it('renders a different size for each of the three', () => {
+    const { button, update } = setup();
+    const sizes = new Set<string>();
+    for (const size of ['sm', 'md', 'lg'] as const) {
+      update((h) => h.size.set(size));
+      sizes.add(button().className);
+    }
+    expect(sizes.size).toBe(3);
   });
 
   it('uses the primary variant when none is given', () => {

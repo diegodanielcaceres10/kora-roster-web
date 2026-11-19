@@ -12,3 +12,4 @@ export { UiSelect, type SelectOption } from './select/select';
 export { UiTextarea } from './textarea/textarea';
 export { ToastService } from './toast/toast-service';
 export { UiToastHost } from './toast/toast-host';
+export { UiStepHeader, type StepHeaderStep, type StepState } from './step-header/step-header';

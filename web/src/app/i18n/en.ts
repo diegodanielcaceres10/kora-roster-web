@@ -117,25 +117,51 @@ export const en = {
     },
   },
   tool: {
-    mode: 'Friendly mode',
     progressLabel: 'Draw progress',
-    heading: 'Quick match',
+    stepDone: 'completed',
+    steps: { list: 'List', review: 'Review', teams: 'Teams' },
+    stepHeader: {
+      paste: {
+        title: 'Paste the player list',
+        subtitle:
+          'Paste the text from WhatsApp or your notes and Kora cleans up the names and spots the goalkeepers.',
+      },
+      preview: {
+        title: 'Check the names',
+        subtitle:
+          'Check the names and the goalkeepers spotted, and choose how many teams to draw.',
+      },
+      result: {
+        title: 'Edit the teams',
+        subtitle: 'Swap players, place the ones left out and confirm the teams.',
+      },
+      confirmed: {
+        title: 'Teams confirmed',
+        subtitle: 'Copy the message for your group or create the image to share.',
+      },
+    },
     teamTitle: (n: number) => `Team ${n}`,
     paste: {
       reviewSignIn: 'Sign in to review the list and edit the teams.',
       detected: (n: number) => (n === 1 ? '1 player detected' : `${n} players detected`),
       guide: {
         title: 'Quick loading guide',
-        step1: 'Copy and paste the list exactly as it comes from your WhatsApp group.',
-        step2: 'Numbers, bullets, dashes and emojis are cleaned up automatically.',
-        step3Before: 'Add the glove emoji or the word',
-        step3Word: '(goalkeeper)',
-        step3After: 'to spread the goalkeepers evenly.',
+        tag: 'Step by step',
+        step1Title: 'Paste the list as it is',
+        step1:
+          'Copy the message from WhatsApp, Telegram or your notes. One name per line, or separated by commas.',
+        step2Title: 'Automatic cleanup',
+        step2:
+          'Numbers, bullets and dashes at the start are removed, and a repeated name counts once. Notes in brackets and emojis are kept.',
+        step3Title: 'How to mark goalkeepers',
+        step3Before: 'Write',
+        step3Words: ['(goalkeeper)', '(goalie)', '(gk)'],
+        step3After: 'next to the name, or add the glove emoji 🧤. They are spread evenly across the teams.',
       },
-      title: 'Paste the list',
+      title: 'List input // Clipboard',
+      clear: 'Clear',
       label: 'WhatsApp list',
       placeholder: 'Paste the list from your WhatsApp group here',
-      hint: 'One name per line, or separated by commas. Numbers, bullets and emojis are fine.',
       continue: 'Continue',
     },
     preview: {
