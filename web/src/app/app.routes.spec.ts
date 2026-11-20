@@ -401,19 +401,24 @@ describe('app routes', () => {
         ) as HTMLButtonElement
       ).click();
       harness.fixture.detectChanges();
+      // The tile of a player has its number and role too, so the name is read from its own element.
+      const nameOf = (button: Element | null) =>
+        button?.querySelector('.font-display')?.textContent?.trim();
+      const playerButton = (card: Element) =>
+        card.querySelector('li button[data-player]') as HTMLButtonElement;
       const cards = Array.from(root.querySelectorAll('ui-card'));
-      const first = cards[0].querySelector('li button') as HTMLButtonElement;
-      const second = cards[1].querySelector('li button') as HTMLButtonElement;
-      const [nameA, nameB] = [first.textContent, second.textContent];
+      const first = playerButton(cards[0]);
+      const second = playerButton(cards[1]);
+      const [nameA, nameB] = [nameOf(first), nameOf(second)];
       first.click();
       harness.fixture.detectChanges();
       second.click();
       harness.fixture.detectChanges();
       const after = Array.from(root.querySelectorAll('ui-card'));
-      expect(after[0].querySelector('li button')?.textContent).toBe(nameB);
-      expect(after[1].querySelector('li button')?.textContent).toBe(nameA);
+      expect(nameOf(playerButton(after[0]))).toBe(nameB);
+      expect(nameOf(playerButton(after[1]))).toBe(nameA);
       confirmTeams(harness, root);
-      expect(await copiedMessage(root)).toContain(nameB?.replace(/^\s*1\.\s*/, '').trim());
+      expect(await copiedMessage(root)).toContain(nameB);
     });
 
     it('explains that the image needs an account, and offers to sign in', async () => {

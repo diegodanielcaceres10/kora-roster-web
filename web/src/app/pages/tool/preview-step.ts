@@ -26,8 +26,6 @@ import {
 } from '../../ui';
 import { countStatus } from './count-status';
 
-const TEAM_LETTERS = 'ABCDEF';
-
 @Component({
   selector: 'app-preview-step',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -292,10 +290,10 @@ export class PreviewStep {
     this.isEven() ? this.t().preview.evenTeams : this.t().preview.unevenTeams,
   );
 
-  // "A y B", "A, B y C": the letters that name the teams, joined the way the language does.
+  // "1 y 2", "1, 2 y 3": the numbers that name the teams, joined the way the language does.
   protected readonly teamNames = computed(() =>
     new Intl.ListFormat(this.i18n.lang(), { style: 'long', type: 'conjunction' }).format(
-      TEAM_LETTERS.slice(0, this.store.teamCount()).split(''),
+      Array.from({ length: this.store.teamCount() }, (_, i) => String(i + 1)),
     ),
   );
 

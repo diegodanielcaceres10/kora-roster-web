@@ -216,9 +216,7 @@ export const pt: Dictionary = {
       manualSignIn: 'Entre para montar os times à mão.',
     },
     result: {
-      balanced: (n) => `${n} times equilibrados`,
       imageHint: 'Exporte uma imagem em formato vertical 9:16 para Instagram ou WhatsApp',
-      title: 'Times',
       copy: 'Copiar texto',
       copied: 'Copiado',
       copyFailed: 'Não foi possível copiar. Selecione o texto e copie manualmente.',
@@ -244,7 +242,7 @@ export const pt: Dictionary = {
       freeSlot: 'Vaga livre',
       moveHere: (name, team) => `Mover ${name} para ${team}`,
       complete: 'Times completos',
-      confirm: 'Confirmar',
+      confirm: 'Confirmar times',
       confirmed: 'Times confirmados.',
       missing: (count) =>
         count === 1
@@ -259,6 +257,31 @@ export const pt: Dictionary = {
       closeImage: 'Fechar',
       imageFailed: 'Não foi possível criar a imagem. Tente de novo.',
       shareFailed: 'Não foi possível compartilhar. Tente baixá-la.',
+      hintTitle: 'Interação tática:',
+      escKey: 'Esc',
+      cancelSelection: 'Cancela a seleção',
+      quota: (n) => `Vagas definidas: ${n}`,
+      playersOf: 'Jogadores:',
+      goalkeeperCount: (n) => (n === 1 ? '1 goleiro' : `${n} goleiros`),
+      goalkeeperShort: 'GOL',
+      roleGoalkeeper: 'Titular no gol',
+      roleField: 'Jogador de linha',
+      freeSlotHint: 'Disponível para atribuir',
+      placeHere: 'Colocar aqui',
+      waiting: (n) => `${n} aguardando`,
+      placed: (placed, total) => `${placed}/${total} alocados`,
+      readyToPlace: 'Pronto para atribuir',
+      place: 'Colocar',
+      placeAria: (name) => `Colocar ${name} em um time`,
+      removeFromTeam: (name) => `Tirar ${name} do time`,
+      toolsTitle: 'Ferramentas de distribuição',
+      redrawNote: 'Aleatório',
+      clearNote: 'Esvaziar',
+      confirmLocked: (missing) =>
+        missing === 1
+          ? 'Será liberado quando todos os jogadores tiverem time (falta 1).'
+          : `Será liberado quando todos os jogadores tiverem time (faltam ${missing}).`,
+      backToReview: 'Voltar ao passo 2 (revisão)',
     },
   },
 };

@@ -177,6 +177,14 @@ A radio group shown as segments, for choosing one of a few options (the language
   emits `(lockedSelect)` with the option so the screen can explain why (see `LockNotice`). The
   arrow keys still reach it without selecting it.
 
+### `UiKbd` · `<ui-kbd>`
+
+A keyboard key inside a line of text, drawn as a small key and exposed as a real `<kbd>`.
+
+```html
+<p>Press <ui-kbd>Esc</ui-kbd> to cancel</p>
+```
+
 ### `UiStat` · `<ui-stat>`
 
 A small tile with one figure, for a summary of numbers (players per team, goalkeepers...).

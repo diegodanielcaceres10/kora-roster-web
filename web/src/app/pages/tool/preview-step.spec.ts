@@ -117,9 +117,11 @@ describe('PreviewStep', () => {
         ]),
       );
 
-    it('names the teams by their letters', () => {
+    // The teams are called "Team 1", "Team 2"... on the next screen and in the message, so the
+    // tile names them the same way.
+    it('names the teams by their numbers', () => {
       const { el } = setup(list(12));
-      expect(stats(el)[T.preview.teamsTile]).toEqual({ value: '2', note: 'A y B' });
+      expect(stats(el)[T.preview.teamsTile]).toEqual({ value: '2', note: '1 y 2' });
     });
 
     it('shows the size of each team when they come out even', () => {
@@ -143,7 +145,7 @@ describe('PreviewStep', () => {
       const { fixture, el, store } = setup(list(18));
       store.setTeamCount(3);
       fixture.detectChanges();
-      expect(stats(el)[T.preview.teamsTile]).toEqual({ value: '3', note: 'A, B y C' });
+      expect(stats(el)[T.preview.teamsTile]).toEqual({ value: '3', note: '1, 2 y 3' });
       expect(stats(el)[T.preview.perTeam]).toEqual({ value: '6', note: T.preview.evenTeams });
     });
 

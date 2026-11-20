@@ -152,8 +152,8 @@ describe('dictionaries', () => {
       ],
       [
         'es',
-        'Tocá un jugador y después uno de otro equipo para intercambiarlos. También podés arrastrarlos.',
-        'Seleccionado: Nico. Tocá un jugador de otro equipo.',
+        'Toca un jugador y después uno de otro equipo para intercambiarlos. También puedes arrastrarlos.',
+        'Seleccionado: Nico. Toca un jugador de otro equipo.',
         'Nico y Fede intercambiados.',
       ],
       [
@@ -244,9 +244,9 @@ describe('dictionaries', () => {
 
   describe('the confirmation of the teams', () => {
     it.each([
-      ['en', 'Confirm', 'Teams confirmed.'],
-      ['es', 'Confirmar', 'Equipos confirmados.'],
-      ['pt', 'Confirmar', 'Times confirmados.'],
+      ['en', 'Confirm teams', 'Teams confirmed.'],
+      ['es', 'Confirmar equipos', 'Equipos confirmados.'],
+      ['pt', 'Confirmar times', 'Times confirmados.'],
     ] as const)('names the button and says it was done in %s', (lang, confirm, confirmed) => {
       const { result } = DICTIONARIES[lang].tool;
       expect(result.confirm).toBe(confirm);
@@ -389,14 +389,47 @@ describe('dictionaries', () => {
       },
     );
 
-    it.each([
-      ['en', '2 balanced teams'],
-      ['es', '2 equipos equilibrados'],
-      ['pt', '2 times equilibrados'],
-    ] as const)('name the balance of the result in %s', (lang, balanced) => {
-      const { result } = DICTIONARIES[lang].tool;
-      expect(result.balanced(2)).toBe(balanced);
-      expect(result.imageHint.length).toBeGreaterThan(10);
+    it.each([['en'], ['es'], ['pt']] as const)(
+      'put the numbers and the names in the messages of the team editor in %s',
+      (lang) => {
+        const { result } = DICTIONARIES[lang].tool;
+        expect(result.imageHint.length).toBeGreaterThan(10);
+        expect(result.quota(6)).toContain('6');
+        expect(result.waiting(3)).toContain('3');
+        expect(result.placed(10, 11)).toContain('10/11');
+        for (const text of [
+          result.placeAria('Diego'),
+          result.removeFromTeam('Diego'),
+        ]) {
+          expect(text).toContain('Diego');
+        }
+        expect(result.goalkeeperCount(1)).toContain('1');
+        expect(result.goalkeeperCount(2)).toContain('2');
+        expect(result.goalkeeperCount(1)).not.toBe(result.goalkeeperCount(2));
+      },
+    );
+
+    it.each([['en'], ['es'], ['pt']] as const)(
+      'say how many players are missing before the teams can be confirmed in %s',
+      (lang) => {
+        const { confirmLocked } = DICTIONARIES[lang].tool.result;
+        expect(confirmLocked(1)).toContain('1');
+        expect(confirmLocked(3)).toContain('3');
+        expect(confirmLocked(1)).not.toBe(confirmLocked(3));
+      },
+    );
+
+    // The neutral Spanish uses tú, not vos: no "Tocá", "podés" or "Probá" on the screens.
+    it('writes the Spanish of the team editor and the image without voseo', () => {
+      const { result } = DICTIONARIES.es.tool;
+      const texts = [
+        result.swapHint,
+        result.selected('Diego'),
+        result.manualHint,
+        result.imageFailed,
+        result.shareFailed,
+      ].join(' ');
+      expect(texts).not.toMatch(/\b(tocá|podés|probá|elegí|arrastrá|seleccioná)\b/i);
     });
   });
 

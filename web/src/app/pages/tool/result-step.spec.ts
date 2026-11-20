@@ -9,6 +9,9 @@ import { ToastService } from '../../ui';
 import { ResultStep } from './result-step';
 
 const T = DICTIONARIES.es.tool;
+const pad2 = (n: number) => String(n).padStart(2, '0');
+const icons = (el: ParentNode) =>
+  Array.from(el.querySelectorAll('[data-team-icon]')).map((i) => i.textContent?.trim());
 const list = (count: number) =>
   Array.from({ length: count }, (_, i) => `Player ${i + 1}`).join('\n');
 
@@ -49,7 +52,8 @@ describe('ResultStep', () => {
   it('shows a card per team with its icon and title in the current language', () => {
     const { el } = setup();
     const titles = Array.from(el.querySelectorAll('ui-card h3')).map((h) => h.textContent?.trim());
-    expect(titles).toEqual([`🔴 ${T.teamTitle(1)}`, `🔵 ${T.teamTitle(2)}`]);
+    expect(titles).toEqual([T.teamTitle(1), T.teamTitle(2)]);
+    expect(icons(el)).toEqual(['🔴', '🔵']);
   });
 
   it('lists the players of each team, numbered from 1', () => {
@@ -61,9 +65,9 @@ describe('ResultStep', () => {
         li.textContent?.replace(/\s+/g, ' ').trim(),
       );
       expect(items).toHaveLength(team.length);
-      expect(items[0]).toMatch(new RegExp(`^1\\.\\s*${team[0].name}`));
+      expect(items[0]).toMatch(new RegExp(`^01\\s*${team[0].name}`));
       expect(items[team.length - 1]).toMatch(
-        new RegExp(`^${team.length}\\.\\s*${team[team.length - 1].name}`),
+        new RegExp(`^${pad2(team.length)}\\s*${team[team.length - 1].name}`),
       );
     });
   });
@@ -122,7 +126,7 @@ describe('ResultStep', () => {
     // "Volver" is also the start of "Volver a sortear", so the whole text has to match.
     const backIn = (el: HTMLElement) =>
       Array.from(el.querySelectorAll('ui-button button')).find(
-        (b) => b.textContent?.trim() === T.preview.back,
+        (b) => b.textContent?.trim() === T.result.backToReview,
       ) as HTMLButtonElement;
 
     it('offers a button to go back, with an arrow', () => {
@@ -174,13 +178,14 @@ describe('ResultStep', () => {
       const titles = Array.from(el.querySelectorAll('ui-card h3')).map((h) =>
         h.textContent?.trim(),
       );
-      expect(titles).toEqual([`🟢 ${T.teamTitle(1)}`, `🟡 ${T.teamTitle(2)}`]);
+      expect(titles).toEqual([T.teamTitle(1), T.teamTitle(2)]);
+      expect(icons(el)).toEqual(['🟢', '🟡']);
     });
 
     it('keeps the cards numbered whatever numbering the message uses', () => {
       const { el } = setup({ ...TEST_PREFERENCES, numbering: 'none' });
       const first = el.querySelector('ui-card li')?.textContent?.replace(/\s+/g, ' ').trim();
-      expect(first).toMatch(/^1\./);
+      expect(first).toMatch(/^01/);
     });
 
     it('copies the message as they set it up', async () => {
@@ -210,7 +215,7 @@ describe('ResultStep', () => {
       fixture.detectChanges();
       return { el: fixture.nativeElement as HTMLElement, store };
     }
-    const grid = (el: HTMLElement) => el.querySelector('div.grid') as HTMLElement;
+    const grid = (el: HTMLElement) => el.querySelector('[data-teams]') as HTMLElement;
 
     it.each([
       [3, 18],
@@ -220,17 +225,16 @@ describe('ResultStep', () => {
       const titles = Array.from(el.querySelectorAll('ui-card h3')).map((h) =>
         h.textContent?.trim(),
       );
-      expect(titles).toEqual(
-        ['🔴', '🔵', '🟢', '🟡'].slice(0, teams).map((icon, i) => `${icon} ${T.teamTitle(i + 1)}`),
-      );
+      expect(titles).toEqual(Array.from({ length: teams }, (_, i) => T.teamTitle(i + 1)));
+      expect(icons(el)).toEqual(['🔴', '🔵', '🟢', '🟡'].slice(0, teams));
     });
 
-    it('puts 3 teams in three columns on wide screens, and 2 or 4 in two', () => {
-      expect(grid(setupMany(3, 18).el).className).toContain('lg:grid-cols-3');
+    it('stacks the teams in their column, and makes two columns on extra-wide screens from 3 teams', () => {
+      expect(grid(setup().el).className).not.toContain('2xl:grid-cols-2');
       TestBed.resetTestingModule();
-      expect(grid(setupMany(4, 20).el).className).not.toContain('lg:grid-cols-3');
+      expect(grid(setupMany(3, 18).el).className).toContain('2xl:grid-cols-2');
       TestBed.resetTestingModule();
-      expect(grid(setup().el).className).not.toContain('lg:grid-cols-3');
+      expect(grid(setupMany(4, 20).el).className).toContain('2xl:grid-cols-2');
     });
 
     it('writes every team in the text for WhatsApp', () => {
@@ -243,7 +247,7 @@ describe('ResultStep', () => {
   describe('swapping players', () => {
     type Ctx = ReturnType<typeof setup>;
     const buttons = (el: HTMLElement) =>
-      Array.from(el.querySelectorAll('ui-card li button')) as HTMLButtonElement[];
+      Array.from(el.querySelectorAll('ui-card li button[data-player]')) as HTMLButtonElement[];
     const ids = (store: Ctx['store']) => (store.teams() ?? []).flat();
     const buttonOf = (ctx: Ctx, id: string) =>
       buttons(ctx.el)[ids(ctx.store).findIndex((p) => p.id === id)];
@@ -440,10 +444,11 @@ describe('ResultStep', () => {
         fire('dragstart', buttonOf(ctx, a.id));
         fire('dragover', buttonOf(ctx, b.id));
         ctx.fixture.detectChanges();
-        expect(buttonOf(ctx, b.id).className).toContain('ring-primary');
+        const tile = () => buttonOf(ctx, b.id).parentElement as HTMLElement;
+        expect(tile().className).toContain('ring-primary');
         fire('dragleave', buttonOf(ctx, b.id));
         ctx.fixture.detectChanges();
-        expect(buttonOf(ctx, b.id).className).not.toContain('ring-primary');
+        expect(tile().className).not.toContain('ring-primary');
       });
 
       it('clears a selection that was made by tapping when a swap is made by dragging', () => {
@@ -869,9 +874,10 @@ describe('ResultStep', () => {
   });
 
   describe('confirming the teams', () => {
+    // Some buttons carry a small note after their label, so the label is the start of the text.
     const named = (el: HTMLElement, text: string) =>
-      Array.from(el.querySelectorAll('ui-button button')).find(
-        (b) => b.textContent?.trim() === text,
+      Array.from(el.querySelectorAll('ui-button button')).find((b) =>
+        b.textContent?.trim().startsWith(text),
       ) as HTMLButtonElement | undefined;
 
     it('offers a button to confirm the teams', () => {
@@ -893,7 +899,7 @@ describe('ResultStep', () => {
       const { el } = setup();
       expect(el.querySelectorAll('ui-card li button')).toHaveLength(12);
       expect(named(el, T.result.redraw)).toBeDefined();
-      expect(named(el, T.preview.back)).toBeDefined();
+      expect(named(el, T.result.backToReview)).toBeDefined();
     });
 
     it('confirms the teams, and says so', () => {
@@ -968,7 +974,7 @@ describe('ResultStep', () => {
       saveSession();
       const { el } = setup(undefined, true);
       expect(named(el, T.result.startOver)).toBeDefined();
-      expect(named(el, T.preview.back)).toBeUndefined();
+      expect(named(el, T.result.backToReview)).toBeUndefined();
       expect(named(el, T.result.confirm)).toBeUndefined();
       expect(named(el, T.result.redraw)).toBeUndefined();
       expect(named(el, T.result.clearTeams)).toBeUndefined();
@@ -995,18 +1001,238 @@ describe('ResultStep', () => {
     });
   });
 
+  describe('the editing screen', () => {
+    // 12 players, two of them goalkeepers, in two teams of six.
+    //  - manual: the teams start empty, with everybody waiting (account)
+    //  - drawn: a draw was made (account)
+    //  - plain: a draw was made and there is no account, so no hand-building
+    function edit(mode: 'manual' | 'drawn' | 'plain' = 'manual') {
+      if (mode !== 'plain') saveSession();
+      TestBed.inject(I18n).setLang('es');
+      const store = TestBed.inject(FriendlyStore);
+      store.setRawText('Diego 🧤\nMati 🧤\n' + list(10));
+      store.continueToPreview();
+      if (mode === 'manual') store.startManual();
+      else store.draw(() => 0.3);
+      const fixture = TestBed.createComponent(ResultStep);
+      fixture.detectChanges();
+      const el = fixture.nativeElement as HTMLElement;
+      const all = (selector: string, root: ParentNode = el) =>
+        Array.from(root.querySelectorAll(selector)) as HTMLElement[];
+      const text = (node: Element | null | undefined) =>
+        node?.textContent?.replace(/\s+/g, ' ').trim() ?? '';
+      const click = (node: HTMLElement | null | undefined) => {
+        (node as HTMLElement).click();
+        fixture.detectChanges();
+      };
+      const teamCards = () => all('ui-card');
+      return { fixture, el, store, all, text, click, teamCards };
+    }
+
+    describe('the hint', () => {
+      it('explains how to edit, and how to cancel a selection with the Esc key', () => {
+        const { el, text } = edit('drawn');
+        expect(text(el.querySelector('[data-hint]'))).toContain(T.result.hintTitle);
+        expect(text(el.querySelector('[data-hint]'))).toContain(T.result.manualHint);
+        expect(text(el.querySelector('[data-hint] kbd'))).toBe(T.result.escKey);
+        expect(text(el.querySelector('[data-hint]'))).toContain(T.result.cancelSelection);
+      });
+
+      it('explains how to swap when there is no account to build by hand', () => {
+        const { el, text } = edit('plain');
+        expect(text(el.querySelector('[data-hint]'))).toContain(T.result.swapHint);
+        expect(text(el.querySelector('[data-hint]'))).not.toContain(T.result.manualHint);
+      });
+
+      it('leaves the title and the balance to the header of the page', () => {
+        const { el } = edit('drawn');
+        expect(el.querySelector('h2')).toBeNull();
+      });
+    });
+
+    describe('a team', () => {
+      it('says how many places it has and how many goalkeepers', () => {
+        const { teamCards, text } = edit('drawn');
+        for (const card of teamCards()) {
+          expect(text(card)).toContain(T.result.quota(6));
+          expect(text(card.querySelector('[data-team-goalkeepers]'))).toBe(
+            T.result.goalkeeperCount(1),
+          );
+        }
+      });
+
+      it('counts its players against its places, with the label, when building by hand', () => {
+        const { teamCards, text } = edit('manual');
+        for (const card of teamCards()) {
+          expect(text(card)).toContain(T.result.playersOf);
+          expect(text(card.querySelector('[data-count]'))).toBe('0/6');
+        }
+      });
+
+      it('shows each player as a numbered tile with the role', () => {
+        const { teamCards, all, text } = edit('drawn');
+        const tiles = all('li', teamCards()[0]);
+        expect(text(tiles[0])).toMatch(/^01/);
+        const roles = tiles.map((tile) =>
+          text(tile).includes(T.result.roleGoalkeeper)
+            ? 'goalkeeper'
+            : text(tile).includes(T.result.roleField)
+              ? 'field'
+              : 'none',
+        );
+        expect(roles).not.toContain('none');
+        expect(roles.filter((role) => role === 'goalkeeper')).toHaveLength(1);
+      });
+
+      it('marks a goalkeeper with the short tag as well as with the glove', () => {
+        const { teamCards, all, text } = edit('drawn');
+        const keeper = all('li', teamCards()[0]).find((tile) =>
+          text(tile).includes(T.result.roleGoalkeeper),
+        ) as HTMLElement;
+        expect(text(keeper)).toContain(T.result.goalkeeperShort);
+        expect(keeper.querySelector('ui-icon[data-icon="glove"]')).not.toBeNull();
+      });
+    });
+
+    describe('taking a player out of a team', () => {
+      it('has a button for each player when building by hand, which sends them to the ones without a team', () => {
+        const { teamCards, store, fixture, click, all, text } = edit('drawn');
+        const name = store.teams()?.[0][1].name as string;
+        const remove = all(`button[aria-label="${T.result.removeFromTeam(name)}"]`)[0];
+        expect(remove).toBeDefined();
+        click(remove);
+        expect(store.pool().map((p) => p.name)).toEqual([name]);
+        expect(text(teamCards()[0].querySelector('[data-count]'))).toBe('5/6');
+        expect(fixture.nativeElement.textContent).toContain(T.result.leftTeam(name));
+      });
+
+      it('is not offered when there is no account to build by hand', () => {
+        const { all } = edit('plain');
+        expect(all('button[aria-label^="Sacar a"][aria-label$="del equipo"]')).toHaveLength(0);
+      });
+    });
+
+    describe('a free place', () => {
+      it('says what it is and invites to place a player there', () => {
+        const { teamCards, all, text } = edit('manual');
+        const slot = all('[data-free-slot]', teamCards()[0])[0];
+        expect(text(slot)).toContain(T.result.freeSlot);
+        expect(text(slot)).toContain(T.result.freeSlotHint);
+        expect(text(slot)).toContain(T.result.placeHere);
+      });
+    });
+
+    describe('the players without a team', () => {
+      it('shows how many wait and how many have a place, apart from the progress', () => {
+        const { el, text } = edit('manual');
+        expect(text(el.querySelector('[data-waiting]'))).toBe(T.result.waiting(12));
+        expect(text(el.querySelector('[data-placed]'))).toBe(T.result.placed(0, 12));
+        expect(text(el.querySelector('[data-progress]'))).toBe(T.result.missing(12));
+      });
+
+      it('numbers each one as in the list they pasted, and says they are ready', () => {
+        const { all, text } = edit('manual');
+        const rows = all('[data-pool] li');
+        const diego = rows.find((row) => text(row).includes('Diego')) as HTMLElement;
+        expect(text(diego)).toMatch(/^01/);
+        expect(text(diego)).toContain(T.result.readyToPlace);
+      });
+
+      it('can be placed in the first team with room with one button', () => {
+        const { store, all, click, teamCards, text } = edit('manual');
+        const name = store.pool()[2].name;
+        click(all(`button[aria-label="${T.result.placeAria(name)}"]`)[0]);
+        expect(store.teams()?.[0].map((p) => p.name)).toContain(name);
+        expect(text(teamCards()[0].querySelector('[data-count]'))).toBe('1/6');
+      });
+
+      it('go to the next team when the first one is full', () => {
+        const { store, fixture, all, click } = edit('manual');
+        const pool = store.pool();
+        for (const player of pool.slice(0, 6)) store.movePlayer(player.id, 0);
+        fixture.detectChanges();
+        const next = store.pool()[0].name;
+        click(all(`button[aria-label="${T.result.placeAria(next)}"]`)[0]);
+        expect(store.teams()?.[1].map((p) => p.name)).toContain(next);
+      });
+    });
+
+    describe('the tools and the actions', () => {
+      it('offers to draw again and, when building by hand, to empty the teams, each with its note', () => {
+        const { el, all, text } = edit('drawn');
+        expect(text(el.querySelector('[data-tools]'))).toContain(T.result.toolsTitle);
+        const redraw = all('ui-button button').find((b) => text(b).includes(T.result.redraw));
+        const clear = all('ui-button button').find((b) => text(b).includes(T.result.clearTeams));
+        expect(text(redraw)).toContain(T.result.redrawNote);
+        expect(text(clear)).toContain(T.result.clearNote);
+      });
+
+      it('does not offer to empty the teams without an account', () => {
+        const { all, text } = edit('plain');
+        expect(
+          all('ui-button button').some((b) => text(b).includes(T.result.clearTeams)),
+        ).toBe(false);
+      });
+
+      it('keeps Confirm closed and says how many are missing while the teams are not complete', () => {
+        const { el, all, text } = edit('manual');
+        const confirm = all('ui-button button').find((b) =>
+          text(b).includes(T.result.confirm),
+        ) as HTMLButtonElement;
+        expect(confirm.disabled).toBe(true);
+        expect(text(el.querySelector('[data-confirm-hint]'))).toBe(T.result.confirmLocked(12));
+      });
+
+      it('opens Confirm, with nothing to explain, once the teams are complete', () => {
+        const { el, all, text } = edit('drawn');
+        const confirm = all('ui-button button').find((b) =>
+          text(b).includes(T.result.confirm),
+        ) as HTMLButtonElement;
+        expect(confirm.disabled).toBe(false);
+        expect(el.querySelector('[data-confirm-hint]')).toBeNull();
+      });
+
+      it('goes back to the review of the names', () => {
+        const { store, all, click, text } = edit('drawn');
+        const back = all('ui-button button').find((b) =>
+          text(b).includes(T.result.backToReview),
+        );
+        click(back);
+        expect(store.step()).toBe('preview');
+      });
+    });
+  });
+
   describe('the texts that depend on the language', () => {
     it.each(['en', 'es', 'pt'] as const)(
-      'shows the balance of the teams and the hint of the image in %s',
+      'shows the hint of the image once confirmed, and the editor in %s',
       (lang) => {
-        const { fixture, el } = setup(undefined, true);
+        const confirmed = setup(undefined, true);
         TestBed.inject(I18n).setLang(lang);
-        fixture.detectChanges();
+        confirmed.fixture.detectChanges();
         const { result } = DICTIONARIES[lang].tool;
-        const text = el.textContent?.replace(/\s+/g, ' ') as string;
-        expect(text).toContain(result.balanced(2));
-        expect(text).toContain(result.imageHint);
+        expect(confirmed.el.textContent?.replace(/\s+/g, ' ')).toContain(result.imageHint);
       },
     );
+
+    it.each(['en', 'es', 'pt'] as const)('shows the editor in %s', (lang) => {
+      const { fixture, el } = setup();
+      TestBed.inject(I18n).setLang(lang);
+      fixture.detectChanges();
+      const { result } = DICTIONARIES[lang].tool;
+      const text = el.textContent?.replace(/\s+/g, ' ') as string;
+      for (const part of [
+        result.hintTitle,
+        result.swapHint,
+        result.cancelSelection,
+        result.quota(6),
+        result.toolsTitle,
+        result.redraw,
+        result.confirm,
+        result.backToReview,
+      ]) {
+        expect(text).toContain(part);
+      }
+    });
   });
 });
