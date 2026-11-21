@@ -38,18 +38,46 @@ const pad = (n: number): string => String(n).padStart(2, '0');
 
       @if (store.confirmed()) {
         <!-- Confirmed: the final teams, with the actions to share them -->
+        <app-story-image-panel>
+          <ui-button panel-start size="lg" class="col-span-2 sm:col-auto" (click)="copy()">
+            <ui-icon name="message" />
+            {{ t().result.copy }}
+          </ui-button>
+          <ui-button panel-end variant="ghost" (click)="store.reset()">
+            <ui-icon name="arrow-back-up" />
+            {{ t().result.startOver }}
+          </ui-button>
+        </app-story-image-panel>
+
         <div [class]="gridClass()">
           @for (team of teams(); track $index; let i = $index) {
             <ui-card [accent]="teamAccent(i)">
-              <h3 card-header>{{ store.teamIcons()[i] }} {{ t().teamTitle(i + 1) }}</h3>
-              <ol class="space-y-1 pt-1">
+              <div card-header class="flex items-center gap-3">
+                <span data-team-icon [class]="iconTile">{{ store.teamIcons()[i] }}</span>
+                <h3
+                  class="mr-auto font-display text-base font-black uppercase tracking-tight text-ink"
+                >
+                  {{ t().teamTitle(i + 1) }}
+                </h3>
+                <ui-badge data-players-badge>{{ t().result.playersBadge(team.length) }}</ui-badge>
+              </div>
+              <ol class="space-y-2">
                 @for (player of team; track player.id; let n = $index) {
-                  <li class="flex items-center gap-2.5 px-2.5 py-2 text-sm">
-                    <span class="w-6 text-right font-bold tabular-nums text-ink-faint">{{ n + 1 }}.</span>
-                    <span class="flex-1 font-medium text-ink">{{ player.name }}</span>
+                  <li
+                    class="flex items-center gap-3 rounded-xl border px-3 py-2.5"
+                    [class]="
+                      player.isGoalkeeper
+                        ? 'border-primary/30 bg-primary/10'
+                        : 'border-transparent bg-surface-muted/60'
+                    "
+                  >
+                    <span class="w-6 font-mono text-xs font-bold text-ink-faint">{{ pad(n + 1) }}</span>
+                    <span class="flex-1 font-display font-bold text-ink">{{ player.name }}</span>
                     @if (player.isGoalkeeper) {
-                      <ui-icon name="glove" class="text-alternative" />
-                      <span class="sr-only">{{ t().preview.goalkeeper }}</span>
+                      <ui-badge tone="primary">
+                        <ui-icon name="glove" />
+                        {{ t().preview.goalkeeper }}
+                      </ui-badge>
                     }
                   </li>
                 }
@@ -57,17 +85,6 @@ const pad = (n: number): string => String(n).padStart(2, '0');
             </ui-card>
           }
         </div>
-
-        <app-story-image-panel>
-          <ui-button size="lg" (click)="copy()">
-            <ui-icon name="copy" />
-            {{ t().result.copy }}
-          </ui-button>
-          <ui-button variant="ghost" (click)="store.reset()">
-            <ui-icon name="arrow-back-up" />
-            {{ t().result.startOver }}
-          </ui-button>
-        </app-story-image-panel>
       } @else {
         <div
           data-hint
@@ -414,9 +431,9 @@ export class ResultStep {
 
   protected teamAccent(index: number): 'primary' | 'secondary' | 'alternative' | undefined {
     const accents: ('primary' | 'secondary' | 'alternative')[] = [
+      'primary',
       'secondary',
       'alternative',
-      'primary',
     ];
     return accents[index % accents.length];
   }

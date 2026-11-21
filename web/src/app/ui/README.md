@@ -37,7 +37,8 @@ Any action the person triggers. Wraps a native `<button>`.
 - `variant`: `primary` (default), `secondary`, `outline`, `ghost`
 - `size`: `sm` (for a secondary action inside a card: 44 px on a phone, 36 px from `sm` up), `md`
   (default, 44 px), `lg` (52 px)
-- `type`: `button` (default) or `submit`; `disabled`; `ariaLabel`
+- `type`: `button` (default) or `submit`; `disabled`; `ariaLabel`; `describedBy` (the id of the text
+  that describes it)
 - Content: text and icons. `(click)` works on the `<ui-button>` itself.
 
 ```html
@@ -208,6 +209,8 @@ title and take the full width.
   (amber, and `aria-current="step"`) or `todo`; leave it out for a plain title
 - `stepsLabel`: the accessible name of the list of steps; `doneLabel`: what to read after a done
   step (for example "completed")
+- `accentLast`: colors the last word of the title ("Teams <amber>confirmed</amber>")
+- Slot `header-aside` (optional): something to show beside the title, such as a few `ui-stat` tiles
 
 ```html
 <ui-step-header

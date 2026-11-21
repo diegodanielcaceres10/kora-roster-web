@@ -217,7 +217,7 @@ export const es: Dictionary = {
     },
     result: {
       imageHint: 'Exporta una imagen con formato vertical 9:16 para Instagram o WhatsApp',
-      copy: 'Copiar texto',
+      copy: 'Copiar para WhatsApp',
       copied: 'Copiado',
       copyFailed: 'No se pudo copiar. Selecciona el texto y cópialo a mano.',
       redraw: 'Volver a sortear',
@@ -246,9 +246,9 @@ export const es: Dictionary = {
       confirmed: 'Equipos confirmados.',
       missing: (count) =>
         count === 1 ? 'Falta 1 jugador por ubicar.' : `Faltan ${count} jugadores por ubicar.`,
-      createImage: 'Crear imagen',
+      createImage: 'Imagen para stories',
       imageSignIn: 'Inicia sesión para crear la imagen.',
-      imageTitle: 'Imagen para historias',
+      imageTitle: 'Imagen para stories',
       imageAlt: 'Imagen con los equipos, lista para compartir',
       download: 'Descargar',
       share: 'Compartir',
@@ -280,6 +280,9 @@ export const es: Dictionary = {
           ? 'Se habilitará al ubicar a todos los jugadores (falta 1).'
           : `Se habilitará al ubicar a todos los jugadores (faltan ${missing}).`,
       backToReview: 'Volver al paso 2 (revisión)',
+      playersBadge: (n) => (n === 1 ? '1 jugador' : `${n} jugadores`),
+      statPlayers: 'Total de jugadores',
+      statGoalkeepers: 'Arqueros',
     },
   },
 };

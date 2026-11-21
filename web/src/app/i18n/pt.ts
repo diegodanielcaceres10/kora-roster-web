@@ -217,7 +217,7 @@ export const pt: Dictionary = {
     },
     result: {
       imageHint: 'Exporte uma imagem em formato vertical 9:16 para Instagram ou WhatsApp',
-      copy: 'Copiar texto',
+      copy: 'Copiar para WhatsApp',
       copied: 'Copiado',
       copyFailed: 'Não foi possível copiar. Selecione o texto e copie manualmente.',
       redraw: 'Sortear de novo',
@@ -248,7 +248,7 @@ export const pt: Dictionary = {
         count === 1
           ? 'Falta 1 jogador para colocar em um time.'
           : `Faltam ${count} jogadores para colocar em um time.`,
-      createImage: 'Criar imagem',
+      createImage: 'Imagem para stories',
       imageSignIn: 'Entre para criar a imagem.',
       imageTitle: 'Imagem para stories',
       imageAlt: 'Imagem com os times, pronta para compartilhar',
@@ -282,6 +282,9 @@ export const pt: Dictionary = {
           ? 'Será liberado quando todos os jogadores tiverem time (falta 1).'
           : `Será liberado quando todos os jogadores tiverem time (faltam ${missing}).`,
       backToReview: 'Voltar ao passo 2 (revisão)',
+      playersBadge: (n) => (n === 1 ? '1 jogador' : `${n} jogadores`),
+      statPlayers: 'Total de jogadores',
+      statGoalkeepers: 'Goleiros',
     },
   },
 };

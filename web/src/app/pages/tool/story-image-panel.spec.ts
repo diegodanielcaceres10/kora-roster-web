@@ -47,8 +47,8 @@ function setup(options: Options = {}) {
   fixture.detectChanges();
   const el = fixture.nativeElement as HTMLElement;
   const button = (label: string) =>
-    Array.from(el.querySelectorAll('ui-button button')).find(
-      (b) => b.textContent?.trim() === label,
+    Array.from(el.querySelectorAll('ui-button button')).find((b) =>
+      b.textContent?.trim().startsWith(label),
     ) as HTMLButtonElement | undefined;
   const image = () => el.querySelector('img');
   const notice = () =>
@@ -298,26 +298,57 @@ describe('StoryImagePanel', () => {
     });
   });
 
-  describe('the buttons that come with it', () => {
+  describe('the bar of actions', () => {
     @Component({
       imports: [StoryImagePanel],
-      template: `<app-story-image-panel
-        ><button id="before">Before</button></app-story-image-panel
-      >`,
+      template: `
+        <app-story-image-panel>
+          <button panel-start id="first">Copiar</button>
+          <button panel-end id="last">Empezar</button>
+        </app-story-image-panel>
+      `,
     })
     class Host {}
 
-    it('puts what it is given in the same row, before its own button', () => {
-      setup();
+    function bar() {
+      saveSession();
+      TestBed.inject(I18n).setLang('es');
+      const store = TestBed.inject(FriendlyStore);
+      store.setRawText(list(12));
+      store.continueToPreview();
+      store.draw(() => 0.3);
       const fixture = TestBed.createComponent(Host);
       fixture.detectChanges();
-      const el = fixture.nativeElement as HTMLElement;
-      const before = el.querySelector('#before') as HTMLElement;
-      const create = Array.from(el.querySelectorAll('ui-button button')).find(
-        (b) => b.textContent?.trim() === T.result.createImage,
+      return fixture.nativeElement as HTMLElement;
+    }
+
+    it('puts what it is given at the start and at the end, around its own button', () => {
+      const el = bar();
+      const first = el.querySelector('#first') as HTMLElement;
+      const image = Array.from(el.querySelectorAll('ui-button button')).find((b) =>
+        b.textContent?.includes(T.result.createImage),
       ) as HTMLElement;
-      expect(before.parentElement).toBe(create.closest('ui-button')?.parentElement);
-      expect(before.compareDocumentPosition(create)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+      const last = el.querySelector('#last') as HTMLElement;
+      expect(first.compareDocumentPosition(image)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+      expect(image.compareDocumentPosition(last)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+    });
+
+    it('shows the proportion of the image on its button', () => {
+      const el = bar();
+      const image = Array.from(el.querySelectorAll('ui-button button')).find((b) =>
+        b.textContent?.includes(T.result.createImage),
+      ) as HTMLElement;
+      expect(image.textContent).toContain('9:16');
+    });
+
+    it('describes the button with the hint, which is only for assistive technology', () => {
+      const el = bar();
+      const image = Array.from(el.querySelectorAll('ui-button button')).find((b) =>
+        b.textContent?.includes(T.result.createImage),
+      ) as HTMLElement;
+      const hint = el.querySelector(`#${image.getAttribute('aria-describedby')}`) as HTMLElement;
+      expect(hint.textContent?.trim()).toBe(T.result.imageHint);
+      expect(hint.classList.contains('sr-only')).toBe(true);
     });
   });
 });

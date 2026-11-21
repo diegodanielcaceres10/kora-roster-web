@@ -419,6 +419,23 @@ describe('dictionaries', () => {
       },
     );
 
+    it.each([
+      ['en', 'Copy for WhatsApp', 'Image for stories', '1 player', '12 players'],
+      ['es', 'Copiar para WhatsApp', 'Imagen para stories', '1 jugador', '12 jugadores'],
+      ['pt', 'Copiar para WhatsApp', 'Imagem para stories', '1 jogador', '12 jogadores'],
+    ] as const)(
+      'name the actions and the count of the confirmed teams in %s',
+      (lang, copy, image, one, many) => {
+        const { result } = DICTIONARIES[lang].tool;
+        expect(result.copy).toBe(copy);
+        expect(result.createImage).toBe(image);
+        expect(result.playersBadge(1)).toBe(one);
+        expect(result.playersBadge(12)).toBe(many);
+        expect(result.statPlayers.length).toBeGreaterThan(4);
+        expect(result.statGoalkeepers.length).toBeGreaterThan(4);
+      },
+    );
+
     // The neutral Spanish uses tú, not vos: no "Tocá", "podés" or "Probá" on the screens.
     it('writes the Spanish of the team editor and the image without voseo', () => {
       const { result } = DICTIONARIES.es.tool;

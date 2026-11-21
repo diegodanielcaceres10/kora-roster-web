@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { booleanAttribute, ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { UiIcon } from '../icon/icon';
 
 export type StepState = 'done' | 'current' | 'todo';
@@ -29,11 +29,17 @@ const LOOKS: Record<StepState, string> = {
       class="flex flex-col gap-4 rounded-2xl border border-line bg-surface p-5 shadow-xs sm:flex-row sm:items-center sm:justify-between sm:gap-6"
     >
       <div class="min-w-0">
-        <h1 class="text-2xl font-black uppercase tracking-tight text-ink sm:text-3xl">{{ title() }}</h1>
+        <h1 class="text-2xl font-black uppercase tracking-tight text-ink sm:text-3xl">
+          {{ parts().lead }}
+          @if (parts().accent) {
+            <span class="text-amber-700 dark:text-primary">{{ parts().accent }}</span>
+          }
+        </h1>
         @if (subtitle()) {
           <p class="mt-1.5 max-w-xl text-sm text-ink-muted">{{ subtitle() }}</p>
         }
       </div>
+      <div data-aside class="empty:hidden"><ng-content select="[header-aside]" /></div>
       @if (steps().length > 0) {
         <nav [attr.aria-label]="stepsLabel()" class="w-full sm:w-auto sm:shrink-0">
           <ol
@@ -75,6 +81,15 @@ export class UiStepHeader {
   // The accessible name of the list of steps, and what to say after a step that is done.
   readonly stepsLabel = input('');
   readonly doneLabel = input('');
+  // Colors the last word of the title, for a title like "Teams confirmed".
+  readonly accentLast = input(false, { transform: booleanAttribute });
+
+  protected readonly parts = computed(() => {
+    const title = this.title().trim();
+    const cut = title.lastIndexOf(' ');
+    if (!this.accentLast() || cut < 0) return { lead: title, accent: '' };
+    return { lead: title.slice(0, cut), accent: title.slice(cut + 1) };
+  });
 
   protected readonly base = BASE;
   protected readonly looks = LOOKS;

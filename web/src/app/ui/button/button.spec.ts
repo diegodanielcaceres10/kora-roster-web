@@ -9,6 +9,7 @@ import { ButtonSize, ButtonVariant, UiButton } from './button';
     <ui-button
       [variant]="variant()"
       [size]="size()"
+      [describedBy]="describedBy()"
       [type]="type()"
       [disabled]="disabled()"
       [ariaLabel]="ariaLabel()"
@@ -21,6 +22,7 @@ import { ButtonSize, ButtonVariant, UiButton } from './button';
 class Host {
   readonly variant = signal<ButtonVariant>('primary');
   readonly size = signal<ButtonSize>('md');
+  readonly describedBy = signal<string | undefined>(undefined);
   readonly type = signal<'button' | 'submit'>('button');
   readonly disabled = signal(false);
   readonly ariaLabel = signal<string | undefined>(undefined);
@@ -67,6 +69,13 @@ describe('UiButton', () => {
       sizes.add(button().className);
     }
     expect(sizes.size).toBe(3);
+  });
+
+  it('can point to the text that describes it', () => {
+    const { button, update } = setup();
+    expect(button().hasAttribute('aria-describedby')).toBe(false);
+    update((h) => h.describedBy.set('hint-1'));
+    expect(button().getAttribute('aria-describedby')).toBe('hint-1');
   });
 
   it('uses the primary variant when none is given', () => {

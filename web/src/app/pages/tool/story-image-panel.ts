@@ -14,7 +14,7 @@ import { STORY_BLOB } from '../../image/story-image';
 import { Entitlements, LockReason } from '../../plans/entitlements';
 import { LockNotice } from '../../plans/lock-notice';
 import { FriendlyStore } from '../../state/friendly.store';
-import { ToastService, UiButton, UiCard, UiIcon } from '../../ui';
+import { ToastService, UiBadge, UiButton, UiCard, UiIcon } from '../../ui';
 
 interface MadeImage {
   url: string;
@@ -24,36 +24,50 @@ interface MadeImage {
   teams: unknown;
 }
 
+let nextHint = 0;
+
 @Component({
   selector: 'app-story-image-panel',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [LockNotice, UiButton, UiCard, UiIcon],
+  imports: [LockNotice, UiBadge, UiButton, UiCard, UiIcon],
   template: `
     <div class="space-y-4">
-      <div class="flex flex-wrap items-center gap-3 rounded-xl border border-secondary/10 bg-white p-4 shadow-xs">
-        <ng-content />
-        <ui-button variant="outline" [disabled]="busy()" (click)="create()">
+      <div
+        class="grid grid-cols-2 gap-3 rounded-2xl border border-line bg-surface p-3 shadow-xs sm:flex sm:flex-wrap sm:items-center"
+      >
+        <ng-content select="[panel-start]" />
+        <ui-button
+          variant="outline"
+          class="sm:col-auto"
+          [disabled]="busy()"
+          [describedBy]="hintId"
+          (click)="create()"
+        >
           <ui-icon [name]="locked() ? 'lock' : 'photo'" />
           {{ t().createImage }}
+          <ui-badge>9:16</ui-badge>
         </ui-button>
+        <ng-content select="[panel-end]" />
       </div>
-      <p class="text-xs text-secondary/60">{{ t().imageHint }}</p>
+      <p [id]="hintId" class="sr-only">{{ t().imageHint }}</p>
       <app-lock-notice [reason]="notice()?.reason ?? null" [message]="notice()?.message ?? null" />
 
       @if (image(); as made) {
         <ui-card accent="alternative">
-          <div card-header class="flex items-center justify-between border-b border-secondary/10 pb-3">
-            <h3 class="flex items-center gap-2 text-base font-bold text-secondary">
+          <div card-header class="flex items-center justify-between gap-3">
+            <h3
+              class="flex items-center gap-2 font-display text-base font-black uppercase tracking-tight text-ink"
+            >
               <ui-icon name="device-mobile" class="text-alternative" />
               {{ t().imageTitle }}
             </h3>
-            <ui-button variant="ghost" (click)="close()">
+            <ui-button variant="ghost" size="sm" (click)="close()">
               <ui-icon name="x" />
               {{ t().closeImage }}
             </ui-button>
           </div>
 
-          <div class="space-y-4 pt-2">
+          <div class="space-y-4">
             <div class="overflow-hidden rounded-xl bg-slate-900 p-2 shadow-inner">
               <img
                 [src]="made.url"
@@ -81,6 +95,7 @@ interface MadeImage {
   `,
 })
 export class StoryImagePanel {
+  protected readonly hintId = `story-image-hint-${nextHint++}`;
   private readonly store = inject(FriendlyStore);
   private readonly entitlements = inject(Entitlements);
   private readonly i18n = inject(I18n);

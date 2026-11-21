@@ -466,7 +466,8 @@ describe('ResultStep', () => {
   describe('the story image', () => {
     const rowOf = (el: HTMLElement, text: string) =>
       Array.from(el.querySelectorAll('ui-button')).find(
-        (host) => host.querySelector('button')?.textContent?.trim() === text,
+        // The button of the image also carries its proportion (9:16) after the label.
+        (host) => host.querySelector('button')?.textContent?.trim().startsWith(text),
       )?.parentElement;
 
     it('is created from a button in the same row as copying and starting over', () => {
@@ -477,12 +478,12 @@ describe('ResultStep', () => {
       expect(rowOf(el, T.result.createImage)).toBe(row);
     });
 
-    it('comes after the buttons to copy and to start over', () => {
+    it('sits between the buttons to copy and to start over', () => {
       const { el } = setup(undefined, true);
       const texts = Array.from(el.querySelectorAll('ui-button button')).map((b) =>
-        b.textContent?.trim(),
+        b.textContent?.trim().replace(/\s*9:16$/, ''),
       );
-      expect(texts).toEqual([T.result.copy, T.result.startOver, T.result.createImage]);
+      expect(texts).toEqual([T.result.copy, T.result.createImage, T.result.startOver]);
     });
 
     it('keeps the image below the buttons once it is created', () => {
@@ -929,10 +930,11 @@ describe('ResultStep', () => {
         const titles = Array.from(el.querySelectorAll('ui-card h3')).map((h) =>
           h.textContent?.trim(),
         );
-        expect(titles).toEqual([`🔴 ${T.teamTitle(1)}`, `🔵 ${T.teamTitle(2)}`]);
+        expect(titles).toEqual([T.teamTitle(1), T.teamTitle(2)]);
+        expect(icons(el)).toEqual(['🔴', '🔵']);
         const [teamA] = store.teams() ?? [[]];
         expect(items(el)).toHaveLength(12);
-        expect(items(el)[0]).toMatch(new RegExp(`^1\\.\\s*${teamA[0].name}`));
+        expect(items(el)[0]).toMatch(new RegExp(`^01\\s*${teamA[0].name}`));
         expect(el.querySelectorAll('li ui-icon[data-icon="glove"]')).toHaveLength(2);
       },
     );
@@ -968,6 +970,50 @@ describe('ResultStep', () => {
       expect(el.querySelector('app-story-image-panel')?.textContent).toContain(
         T.result.createImage,
       );
+    });
+
+    it('says how many players each team has', () => {
+      const { el } = setup(undefined, true);
+      const badges = Array.from(el.querySelectorAll('[data-players-badge]')).map((b) =>
+        b.textContent?.trim(),
+      );
+      expect(badges).toEqual([T.result.playersBadge(6), T.result.playersBadge(6)]);
+    });
+
+    it('names a goalkeeper in the list with the glove and the word', () => {
+      const { el } = setup(undefined, true);
+      const keepers = Array.from(el.querySelectorAll('ui-card li')).filter((li) =>
+        li.querySelector('ui-icon[data-icon="glove"]'),
+      );
+      expect(keepers).toHaveLength(2);
+      for (const keeper of keepers) expect(keeper.textContent).toContain(T.preview.goalkeeper);
+    });
+
+    it('gives every team its own color on top', () => {
+      const { el } = setup(undefined, true);
+      const [a, b] = Array.from(el.querySelectorAll('ui-card section'));
+      expect(a.className).toContain('border-t-primary');
+      expect(b.className).not.toContain('border-t-primary');
+      expect(b.className).toContain('border-t-slate-600');
+    });
+
+    it('puts the actions in order: copy, the image, and start over', () => {
+      const { el } = setup(undefined, true);
+      const labels = Array.from(el.querySelectorAll('app-story-image-panel ui-button button')).map(
+        (b) => b.textContent?.trim() ?? '',
+      );
+      const at = (text: string) => labels.findIndex((label) => label.startsWith(text));
+      expect(at(T.result.copy)).toBeGreaterThanOrEqual(0);
+      expect(at(T.result.copy)).toBeLessThan(at(T.result.createImage));
+      expect(at(T.result.createImage)).toBeLessThan(at(T.result.startOver));
+    });
+
+    it('lets the copy button take the whole row on a phone', () => {
+      const { el } = setup(undefined, true);
+      const copy = Array.from(el.querySelectorAll('ui-button')).find((b) =>
+        b.textContent?.includes(T.result.copy),
+      ) as HTMLElement;
+      expect(copy.className).toContain('col-span-2');
     });
 
     it('has the button to start over, and none to go back or to edit the teams', () => {

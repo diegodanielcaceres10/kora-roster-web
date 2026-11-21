@@ -34,6 +34,7 @@ const SIZES: Record<ButtonSize, string> = {
       [attr.type]="type()"
       [disabled]="disabled()"
       [attr.aria-label]="ariaLabel() ?? null"
+      [attr.aria-describedby]="describedBy() ?? null"
       [class]="classes()"
     >
       <ng-content />
@@ -46,6 +47,8 @@ export class UiButton {
   readonly type = input<'button' | 'submit'>('button');
   readonly disabled = input(false);
   readonly ariaLabel = input<string | undefined>(undefined);
+  // The id of the text that describes the button, when its label alone is not enough.
+  readonly describedBy = input<string | undefined>(undefined);
 
   protected readonly classes = computed(
     () => `${BASE} ${VARIANTS[this.variant()]} ${SIZES[this.size()]}`,

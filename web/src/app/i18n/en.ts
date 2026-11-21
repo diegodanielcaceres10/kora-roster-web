@@ -213,7 +213,7 @@ export const en = {
     },
     result: {
       imageHint: 'Export a vertical 9:16 image for Instagram or WhatsApp',
-      copy: 'Copy text',
+      copy: 'Copy for WhatsApp',
       copied: 'Copied',
       copyFailed: 'Could not copy. Select the text and copy it by hand.',
       redraw: 'Draw again',
@@ -242,7 +242,7 @@ export const en = {
       confirmed: 'Teams confirmed.',
       missing: (count: number) =>
         count === 1 ? '1 player still needs a team.' : `${count} players still need a team.`,
-      createImage: 'Create image',
+      createImage: 'Image for stories',
       imageSignIn: 'Sign in to create the image.',
       imageTitle: 'Image for stories',
       imageAlt: 'Image with the teams, ready to share',
@@ -276,6 +276,9 @@ export const en = {
           ? 'It unlocks once every player has a team (1 missing).'
           : `It unlocks once every player has a team (${missing} missing).`,
       backToReview: 'Back to step 2 (review)',
+      playersBadge: (n: number) => (n === 1 ? '1 player' : `${n} players`),
+      statPlayers: 'Total players',
+      statGoalkeepers: 'Goalkeepers',
     },
   },
 };

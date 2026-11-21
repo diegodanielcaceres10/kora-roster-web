@@ -84,6 +84,49 @@ describe('Tool', () => {
     });
   });
 
+  describe('the header of the confirmed teams', () => {
+    function confirmed(text: string) {
+      const store = TestBed.inject(FriendlyStore);
+      TestBed.inject(I18n).setLang('es');
+      store.setRawText(text);
+      store.continueToPreview();
+      store.draw(() => 0.3);
+      store.confirm();
+      const fixture = TestBed.createComponent(Tool);
+      fixture.detectChanges();
+      return fixture.nativeElement as HTMLElement;
+    }
+    const tiles = (el: HTMLElement) =>
+      Array.from(el.querySelectorAll('header ui-stat')).map((stat) => ({
+        label: stat.querySelector('[data-label]')?.textContent?.trim(),
+        value: stat.querySelector('[data-value]')?.textContent?.trim(),
+      }));
+
+    it('colors the last word of the title', () => {
+      const el = confirmed(list(12));
+      const title = DICTIONARIES.es.tool.stepHeader.confirmed.title;
+      expect(el.querySelector('h1 span')?.textContent?.trim()).toBe(title.split(' ').pop());
+    });
+
+    it('counts the players and the goalkeepers beside the title', () => {
+      const el = confirmed('Diego 🧤\nMati 🧤\n' + list(10));
+      const { result } = DICTIONARIES.es.tool;
+      expect(tiles(el)).toEqual([
+        { label: result.statPlayers, value: '12' },
+        { label: result.statGoalkeepers, value: '2' },
+      ]);
+    });
+
+    it('shows no figures before the teams are confirmed', () => {
+      const store = TestBed.inject(FriendlyStore);
+      store.setRawText(list(12));
+      const fixture = TestBed.createComponent(Tool);
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('header ui-stat')).toBeNull();
+      expect(fixture.nativeElement.querySelector('h1 span')).toBeNull();
+    });
+  });
+
   describe('the indicator of the steps', () => {
     // Only people with an account go through the steps, so only they see it.
     beforeEach(() => saveSession());
@@ -123,14 +166,15 @@ describe('Tool', () => {
       expect(states(el)).toEqual(['done', 'done', 'active']);
     });
 
-    it('marks the three steps as done once the teams are confirmed', () => {
+    it('drops the steps once the teams are confirmed, as there is nothing left to follow', () => {
       const { store, el, refresh } = open();
       store.setRawText(list(12));
       store.continueToPreview();
       store.draw(() => 0.3);
+      expect(el.querySelector('nav')).not.toBeNull();
       store.confirm();
       refresh();
-      expect(states(el)).toEqual(['done', 'done', 'done']);
+      expect(el.querySelector('nav')).toBeNull();
     });
 
     it('goes back to the first step in use when the person starts over', () => {
