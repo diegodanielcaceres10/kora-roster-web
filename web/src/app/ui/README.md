@@ -59,12 +59,27 @@ button or the text next to it.
 - To add an icon, copy its markup from [Tabler Icons](https://tabler.io/icons) (MIT, outline set)
   into `icon/icons.ts` in alphabetical order, and add its name to the list here.
 
-Names: `adjustments-horizontal`, `alert-circle`, `arrow-back-up`, `arrow-left`, `arrow-right`, `arrows-shuffle`, `ball-football`, `bolt`, `book`, `camera`, `check`, `chevron-right`, `circle-check`, `clipboard`, `clipboard-check`, `copy`, `crown`, `device-mobile`, `download`, `flame`, `glove`, `grip-vertical`, `id`, `info-circle`, `lock`, `logout`, `message`, `moon`, `pencil`, `photo`, `plus`, `refresh`, `share`, `shield`, `skull`, `star`, `sun`, `trash`, `user`, `user-minus`, `user-plus`, `users`, `world`, `x`.
+Names: `adjustments-horizontal`, `alert-circle`, `arrow-back-up`, `arrow-left`, `arrow-right`, `arrows-shuffle`, `ball-football`, `bolt`, `book`, `camera`, `check`, `chevron-right`, `circle-check`, `clipboard`, `clipboard-check`, `copy`, `crown`, `device-mobile`, `download`, `flame`, `glove`, `grip-vertical`, `id`, `info-circle`, `lock`, `logout`, `message`, `moon`, `pencil`, `photo`, `player-play`, `plus`, `refresh`, `send`, `share`, `shield`, `skull`, `star`, `sun`, `trash`, `user`, `user-minus`, `user-plus`, `users`, `world`, `x`.
 
 `glove` is drawn for this project (it stands for the goalkeeper); the rest come from Tabler.
 
 ```html
 <ui-icon name="lock" class="text-xs" />
+```
+
+### `UiButtonLink` · `<ui-button-link>`
+
+A link that looks exactly like `UiButton`. It renders a real `<a>`, so it opens in a new tab and
+is read as a link. Use it to go to another page; use `UiButton` to do something here.
+
+- `link` (required): where it goes, the same as `routerLink` (a path or the list of its parts)
+- `variant` and `size`: the same as `UiButton`
+
+```html
+<ui-button-link [link]="['/', lang, 'friendly']" size="lg">
+  <ui-icon name="bolt" />
+  {{ t().cta }}
+</ui-button-link>
 ```
 
 ### `UiIconButton` · `<ui-icon-button>`

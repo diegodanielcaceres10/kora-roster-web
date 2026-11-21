@@ -85,39 +85,47 @@ export const pt: Dictionary = {
     rights: 'Todos os direitos reservados.',
   },
   landing: {
-    eyebrow: 'Utilitário esportivo de montagem rápida',
     hero: {
-      title: 'Monte os times da partida em segundos',
+      title: 'Monte os times da partida',
+      accent: 'em segundos',
       subtitle:
-        'Cole a lista do grupo do WhatsApp e o Kora limpa os nomes, sorteia dois times equilibrados e deixa a mensagem pronta para enviar.',
+        'Cole a lista do grupo do WhatsApp e o Kora limpa os nomes, detecta os goleiros, sorteia times equilibrados e deixa a mensagem pronta para enviar.',
       cta: 'Amistoso rápido',
+      demo: 'Ver demonstração',
+      checks: [
+        'Comece grátis, sem conta',
+        'Mais opções com a sua conta',
+        'Goleiros distribuídos entre os times',
+      ],
     },
-    benefits: {
-      title: 'Por que o Kora',
-      noAccount: {
-        title: 'Sem conta, sem instalar nada',
-        text: 'Abra a página, cole a lista e pronto. Funciona no celular.',
-      },
-      anyList: {
-        title: 'Entende qualquer lista',
-        text: 'Números, marcadores, emojis e negrito: o Kora fica só com os nomes.',
-      },
-      fairDraw: {
-        title: 'Sorteio justo, com goleiros separados',
-        text: 'Times do mesmo tamanho e os goleiros em lados opostos.',
-      },
+    demo: {
+      input: 'Entrada do WhatsApp',
+      clipboard: 'Colado da área de transferência',
+      draw: 'Sortear',
+      result: 'Escalação resultante',
+      cta: 'Experimente com a sua lista',
     },
     steps: {
-      title: 'Como funciona',
-      paste: { title: 'Cole a lista', text: 'Copie do grupo do WhatsApp do jeito que está.' },
-      check: {
-        title: 'Confira os nomes',
-        text: 'Corrija um nome, remova alguém ou marque os goleiros.',
+      eyebrow: 'Como funciona',
+      title: 'Do WhatsApp ao campo em 3 passos',
+      subtitle: 'Sem planilhas complicadas nem discussões intermináveis antes de calçar as chuteiras.',
+      paste: {
+        title: 'Copie e cole a lista',
+        text: 'Copie a mensagem do jeito que vem do grupo do WhatsApp. O Kora tira os números e os marcadores e detecta os goleiros.',
       },
-      draw: {
-        title: 'Sorteie e copie',
-        text: 'Sorteie de novo quantas vezes quiser e copie o texto para o grupo.',
+      balance: {
+        title: 'Equilíbrio tático',
+        text: 'O Kora distribui os goleiros entre os times e monta times do mesmo tamanho.',
       },
+      send: {
+        title: 'Copie e envie ao grupo',
+        text: 'Com um só clique você tem a mensagem com os times, pronta para colar de volta no WhatsApp e confirmar a partida.',
+      },
+    },
+    cta: {
+      tag: 'Sem demora no vestiário',
+      title: 'Pronto para a próxima partida?',
+      text: 'Comece a sortear num instante. Sem cadastro e sem baixar nada.',
     },
   },
   tool: {

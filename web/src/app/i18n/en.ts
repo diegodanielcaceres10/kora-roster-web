@@ -81,39 +81,47 @@ export const en = {
     rights: 'All rights reserved.',
   },
   landing: {
-    eyebrow: 'Quick team-building sports utility',
     hero: {
-      title: 'Build the match teams in seconds',
+      title: 'Build the match teams',
+      accent: 'in seconds',
       subtitle:
-        'Paste your WhatsApp group list and Kora cleans up the names, splits two even teams and gives you a message ready to send.',
+        'Paste your WhatsApp group list and Kora cleans up the names, spots the goalkeepers, draws even teams and gives you a message ready to send.',
       cta: 'Quick match',
+      demo: 'See a demo',
+      checks: [
+        'Start free, no account',
+        'More options with your account',
+        'Goalkeepers split across the teams',
+      ],
     },
-    benefits: {
-      title: 'Why Kora',
-      noAccount: {
-        title: 'No account, nothing to install',
-        text: 'Open the page, paste the list, done. Works on your phone.',
-      },
-      anyList: {
-        title: 'Understands any list',
-        text: 'Numbers, bullets, emojis and bold text: Kora keeps only the names.',
-      },
-      fairDraw: {
-        title: 'Fair draw, goalkeepers split',
-        text: 'Teams of equal size, with the goalkeepers on opposite sides.',
-      },
+    demo: {
+      input: 'WhatsApp input',
+      clipboard: 'Pasted from the clipboard',
+      draw: 'Draw',
+      result: 'Resulting line-up',
+      cta: 'Try it with your list',
     },
     steps: {
-      title: 'How it works',
-      paste: { title: 'Paste the list', text: 'Copy it from your WhatsApp group as it is.' },
-      check: {
-        title: 'Check the names',
-        text: 'Fix a name, remove someone or mark the goalkeepers.',
+      eyebrow: 'How it works',
+      title: 'From WhatsApp to the pitch in 3 steps',
+      subtitle: 'No complicated spreadsheets, no endless arguments before you lace up.',
+      paste: {
+        title: 'Copy and paste the list',
+        text: 'Copy the message as it comes from the WhatsApp group. Kora removes the numbers and bullets and spots the goalkeepers.',
       },
-      draw: {
-        title: 'Draw and copy',
-        text: 'Redraw as many times as you like, then copy the text for the group.',
+      balance: {
+        title: 'Tactical balance',
+        text: 'Kora splits the goalkeepers across the teams and builds teams of the same size.',
       },
+      send: {
+        title: 'Copy and send to the group',
+        text: 'With a single click you get the message with the teams, ready to paste back into WhatsApp and confirm the match.',
+      },
+    },
+    cta: {
+      tag: 'No delays in the changing room',
+      title: 'Ready for the next match?',
+      text: 'Start drawing in an instant. No sign-up, nothing to download.',
     },
   },
   tool: {

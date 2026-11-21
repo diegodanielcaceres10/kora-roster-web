@@ -1,5 +1,6 @@
 export { UiBadge, type BadgeTone } from './badge/badge';
 export { UiButton, type ButtonSize, type ButtonVariant } from './button/button';
+export { UiButtonLink } from './button-link/button-link';
 export { UiCard, type CardAccent } from './card/card';
 export { UiIcon } from './icon/icon';
 export type { IconName } from './icon/icons';

@@ -86,39 +86,47 @@ export const es: Dictionary = {
     rights: 'Todos los derechos reservados.',
   },
   landing: {
-    eyebrow: 'Utilidad deportiva de armado rápido',
     hero: {
-      title: 'Arma los equipos del partido en segundos',
+      title: 'Arma los equipos del partido',
+      accent: 'en segundos',
       subtitle:
-        'Pega la lista del grupo de WhatsApp y Kora limpia los nombres, sortea dos equipos parejos y te deja el mensaje listo para enviar.',
+        'Pega la lista del grupo de WhatsApp y Kora limpia los nombres, detecta a los arqueros, sortea equipos parejos y te deja el mensaje listo para enviar.',
       cta: 'Amistoso rápido',
+      demo: 'Ver demostración',
+      checks: [
+        'Empieza gratis sin cuenta',
+        'Más opciones con tu cuenta',
+        'Arqueros repartidos entre los equipos',
+      ],
     },
-    benefits: {
-      title: 'Por qué Kora',
-      noAccount: {
-        title: 'Sin cuenta, sin instalar nada',
-        text: 'Abres la página, pegas la lista y listo. Funciona en el móvil.',
-      },
-      anyList: {
-        title: 'Entiende cualquier lista',
-        text: 'Números, viñetas, emojis y negritas: Kora se queda solo con los nombres.',
-      },
-      fairDraw: {
-        title: 'Sorteo justo, con arqueros repartidos',
-        text: 'Equipos del mismo tamaño y los arqueros en lados opuestos.',
-      },
+    demo: {
+      input: 'Entrada de WhatsApp',
+      clipboard: 'Portapapeles pegado',
+      draw: 'Sortear',
+      result: 'Alineación resultante',
+      cta: 'Probar con tu lista',
     },
     steps: {
-      title: 'Cómo funciona',
-      paste: { title: 'Pega la lista', text: 'Cópiala del grupo de WhatsApp tal como está.' },
-      check: {
-        title: 'Revisa los nombres',
-        text: 'Corrige uno, quita a alguien o marca a los arqueros.',
+      eyebrow: 'Cómo funciona',
+      title: 'De WhatsApp a la cancha en 3 pasos',
+      subtitle: 'Sin planillas complejas ni discusiones interminables antes de atarte los botines.',
+      paste: {
+        title: 'Copia y pega la lista',
+        text: 'Copia el mensaje tal cual viene del grupo de WhatsApp. Kora quita los números y las viñetas y detecta a los arqueros.',
       },
-      draw: {
-        title: 'Sortea y copia',
-        text: 'Vuelve a sortear cuantas veces quieras y copia el texto para el grupo.',
+      balance: {
+        title: 'Equilibrio táctico',
+        text: 'Kora reparte a los arqueros entre los equipos y arma equipos del mismo tamaño.',
       },
+      send: {
+        title: 'Copia y envía al grupo',
+        text: 'Con un solo clic tienes el mensaje con los equipos listo para pegar de vuelta en WhatsApp y confirmar el partido.',
+      },
+    },
+    cta: {
+      tag: 'Sin demoras en el vestuario',
+      title: '¿Listo para el próximo partido?',
+      text: 'Empieza a sortear en un instante. Sin registros ni descargas.',
     },
   },
   tool: {

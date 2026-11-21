@@ -256,31 +256,30 @@ describe('dictionaries', () => {
 
   describe('the texts that used to be written in the templates', () => {
     it.each([
-      [
-        'en',
-        'Tactical team picker for friendly football',
-        'Quick team-building sports utility',
-        'Organizer profile',
-      ],
-      [
-        'es',
-        'Sorteador táctico de equipos para fútbol entre amigos',
-        'Utilidad deportiva de armado rápido',
-        'Perfil de Organizador',
-      ],
-      [
-        'pt',
-        'Sorteador tático de times para futebol entre amigos',
-        'Utilitário esportivo de montagem rápida',
-        'Perfil de organizador',
-      ],
-    ] as const)(
-      'name the footer, the landing and the account in %s',
-      (lang, footer, landing, account) => {
-        const dictionary = DICTIONARIES[lang];
-        expect(dictionary.footer.tagline).toBe(footer);
-        expect(dictionary.landing.eyebrow).toBe(landing);
-        expect(dictionary.account.eyebrow).toBe(account);
+      ['en', 'Tactical team picker for friendly football', 'Organizer profile'],
+      ['es', 'Sorteador táctico de equipos para fútbol entre amigos', 'Perfil de Organizador'],
+      ['pt', 'Sorteador tático de times para futebol entre amigos', 'Perfil de organizador'],
+    ] as const)('name the footer and the account in %s', (lang, footer, account) => {
+      const dictionary = DICTIONARIES[lang];
+      expect(dictionary.footer.tagline).toBe(footer);
+      expect(dictionary.account.eyebrow).toBe(account);
+    });
+
+    // The landing only promises what the app does. These words come from the behavior of the
+    // parser and of the draw, so a promise that stops being true has to be taken out here too.
+    it.each([['en'], ['es'], ['pt']] as const)(
+      'keeps to what the app does in the landing in %s',
+      (lang) => {
+        const { landing } = DICTIONARIES[lang];
+        expect(landing.hero.checks).toHaveLength(3);
+        const everything = JSON.stringify(landing).toLowerCase();
+        for (const promise of ['100%', 'garantizad', 'guarantee', 'garantid', 'pro ']) {
+          expect(everything, promise).not.toContain(promise);
+        }
+        // No voseo in the neutral Spanish.
+        if (lang === 'es') {
+          expect(everything).not.toMatch(/\b(tenés|podés|elegí|empezá|pegá|copiá|probá)\b/);
+        }
       },
     );
 

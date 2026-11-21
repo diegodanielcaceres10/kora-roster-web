@@ -1,108 +1,254 @@
+import { DOCUMENT } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { drawTeams, keepersFirst } from '../../core/draw-teams';
+import { parsePastedNames } from '../../core/parse-players';
 import { I18n } from '../../i18n/i18n';
 import { PageMeta } from '../../i18n/page-meta';
-import { UiCard, UiIcon } from '../../ui';
+import { UiButton, UiButtonLink, UiIcon } from '../../ui';
+
+// What the demonstration pastes. It uses markers that every language understands.
+const SAMPLE = [
+  '1. Nico 🧤',
+  '2. Matías C.',
+  '3. Leo',
+  '4. Santi',
+  '5. Tomi (gk)',
+  '6. Lucas Gómez',
+  '7. Facu',
+  '8. Marcos',
+  '9. Julián',
+  '10. Valen',
+];
+
+// The demonstration is made with the same parser and the same draw as the tool, with a fixed
+// "random" so that it always shows the same teams: it can never show what the app does not do.
+const DEMO_TEAMS = (() => {
+  const result = drawTeams(parsePastedNames(SAMPLE.join('\n')), () => 0.37, 2);
+  return result.ok ? result.teams.map((team) => keepersFirst(team)) : [];
+})();
+
+const STEP_ICONS = ['clipboard', 'adjustments-horizontal', 'send'] as const;
+
+const CARD_TILE =
+  'inline-flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-xl text-amber-700 dark:text-primary';
 
 @Component({
   selector: 'app-landing',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, UiCard, UiIcon],
+  imports: [UiButton, UiButtonLink, UiIcon],
   host: { class: 'block' },
   template: `
-    <!-- Hero Section -->
-    <section class="border-b border-secondary/15 bg-secondary text-white relative overflow-hidden">
-      <div class="mx-auto max-w-4xl space-y-6 px-4 py-16 sm:py-20 text-center">
-        <div
-          class="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3.5 py-1 text-xs font-bold uppercase tracking-widest text-primary backdrop-blur-md"
+    <!-- Hero -->
+    <section class="relative overflow-hidden">
+      <div
+        aria-hidden="true"
+        class="pointer-events-none absolute inset-x-0 top-0 h-96 bg-[radial-gradient(ellipse_at_top,rgb(255_182_39/0.2),transparent_65%)]"
+      ></div>
+      <div class="relative mx-auto max-w-4xl space-y-6 px-4 pb-10 pt-14 text-center sm:px-6 sm:pt-20">
+        <h1
+          class="font-display text-4xl font-black uppercase leading-[1.05] tracking-tight text-ink sm:text-6xl"
         >
-          <ui-icon name="bolt" />
-          <span>{{ t().eyebrow }}</span>
-        </div>
-
-        <h1 class="text-3xl sm:text-5xl font-black tracking-tight text-white leading-tight">
           {{ t().hero.title }}
+          <span
+            class="text-amber-700 underline decoration-primary decoration-4 underline-offset-8 dark:text-primary"
+            >{{ t().hero.accent }}</span
+          >
         </h1>
-
-        <p class="mx-auto max-w-2xl text-base sm:text-lg text-white/80 leading-relaxed">
+        <p class="mx-auto max-w-2xl text-base leading-relaxed text-ink-muted sm:text-lg">
           {{ t().hero.subtitle }}
         </p>
-
-        <div class="pt-2">
-          <a
-            [routerLink]="['/', i18n.lang(), 'friendly']"
-            class="inline-flex min-h-13 items-center justify-center gap-2.5 rounded-xl bg-primary px-8 text-base sm:text-lg font-black tracking-wide text-secondary shadow-lg transition-all duration-150 ease-out hover:brightness-95 hover:shadow-xl active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-          >
-            <ui-icon name="ball-football" />
+        <div class="flex flex-wrap items-center justify-center gap-3 pt-2">
+          <ui-button-link size="lg" [link]="toolLink()">
+            <ui-icon name="bolt" />
             {{ t().hero.cta }}
-          </a>
+            <ui-icon name="arrow-right" />
+          </ui-button-link>
+          <ui-button size="lg" variant="outline" (click)="showDemo(demo)">
+            <ui-icon name="player-play" class="text-amber-700 dark:text-primary" />
+            {{ t().hero.demo }}
+          </ui-button>
+        </div>
+        <ul
+          data-checks
+          class="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 font-mono text-[11px] font-bold uppercase tracking-wider text-ink-muted"
+        >
+          @for (check of t().hero.checks; track check) {
+            <li class="inline-flex items-center gap-1.5">
+              <ui-icon name="check" class="text-amber-700 dark:text-primary" />
+              {{ check }}
+            </li>
+          }
+        </ul>
+      </div>
+    </section>
+
+    <!-- Demonstration: a real list and a real draw -->
+    <section #demo id="demo" class="mx-auto max-w-6xl scroll-mt-24 px-4 sm:px-6">
+      <h2 class="sr-only">{{ t().hero.demo }}</h2>
+      <div
+        class="grid gap-4 rounded-3xl border border-line bg-surface p-4 shadow-md sm:p-6 lg:grid-cols-[1fr_auto_1fr]"
+      >
+        <div class="rounded-2xl border border-line bg-surface-muted/60 p-4">
+          <p
+            class="flex items-center gap-2 font-display text-sm font-black uppercase tracking-tight text-ink"
+          >
+            <ui-icon name="message" class="text-amber-700 dark:text-primary" />
+            {{ t().demo.input }}
+          </p>
+          <div class="mt-3 rounded-xl bg-canvas p-3 font-mono text-xs leading-6 text-ink-muted">
+            <p class="mb-1 text-[10px] uppercase tracking-wider text-ink-faint">
+              // {{ t().demo.clipboard }}
+            </p>
+            <ol class="list-none">
+              @for (line of sample; track line) {
+                <li>{{ line }}</li>
+              }
+            </ol>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-center gap-3 lg:flex-col">
+          <span class="h-px flex-1 bg-line lg:h-auto lg:w-px"></span>
+          <span
+            class="inline-flex flex-col items-center gap-1 rounded-2xl border border-primary/40 bg-primary/10 px-4 py-3 font-mono text-[10px] font-bold uppercase tracking-wider text-amber-700 dark:text-primary"
+          >
+            <ui-icon name="refresh" class="text-xl" />
+            {{ t().demo.draw }}
+          </span>
+          <span class="h-px flex-1 bg-line lg:h-auto lg:w-px"></span>
+        </div>
+
+        <div class="rounded-2xl border border-line bg-surface-muted/60 p-4">
+          <p
+            class="flex items-center gap-2 font-display text-sm font-black uppercase tracking-tight text-ink"
+          >
+            <ui-icon name="ball-football" class="text-amber-700 dark:text-primary" />
+            {{ t().demo.result }}
+          </p>
+          <div class="mt-3 grid grid-cols-2 gap-3">
+            @for (team of teams; track $index; let i = $index) {
+              <div data-team class="rounded-xl border border-line bg-surface p-2.5">
+                <h3
+                  class="mb-2 rounded-lg bg-surface-muted px-2 py-1.5 font-mono text-[11px] font-bold uppercase tracking-wider text-ink"
+                >
+                  {{ i18n.t().tool.teamTitle(i + 1) }}
+                </h3>
+                <ul class="space-y-1.5">
+                  @for (player of team; track player.name) {
+                    <li
+                      class="flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-xs font-medium text-ink"
+                      [class]="
+                        player.isGoalkeeper
+                          ? 'border border-primary/30 bg-primary/10'
+                          : 'bg-surface-muted/60'
+                      "
+                    >
+                      @if (player.isGoalkeeper) {
+                        <ui-icon name="glove" class="text-amber-700 dark:text-primary" />
+                      }
+                      <span data-name>{{ player.name }}</span>
+                    </li>
+                  }
+                </ul>
+              </div>
+            }
+          </div>
+          <ui-button-link class="mt-4 block" [link]="toolLink()">
+            <ui-icon name="arrow-right" />
+            {{ t().demo.cta }}
+          </ui-button-link>
         </div>
       </div>
     </section>
 
-    <!-- Tactical Benefits Grid -->
-    <section class="mx-auto max-w-5xl px-4 py-14">
-      <h2 class="sr-only">{{ t().benefits.title }}</h2>
-      <div class="grid grid-cols-1 gap-5 sm:grid-cols-3">
-        @for (benefit of benefits(); track benefit.title; let i = $index) {
-          <ui-card [accent]="benefitAccent(i)">
-            <h3 card-header class="text-base font-bold text-secondary">{{ benefit.title }}</h3>
-            <p class="text-sm text-secondary/75 leading-relaxed">{{ benefit.text }}</p>
-          </ui-card>
-        }
-      </div>
-    </section>
-
-    <!-- How it works (Tactical Step Process) -->
-    <section class="mx-auto max-w-3xl space-y-6 px-4 pb-20">
-      <div class="border-b border-secondary/10 pb-3">
-        <h2 class="text-xl sm:text-2xl font-black tracking-tight text-secondary">
+    <!-- How it works -->
+    <section data-steps class="mx-auto max-w-6xl space-y-8 px-4 py-16 sm:px-6">
+      <header class="text-center">
+        <p
+          data-eyebrow
+          class="font-mono text-[11px] font-bold uppercase tracking-widest text-amber-700 dark:text-primary"
+        >
+          {{ t().steps.eyebrow }}
+        </p>
+        <h2
+          class="mt-2 font-display text-2xl font-black uppercase tracking-tight text-ink sm:text-4xl"
+        >
           {{ t().steps.title }}
         </h2>
-      </div>
-
-      <ol class="space-y-4">
+        <p class="mt-2 text-sm text-ink-muted">{{ t().steps.subtitle }}</p>
+      </header>
+      <ol class="grid gap-5 sm:grid-cols-3">
         @for (step of steps(); track step.title; let i = $index) {
-          <li
-            class="flex items-start gap-4 rounded-xl border border-secondary/10 bg-white p-4 sm:p-5 shadow-xs transition hover:border-secondary/20"
-          >
-            <span
-              class="inline-flex size-9 shrink-0 items-center justify-center rounded-lg bg-secondary text-sm font-black text-primary shadow-xs"
-              >{{ i + 1 }}</span
-            >
-            <div class="space-y-1">
-              <h3 class="text-base font-bold text-secondary">{{ step.title }}</h3>
-              <p class="text-sm text-secondary/75 leading-relaxed">{{ step.text }}</p>
+          <li class="rounded-2xl border border-line bg-surface p-5 shadow-xs sm:p-6">
+            <div class="flex items-start justify-between gap-3">
+              <span
+                data-number
+                class="font-display text-4xl font-black tabular-nums text-amber-700 dark:text-primary"
+                >{{ '0' + (i + 1) }}</span
+              >
+              <span [class]="tile"><ui-icon [name]="step.icon" /></span>
             </div>
+            <h3 class="mt-4 font-display text-base font-black uppercase tracking-tight text-ink">
+              {{ step.title }}
+            </h3>
+            <p class="mt-2 text-sm leading-relaxed text-ink-muted">{{ step.text }}</p>
           </li>
         }
       </ol>
+    </section>
+
+    <!-- Call to action -->
+    <section data-cta class="mx-auto max-w-6xl px-4 pb-20 sm:px-6">
+      <div
+        class="relative flex flex-col gap-6 overflow-hidden rounded-3xl border border-line bg-surface-muted p-6 shadow-md sm:flex-row sm:items-center sm:justify-between sm:p-10"
+      >
+        <div
+          aria-hidden="true"
+          class="pointer-events-none absolute -right-16 top-1/2 size-72 -translate-y-1/2 rounded-full bg-primary/15 blur-3xl"
+        ></div>
+        <div class="relative max-w-xl space-y-2">
+          <p
+            data-tag
+            class="inline-flex items-center gap-2 font-mono text-[11px] font-bold uppercase tracking-widest text-amber-700 dark:text-primary"
+          >
+            <span aria-hidden="true" class="size-2 rounded-full bg-primary"></span>
+            {{ t().cta.tag }}
+          </p>
+          <h2 class="font-display text-2xl font-black uppercase tracking-tight text-ink sm:text-3xl">
+            {{ t().cta.title }}
+          </h2>
+          <p class="text-sm leading-relaxed text-ink-muted">{{ t().cta.text }}</p>
+        </div>
+        <ui-button-link class="relative" size="lg" [link]="toolLink()">
+          <ui-icon name="bolt" />
+          {{ t().hero.cta }}
+        </ui-button-link>
+      </div>
     </section>
   `,
 })
 export class Landing {
   protected readonly i18n = inject(I18n);
+  private readonly document = inject(DOCUMENT);
 
   protected readonly t = computed(() => this.i18n.t().landing);
-  protected readonly benefits = computed(() => {
-    const { noAccount, anyList, fairDraw } = this.t().benefits;
-    return [noAccount, anyList, fairDraw];
-  });
+  protected readonly toolLink = computed(() => ['/', this.i18n.lang(), 'friendly']);
+  protected readonly sample = SAMPLE;
+  protected readonly teams = DEMO_TEAMS;
+  protected readonly tile = CARD_TILE;
+
   protected readonly steps = computed(() => {
-    const { paste, check, draw } = this.t().steps;
-    return [paste, check, draw];
+    const { paste, balance, send } = this.t().steps;
+    return [paste, balance, send].map((step, i) => ({ ...step, icon: STEP_ICONS[i] }));
   });
 
   constructor() {
     inject(PageMeta).apply('landing');
   }
 
-  protected benefitAccent(index: number): 'primary' | 'secondary' | 'alternative' {
-    const accents: ('primary' | 'secondary' | 'alternative')[] = [
-      'primary',
-      'secondary',
-      'alternative',
-    ];
-    return accents[index % accents.length];
+  // Scrolls to the demonstration, without the animation for people who asked for less motion.
+  protected showDemo(section: HTMLElement): void {
+    const reduce = this.document.defaultView?.matchMedia?.('(prefers-reduced-motion: reduce)');
+    section.scrollIntoView({ behavior: reduce?.matches ? 'auto' : 'smooth', block: 'start' });
   }
 }
