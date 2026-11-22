@@ -1,4 +1,5 @@
 import {
+  booleanAttribute,
   ChangeDetectionStrategy,
   Component,
   computed,
@@ -20,7 +21,17 @@ const COLOR_FIELD =
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'block' },
   template: `
-    <label [attr.for]="fieldId" [class]="labelClass()">{{ label() }}</label>
+    <div class="flex items-end justify-between gap-2">
+      <label [attr.for]="fieldId" [class]="labelClass()">{{ label() }}</label>
+      @if (showCount() && maxLength()) {
+        <span
+          data-count
+          aria-hidden="true"
+          class="mb-1.5 font-mono text-[11px] font-bold tabular-nums text-ink-faint"
+          >{{ value().length }}/{{ maxLength() }}</span
+        >
+      }
+    </div>
     <input
       #field
       [id]="fieldId"
@@ -43,6 +54,8 @@ export class UiInput {
   readonly labelHidden = input(false);
   readonly type = input<'text' | 'color'>('text');
   readonly maxLength = input<number | undefined>(undefined);
+  // Shows how many characters are used out of the limit; it needs a `maxLength`.
+  readonly showCount = input(false, { transform: booleanAttribute });
   readonly placeholder = input('');
   readonly hint = input('');
   readonly value = model('');

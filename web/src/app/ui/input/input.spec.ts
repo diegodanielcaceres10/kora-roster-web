@@ -11,6 +11,7 @@ import { UiInput } from './input';
       [labelHidden]="labelHidden()"
       [type]="type()"
       [maxLength]="maxLength()"
+      [showCount]="showCount()"
       [placeholder]="placeholder()"
       [hint]="hint()"
       [(value)]="text"
@@ -22,6 +23,7 @@ class Host {
   readonly labelHidden = signal(false);
   readonly type = signal<'text' | 'color'>('text');
   readonly maxLength = signal<number | undefined>(undefined);
+  readonly showCount = signal(false);
   readonly placeholder = signal('');
   readonly hint = signal('');
 }
@@ -131,5 +133,42 @@ describe('UiInput', () => {
     input.select();
     expect(field().selectionStart).toBe(0);
     expect(field().selectionEnd).toBe(5);
+  });
+
+  describe('the count of characters', () => {
+    const count = (el: HTMLElement) => el.querySelector('[data-count]')?.textContent?.trim();
+
+    it('is not shown by default, even with a limit', () => {
+      const { el, update } = setup();
+      update((h) => h.maxLength.set(200));
+      expect(count(el)).toBeUndefined();
+    });
+
+    it('shows how many characters are used out of the limit, and follows what is typed', () => {
+      const { el, update } = setup();
+      update((h) => {
+        h.maxLength.set(200);
+        h.showCount.set(true);
+        h.text.set('Amistoso');
+      });
+      expect(count(el)).toBe('8/200');
+      update((h) => h.text.set('Amistoso del jueves'));
+      expect(count(el)).toBe('19/200');
+    });
+
+    it('needs a limit to count against', () => {
+      const { el, update } = setup();
+      update((h) => h.showCount.set(true));
+      expect(count(el)).toBeUndefined();
+    });
+
+    it('is kept apart from the label for assistive technology, which already knows the limit', () => {
+      const { el, update } = setup();
+      update((h) => {
+        h.maxLength.set(200);
+        h.showCount.set(true);
+      });
+      expect(el.querySelector('[data-count]')?.getAttribute('aria-hidden')).toBe('true');
+    });
   });
 });

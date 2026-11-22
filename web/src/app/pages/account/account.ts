@@ -22,66 +22,89 @@ import { PremiumCard } from './premium-card';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [UiButton, UserAvatar, PreferencesEditor, PremiumCard, UiIcon],
   template: `
-    <section class="mx-auto max-w-4xl space-y-8 px-4 py-8">
-      <div class="border-b border-secondary/10 pb-4">
-        <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-secondary/60">
-          <ui-icon name="id" class="text-primary" />
-          <span>{{ t().eyebrow }}</span>
-        </div>
-        <h1 class="mt-1 text-2xl font-black tracking-tight text-secondary sm:text-3xl">
+    <section class="mx-auto max-w-6xl space-y-8 px-4 py-8 sm:px-6 sm:py-10">
+      <header class="space-y-2">
+        <h1 class="text-3xl font-black uppercase tracking-tight text-ink sm:text-5xl">
           {{ t().title }}
         </h1>
-      </div>
+        <p class="max-w-2xl text-sm leading-relaxed text-ink-muted sm:text-base">
+          {{ t().subtitle }}
+        </p>
+      </header>
 
       @if (!auth.enabled) {
-        <div class="rounded-xl border border-secondary/15 bg-white p-6 shadow-xs text-center space-y-2">
-          <p class="text-secondary/70">{{ t().unavailable }}</p>
+        <div class="space-y-2 rounded-2xl border border-line bg-surface p-6 text-center shadow-xs">
+          <p class="text-ink-muted">{{ t().unavailable }}</p>
         </div>
       } @else if (auth.user(); as user) {
-        <!-- User Profile Card -->
-        <div class="rounded-xl border border-secondary/15 bg-white p-6 shadow-xs flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+        <!-- Profile -->
+        <div
+          data-profile
+          class="flex flex-col gap-5 rounded-2xl border border-line bg-surface p-5 shadow-xs sm:flex-row sm:items-center sm:justify-between sm:p-6"
+        >
           <div class="flex items-center gap-4">
-            <app-user-avatar [user]="user" [size]="64" />
-            <dl class="space-y-1">
+            <span class="relative inline-flex">
+              <app-user-avatar [user]="user" [size]="64" />
+              <span
+                data-online
+                aria-hidden="true"
+                class="absolute -bottom-0.5 -right-0.5 size-4 rounded-full border-2 border-surface bg-alternative"
+              ></span>
+            </span>
+            <dl class="min-w-0 space-y-1">
               <div>
-                <dt class="text-xs font-bold uppercase tracking-wider text-secondary/60">{{ t().nameLabel }}</dt>
-                <dd class="text-base font-bold text-secondary">{{ user.name }}</dd>
+                <dt class="sr-only">{{ t().nameLabel }}</dt>
+                <dd>
+                  <h2 class="font-display text-xl font-black tracking-tight text-ink">
+                    {{ user.name }}
+                  </h2>
+                </dd>
               </div>
               <div>
-                <dt class="text-xs font-bold uppercase tracking-wider text-secondary/60">{{ t().emailLabel }}</dt>
-                <dd class="text-sm text-secondary/80">{{ user.email }}</dd>
+                <dt class="sr-only">{{ t().emailLabel }}</dt>
+                <dd class="flex items-center gap-1.5 break-all text-sm text-ink-muted">
+                  <ui-icon name="at" class="shrink-0 text-ink-faint" />
+                  {{ user.email }}
+                </dd>
               </div>
             </dl>
           </div>
 
-          <div>
+          <div class="sm:shrink-0">
             <ui-button variant="outline" (click)="signOut()">
-              <ui-icon name="logout" class="mr-1" />
+              <ui-icon name="logout" />
               {{ t().signOut }}
             </ui-button>
           </div>
         </div>
 
-        <!-- Premium Teaser Card -->
+        <!-- Premium teaser -->
         <app-premium-card />
 
-        <!-- Preferences Form -->
+        <!-- Preferences -->
         <app-preferences-editor />
       } @else {
-        <!-- Signed Out State Card -->
-        <div class="rounded-xl border border-secondary/15 bg-white p-6 sm:p-8 shadow-xs space-y-5 text-center max-w-md mx-auto">
-          <div class="mx-auto flex size-12 items-center justify-center rounded-full bg-secondary/8 text-secondary">
-            <ui-icon name="user" class="text-xl" />
+        <!-- Signed out -->
+        <div
+          class="mx-auto max-w-md space-y-5 rounded-2xl border border-line bg-surface p-6 text-center shadow-xs sm:p-8"
+        >
+          <div
+            class="mx-auto flex size-12 items-center justify-center rounded-full bg-primary/15 text-xl text-amber-700 dark:text-primary"
+          >
+            <ui-icon name="user" />
           </div>
 
-          <p class="text-sm text-secondary/80 leading-relaxed">{{ t().signInPrompt }}</p>
+          <p class="text-sm leading-relaxed text-ink-muted">{{ t().signInPrompt }}</p>
 
           <div class="flex justify-center pt-2">
             <div #googleButton data-google-button></div>
           </div>
 
           @if (problem(); as message) {
-            <p role="alert" class="rounded-lg bg-red-50 p-3 text-xs font-bold text-red-700 border border-red-200">
+            <p
+              role="alert"
+              class="rounded-lg border border-red-200 bg-red-50 p-3 text-xs font-bold text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300"
+            >
               {{ message }}
             </p>
           }

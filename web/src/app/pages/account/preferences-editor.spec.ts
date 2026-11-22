@@ -43,10 +43,23 @@ function setup(saved?: Preferences) {
     input.dispatchEvent(new Event('input'));
     detect();
   };
-  const choose = (label: string, value: string) => {
-    const select = field(label) as HTMLSelectElement;
-    select.value = value;
-    select.dispatchEvent(new Event('change'));
+  // The size of the teams and the numbering are groups of options: press the one with this value.
+  const optionLabel = (group: string, value: string): string => {
+    if (group === P.playersPerTeam.label) {
+      return value === '' ? P.playersPerTeam.any : `${value}v${value}`;
+    }
+    const { template } = P;
+    return {
+      dot: template.numberingDot,
+      paren: template.numberingParen,
+      dash: template.numberingDash,
+      none: template.numberingNone,
+    }[value] as string;
+  };
+  const choose = (group: string, value: string) => {
+    radios(group)
+      .find((r) => r.textContent?.trim() === optionLabel(group, value))
+      ?.click();
     detect();
   };
   const radios = (group: string) =>
@@ -100,35 +113,70 @@ describe('PreferencesEditor', () => {
   describe('the form', () => {
     it('shows the preferences the account saved', () => {
       const { field, checkedIcon, iconGroup, colorLabel } = setup(mine);
-      expect((field(P.playersPerTeam.label) as HTMLSelectElement).value).toBe('7');
+      expect(checkedIcon(P.playersPerTeam.label)).toBe('7v7');
       expect(checkedIcon(iconGroup(1))).toBe('🟢');
       expect(checkedIcon(iconGroup(2))).toBe('🟡');
       expect((field(colorLabel(1)) as HTMLInputElement).value).toBe('#00ff00');
       expect((field(colorLabel(2)) as HTMLInputElement).value).toBe('#ffff00');
       expect((field(P.template.header) as HTMLInputElement).value).toBe('⚽ Amistoso');
       expect((field(P.template.footer) as HTMLInputElement).value).toBe('Confirmen');
-      expect((field(P.template.numbering) as HTMLSelectElement).value).toBe('paren');
+      expect(checkedIcon(P.template.numbering)).toBe(P.template.numberingParen);
     });
 
     it('starts from the defaults when nothing was saved', () => {
       const { field, checkedIcon, iconGroup, colorLabel } = setup();
-      expect((field(P.playersPerTeam.label) as HTMLSelectElement).value).toBe('');
+      expect(checkedIcon(P.playersPerTeam.label)).toBe(P.playersPerTeam.any);
       expect(checkedIcon(iconGroup(1))).toBe('🔴');
       expect(checkedIcon(iconGroup(2))).toBe('🔵');
       expect((field(colorLabel(1)) as HTMLInputElement).value).toBe('#e53935');
       expect((field(P.template.header) as HTMLInputElement).value).toBe('');
-      expect((field(P.template.numbering) as HTMLSelectElement).value).toBe('dot');
+      expect(checkedIcon(P.template.numbering)).toBe(P.template.numberingDot);
     });
 
-    it('offers "any" and the team sizes from 5 to 11', () => {
-      const { field } = setup();
-      const options = Array.from((field(P.playersPerTeam.label) as HTMLSelectElement).options).map(
-        (o) => [o.value, o.textContent?.trim()],
-      );
-      expect(options).toEqual([
-        ['', P.playersPerTeam.any],
-        ...[5, 6, 7, 8, 9, 10, 11].map((n) => [String(n), String(n)]),
+    it('offers "any" and the team sizes from 5 to 11, in one group', () => {
+      const { radios } = setup();
+      expect(radios(P.playersPerTeam.label).map((r) => r.textContent?.trim())).toEqual([
+        P.playersPerTeam.any,
+        ...[5, 6, 7, 8, 9, 10, 11].map((n) => `${n}v${n}`),
       ]);
+    });
+
+    it('offers the four numberings in one group', () => {
+      const { radios } = setup();
+      expect(radios(P.template.numbering).map((r) => r.textContent?.trim())).toEqual([
+        P.template.numberingDot,
+        P.template.numberingParen,
+        P.template.numberingDash,
+        P.template.numberingNone,
+      ]);
+    });
+
+    it('says the size of the teams that is chosen, in the title of its card', () => {
+      const { el, choose } = setup(mine);
+      const card = () => el.querySelector('[data-section="size"]') as HTMLElement;
+      expect(card().textContent).toContain(P.playersPerTeam.selected('7v7'));
+      choose(P.playersPerTeam.label, '');
+      expect(card().textContent).toContain(P.playersPerTeam.selected(P.playersPerTeam.any));
+    });
+
+    it('says the number of teams per session that is chosen, in the title of its card', () => {
+      const { el } = setup();
+      const card = el.querySelector('[data-section="teams"]') as HTMLElement;
+      expect(card.textContent).toContain(P.teamCount.default(2));
+    });
+
+    it('shows how many characters of the 200 the header and the footer use', () => {
+      const { el, typeInto } = setup();
+      const counts = () =>
+        Array.from(el.querySelectorAll('[data-count]')).map((c) => c.textContent?.trim());
+      expect(counts()).toEqual(['0/200', '0/200']);
+      typeInto(P.template.header, 'Amistoso');
+      expect(counts()).toEqual(['8/200', '0/200']);
+    });
+
+    it('shows the preview as a message bubble', () => {
+      const { el } = setup();
+      expect(el.querySelector('[data-bubble] pre')).not.toBeNull();
     });
 
     it('limits the header and the footer to 200 characters', () => {
@@ -256,7 +304,7 @@ describe('PreferencesEditor', () => {
       const { fixture, field, checkedIcon, iconGroup, button, service } = setup(mine);
       button(P.restore).click();
       fixture.detectChanges();
-      expect((field(P.playersPerTeam.label) as HTMLSelectElement).value).toBe('');
+      expect(checkedIcon(P.playersPerTeam.label)).toBe(P.playersPerTeam.any);
       expect(checkedIcon(iconGroup(1))).toBe('🔴');
       expect((field(P.template.header) as HTMLInputElement).value).toBe('');
       expect(service.active()).toEqual(mine);

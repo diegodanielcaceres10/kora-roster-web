@@ -30,7 +30,8 @@ describe('PremiumCard', () => {
     const { el } = setup();
     const title = el.querySelector('h2') as HTMLElement;
     expect(title.textContent).toContain(T.premiumCard.title);
-    expect(title.querySelector('ui-icon[data-icon="lock"]')).not.toBeNull();
+    // The lock sits in its own tile, beside the title, in the header of the card.
+    expect(el.querySelector('header ui-icon[data-icon="lock"]')).not.toBeNull();
     expect(el.textContent).toContain(T.premiumCard.intro);
   });
 

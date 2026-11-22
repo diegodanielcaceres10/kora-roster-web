@@ -25,8 +25,9 @@ export const es: Dictionary = {
     },
   },
   account: {
-    eyebrow: 'Perfil de Organizador',
     title: 'Mi cuenta',
+    subtitle:
+      'Gestiona tu cuenta y personaliza cómo se ven tus equipos y el mensaje para tu grupo de WhatsApp.',
     signInLink: 'Iniciar sesión',
     signInPrompt:
       'Inicia sesión con tu cuenta de Google para guardar tus preferencias en este dispositivo.',
@@ -58,8 +59,12 @@ export const es: Dictionary = {
     title: 'Preferencias',
     description:
       'Se guardan en este dispositivo y se usan cuando armas equipos con la sesión iniciada.',
-    playersPerTeam: { label: 'Jugadores por equipo', any: 'Cualquiera' },
-    teamCount: { label: 'Cantidad de equipos' },
+    playersPerTeam: {
+      label: 'Jugadores por equipo',
+      any: 'Libre',
+      selected: (label) => `${label} seleccionado`,
+    },
+    teamCount: { label: 'Cantidad de equipos', default: (n) => `${n} por defecto` },
     teams: {
       iconLabel: (team) => `${team}: ícono`,
       colorLabel: (team) => `${team}: color`,
@@ -76,7 +81,7 @@ export const es: Dictionary = {
       numberingNone: 'Sin números',
     },
     preview: { title: 'Vista previa' },
-    save: 'Guardar',
+    save: 'Guardar preferencias',
     saved: 'Guardado',
     restore: 'Restaurar valores',
   },

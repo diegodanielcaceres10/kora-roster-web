@@ -37,7 +37,7 @@ const LOCKED = 'bg-transparent text-ink-faint hover:bg-ink/10';
       role="radiogroup"
       [attr.aria-label]="label()"
       class="gap-1 rounded-xl border border-line bg-surface-muted p-1 shadow-inner"
-      [class]="stretch() ? 'flex w-full' : 'inline-flex'"
+      [class]="groupClass()"
     >
       @for (option of options(); track option.value; let i = $index) {
         <button
@@ -69,6 +69,12 @@ export class UiSegmented {
   readonly value = model('');
   // Fills the whole width, with options of the same size.
   readonly stretch = input(false, { transform: booleanAttribute });
+  // Lets the options go on to another row when they do not fit; each keeps a minimum width.
+  readonly wrap = input(false, { transform: booleanAttribute });
+
+  protected readonly groupClass = computed(
+    () => `${this.stretch() ? 'flex w-full' : 'inline-flex'}${this.wrap() ? ' flex-wrap' : ''}`,
+  );
   // Emits the option when somebody touches one that is locked; the value does not change.
   readonly lockedSelect = output<SegmentedOption>();
 
@@ -85,7 +91,7 @@ export class UiSegmented {
 
   protected optionClass(option: SegmentedOption): string {
     const state = option.locked ? LOCKED : this.isSelected(option) ? SELECTED : UNSELECTED;
-    return `${OPTION_BASE} ${state}${this.stretch() ? ' flex-1' : ''}`;
+    return `${OPTION_BASE} ${state}${this.stretch() ? ' flex-1' : ''}${this.wrap() ? ' min-w-16' : ''}`;
   }
 
   protected activate(index: number): void {

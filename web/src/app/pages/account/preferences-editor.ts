@@ -15,10 +15,12 @@ import {
   SegmentedOption,
   SelectOption,
   ToastService,
+  UiBadge,
   UiButton,
+  UiCard,
+  UiIcon,
   UiInput,
   UiSegmented,
-  UiSelect,
 } from '../../ui';
 
 const SAMPLE_NAMES = [
@@ -35,6 +37,11 @@ const SAMPLE_TEAMS = SAMPLE_NAMES.map((names) =>
 
 const NUMBERINGS: readonly Numbering[] = ['dot', 'paren', 'dash', 'none'];
 
+const TILE =
+  'inline-flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-xl text-amber-700 dark:text-primary';
+const SECTION_TITLE = 'mr-auto font-display text-base font-black uppercase tracking-tight text-ink';
+const FIELD_LABEL = 'block font-mono text-[11px] font-bold uppercase tracking-wider text-ink-muted';
+
 const copyOf = (preferences: Preferences): Preferences => ({
   ...preferences,
   teams: preferences.teams.map((team) => ({ ...team })),
@@ -43,98 +50,151 @@ const copyOf = (preferences: Preferences): Preferences => ({
 @Component({
   selector: 'app-preferences-editor',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [LockNotice, UiButton, UiInput, UiSegmented, UiSelect],
+  imports: [LockNotice, UiBadge, UiButton, UiCard, UiIcon, UiInput, UiSegmented],
   template: `
-    <section class="space-y-6 rounded-xl border border-secondary/15 bg-white p-6 shadow-xs">
-      <div class="border-b border-secondary/10 pb-4">
-        <h2>{{ t().title }}</h2>
-        <p class="mt-1 text-sm text-secondary/70">{{ t().description }}</p>
-      </div>
+    <section class="space-y-6">
+      <header class="space-y-1">
+        <p
+          class="flex items-center gap-2 font-mono text-[11px] font-bold uppercase tracking-widest text-amber-700 dark:text-primary"
+        >
+          <ui-icon name="adjustments-horizontal" />
+          {{ t().title }}
+        </p>
+        <p class="text-sm text-ink-muted">{{ t().description }}</p>
+      </header>
 
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
-        <ui-select
-          [label]="t().playersPerTeam.label"
-          [options]="sizeOptions()"
-          [value]="sizeValue()"
-          (valueChange)="setSize($event)"
-        />
+      <div class="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
+        <div class="space-y-5 lg:col-span-7">
+          <ui-card data-section="size">
+            <div card-header class="flex flex-wrap items-center gap-3">
+              <span [class]="tile"><ui-icon name="users" /></span>
+              <h3 [class]="sectionTitle">{{ t().playersPerTeam.label }}</h3>
+              <ui-badge tone="primary">{{ t().playersPerTeam.selected(sizeLabel()) }}</ui-badge>
+            </div>
+            <ui-segmented
+              stretch
+              wrap
+              [label]="t().playersPerTeam.label"
+              [options]="sizeOptions()"
+              [value]="sizeValue()"
+              (valueChange)="setSize($event)"
+            />
+          </ui-card>
 
-        <div class="space-y-2">
-          <ui-segmented
-            [label]="t().teamCount.label"
-            [options]="teamCountOptions()"
-            [value]="teamCountValue()"
-            (valueChange)="setTeamCount($event)"
-            (lockedSelect)="touchLocked($event)"
-          />
-          <app-lock-notice [reason]="lock()?.reason ?? null" [message]="lock()?.message ?? null" />
-        </div>
-      </div>
-
-      <div class="space-y-3">
-        <span class="block text-xs font-bold uppercase tracking-wider text-secondary/70">
-          {{ t().teamsSection }}
-        </span>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          @for (team of visibleTeams(); track $index; let i = $index) {
-            <fieldset class="space-y-3 rounded-xl border border-secondary/15 bg-secondary/[0.02] p-4 shadow-2xs">
-              <legend class="px-1 text-xs font-bold uppercase tracking-wider text-secondary">{{ teamTitle(i) }}</legend>
+          <ui-card data-section="teams">
+            <div card-header class="flex flex-wrap items-center gap-3">
+              <span [class]="tile"><ui-icon name="shield" /></span>
+              <h3 [class]="sectionTitle">{{ t().teamCount.label }}</h3>
+              <ui-badge>{{ t().teamCount.default(draft().teamCount) }}</ui-badge>
+            </div>
+            <div class="space-y-2">
               <ui-segmented
-                [label]="t().teams.iconLabel(teamTitle(i))"
-                [options]="iconOptions"
-                [value]="team.icon"
-                (valueChange)="setIcon(i, $event)"
+                stretch
+                [label]="t().teamCount.label"
+                [options]="teamCountOptions()"
+                [value]="teamCountValue()"
+                (valueChange)="setTeamCount($event)"
+                (lockedSelect)="touchLocked($event)"
+              />
+              <app-lock-notice
+                [reason]="lock()?.reason ?? null"
+                [message]="lock()?.message ?? null"
+              />
+            </div>
+          </ui-card>
+
+          <ui-card data-section="identity">
+            <div card-header class="flex flex-wrap items-center gap-3">
+              <span [class]="tile"><ui-icon name="star" /></span>
+              <h3 [class]="sectionTitle">{{ t().teamsSection }}</h3>
+            </div>
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              @for (team of visibleTeams(); track $index; let i = $index) {
+                <fieldset class="space-y-3 rounded-xl border border-line bg-surface-muted/60 p-4">
+                  <legend class="px-1 font-mono text-[11px] font-bold uppercase tracking-wider text-ink">
+                    {{ teamTitle(i) }}
+                  </legend>
+                  <ui-segmented
+                    [label]="t().teams.iconLabel(teamTitle(i))"
+                    [options]="iconOptions"
+                    [value]="team.icon"
+                    (valueChange)="setIcon(i, $event)"
+                  />
+                  <ui-input
+                    type="color"
+                    [label]="t().teams.colorLabel(teamTitle(i))"
+                    [value]="team.color"
+                    (valueChange)="setColor(i, $event)"
+                  />
+                </fieldset>
+              }
+            </div>
+          </ui-card>
+
+          <ui-card data-section="template">
+            <div card-header class="flex flex-wrap items-center gap-3">
+              <span [class]="tile"><ui-icon name="message" /></span>
+              <h3 [class]="sectionTitle">{{ t().templateSection }}</h3>
+            </div>
+            <div class="space-y-5">
+              <ui-input
+                showCount
+                [label]="t().template.header"
+                [placeholder]="t().template.headerPlaceholder"
+                [maxLength]="textMax"
+                [value]="draft().header"
+                (valueChange)="setHeader($event)"
               />
               <ui-input
-                type="color"
-                [label]="t().teams.colorLabel(teamTitle(i))"
-                [value]="team.color"
-                (valueChange)="setColor(i, $event)"
+                showCount
+                [label]="t().template.footer"
+                [placeholder]="t().template.footerPlaceholder"
+                [maxLength]="textMax"
+                [value]="draft().footer"
+                (valueChange)="setFooter($event)"
               />
-            </fieldset>
-          }
-        </div>
-      </div>
-
-      <div class="space-y-4 border-t border-secondary/10 pt-4">
-        <span class="block text-xs font-bold uppercase tracking-wider text-secondary/70">
-          {{ t().templateSection }}
-        </span>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <ui-input
-            [label]="t().template.header"
-            [placeholder]="t().template.headerPlaceholder"
-            [maxLength]="textMax"
-            [value]="draft().header"
-            (valueChange)="setHeader($event)"
-          />
-          <ui-input
-            [label]="t().template.footer"
-            [placeholder]="t().template.footerPlaceholder"
-            [maxLength]="textMax"
-            [value]="draft().footer"
-            (valueChange)="setFooter($event)"
-          />
+              <div class="space-y-2">
+                <span [class]="fieldLabel">{{ t().template.numbering }}</span>
+                <ui-segmented
+                  stretch
+                  wrap
+                  [label]="t().template.numbering"
+                  [options]="numberingOptions()"
+                  [value]="draft().numbering"
+                  (valueChange)="setNumbering($event)"
+                />
+              </div>
+            </div>
+          </ui-card>
         </div>
 
-        <ui-select
-          [label]="t().template.numbering"
-          [options]="numberingOptions()"
-          [value]="draft().numbering"
-          (valueChange)="setNumbering($event)"
-        />
-      </div>
+        <aside class="space-y-5 lg:col-span-5 lg:sticky lg:top-24">
+          <ui-card data-section="preview">
+            <div card-header class="flex flex-wrap items-center gap-3">
+              <span [class]="tile"><ui-icon name="message" /></span>
+              <h3 [class]="sectionTitle">{{ t().preview.title }}</h3>
+            </div>
+            <div
+              data-bubble
+              class="rounded-2xl rounded-tl-md bg-[#d9fdd3] p-4 shadow-xs dark:bg-[#005c4b]"
+            >
+              <pre
+                class="overflow-x-auto whitespace-pre-wrap font-mono text-xs leading-relaxed text-slate-900 sm:text-sm dark:text-slate-100"
+              >{{ previewText() }}</pre>
+            </div>
+          </ui-card>
 
-      <div class="space-y-2 border-t border-secondary/10 pt-4">
-        <h3 class="text-sm font-bold uppercase tracking-wider text-secondary">{{ t().preview.title }}</h3>
-        <pre class="overflow-x-auto whitespace-pre-wrap rounded-xl border border-secondary/15 bg-secondary/[0.04] p-4 text-xs sm:text-sm font-mono text-secondary leading-relaxed shadow-inner">{{
-          previewText()
-        }}</pre>
-      </div>
-
-      <div class="flex flex-wrap gap-3 pt-2">
-        <ui-button size="lg" (click)="save()">{{ t().save }}</ui-button>
-        <ui-button variant="outline" (click)="restore()">{{ t().restore }}</ui-button>
+          <div class="space-y-3">
+            <ui-button size="lg" (click)="save()">
+              <ui-icon name="check" />
+              {{ t().save }}
+            </ui-button>
+            <ui-button variant="outline" (click)="restore()">
+              <ui-icon name="arrow-back-up" />
+              {{ t().restore }}
+            </ui-button>
+          </div>
+        </aside>
       </div>
     </section>
   `,
@@ -147,6 +207,9 @@ export class PreferencesEditor {
 
   protected readonly t = computed(() => this.i18n.t().preferences);
   protected readonly textMax = HEADER_MAX;
+  protected readonly tile = TILE;
+  protected readonly sectionTitle = SECTION_TITLE;
+  protected readonly fieldLabel = FIELD_LABEL;
   protected readonly iconOptions: SelectOption[] = TEAM_ICONS.map((icon) => ({
     value: icon,
     label: icon,
@@ -157,14 +220,18 @@ export class PreferencesEditor {
   );
   protected readonly lock = signal<{ reason: LockReason; message: string } | null>(null);
 
-  protected readonly sizeOptions = computed<SelectOption[]>(() => [
+  // "Any", then 5v5, 6v6... up to the biggest team there can be.
+  protected readonly sizeOptions = computed<SegmentedOption[]>(() => [
     { value: '', label: this.t().playersPerTeam.any },
     ...Array.from({ length: MAX_TEAM_SIZE - MIN_TEAM_SIZE + 1 }, (_, i) => ({
       value: String(MIN_TEAM_SIZE + i),
-      label: String(MIN_TEAM_SIZE + i),
+      label: `${MIN_TEAM_SIZE + i}v${MIN_TEAM_SIZE + i}`,
     })),
   ]);
   protected readonly sizeValue = computed(() => this.draft().playersPerTeam?.toString() ?? '');
+  protected readonly sizeLabel = computed(
+    () => this.sizeOptions().find((option) => option.value === this.sizeValue())?.label ?? '',
+  );
 
   protected readonly teamCountOptions = computed<SegmentedOption[]>(() =>
     Array.from({ length: MAX_TEAMS - MIN_TEAMS + 1 }, (_, i) => MIN_TEAMS + i).map((count) => {
@@ -182,7 +249,7 @@ export class PreferencesEditor {
     this.draft().teams.slice(0, this.draft().teamCount),
   );
 
-  protected readonly numberingOptions = computed<SelectOption[]>(() => {
+  protected readonly numberingOptions = computed<SegmentedOption[]>(() => {
     const { template } = this.t();
     return [
       { value: 'dot', label: template.numberingDot },

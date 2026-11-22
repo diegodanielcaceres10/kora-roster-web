@@ -25,8 +25,9 @@ export const pt: Dictionary = {
     },
   },
   account: {
-    eyebrow: 'Perfil de organizador',
     title: 'Minha conta',
+    subtitle:
+      'Gerencie sua conta e personalize a aparência dos seus times e da mensagem para o seu grupo do WhatsApp.',
     signInLink: 'Entrar',
     signInPrompt: 'Entre com sua conta do Google para salvar suas preferências neste dispositivo.',
     unavailable: 'O login ainda não está disponível.',
@@ -57,8 +58,12 @@ export const pt: Dictionary = {
     title: 'Preferências',
     description:
       'Ficam salvas neste dispositivo e são usadas quando você monta times com a sessão iniciada.',
-    playersPerTeam: { label: 'Jogadores por time', any: 'Qualquer' },
-    teamCount: { label: 'Quantidade de times' },
+    playersPerTeam: {
+      label: 'Jogadores por time',
+      any: 'Livre',
+      selected: (label) => `${label} selecionado`,
+    },
+    teamCount: { label: 'Quantidade de times', default: (n) => `${n} por padrão` },
     teams: {
       iconLabel: (team) => `${team}: ícone`,
       colorLabel: (team) => `${team}: cor`,
@@ -75,7 +80,7 @@ export const pt: Dictionary = {
       numberingNone: 'Sem números',
     },
     preview: { title: 'Prévia' },
-    save: 'Salvar',
+    save: 'Salvar preferências',
     saved: 'Salvo',
     restore: 'Restaurar padrões',
   },

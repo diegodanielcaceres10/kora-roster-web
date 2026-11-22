@@ -227,12 +227,38 @@ describe('Account page', () => {
   });
 
   it.each(['en', 'es', 'pt'] as const)(
-    'says what the page is above the title in %s',
+    'has the title and says what the account is for under it in %s',
     async (lang) => {
       const { el, settle } = await setup();
       TestBed.inject(I18n).setLang(lang);
       await settle();
-      expect(el.textContent).toContain(DICTIONARIES[lang].account.eyebrow);
+      expect(el.querySelector('h1')?.textContent?.trim()).toBe(DICTIONARIES[lang].account.title);
+      expect(el.querySelector('h1 + p')?.textContent?.trim()).toBe(
+        DICTIONARIES[lang].account.subtitle,
+      );
     },
   );
+
+  describe('the profile card', () => {
+    it('shows the email with the at sign, and a dot that says the session is open', async () => {
+      const { el, fake, settle } = await setup();
+      fake.pick(makeCredential());
+      await settle();
+      const card = el.querySelector('[data-profile]') as HTMLElement;
+      expect(card.querySelector('ui-icon[data-icon="at"]')).not.toBeNull();
+      expect(card.querySelector('[data-online]')).not.toBeNull();
+      expect(card.querySelector('[data-online]')?.getAttribute('aria-hidden')).toBe('true');
+    });
+
+    it('keeps the name as the heading of the card, and the labels for assistive technology', async () => {
+      const { el, fake, settle } = await setup();
+      fake.pick(makeCredential());
+      await settle();
+      const card = el.querySelector('[data-profile]') as HTMLElement;
+      expect(card.querySelector('h2')?.textContent?.trim()).toBe('Diego Cáceres');
+      for (const label of Array.from(card.querySelectorAll('dt'))) {
+        expect(label.classList.contains('sr-only')).toBe(true);
+      }
+    });
+  });
 });

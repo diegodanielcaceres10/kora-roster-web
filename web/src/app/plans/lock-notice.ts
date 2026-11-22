@@ -13,12 +13,12 @@ import { LockReason } from './entitlements';
   template: `
     <div role="status">
       @if (message(); as text) {
-        <p class="text-sm text-secondary/80">
+        <p class="text-sm text-ink-muted">
           {{ text }}
           @if (reason() === 'sign-in') {
             <a
               [routerLink]="['/', i18n.lang(), 'account']"
-              class="font-semibold underline underline-offset-4"
+              class="font-semibold text-ink underline underline-offset-4"
               >{{ i18n.t().locks.signInLink }}</a
             >
           }

@@ -10,10 +10,11 @@ const OPTIONS: SegmentedOption[] = [
 
 @Component({
   imports: [UiSegmented],
-  template: `<ui-segmented label="Idioma" [options]="options" [stretch]="stretch()" [(value)]="lang" />`,
+  template: `<ui-segmented label="Idioma" [options]="options" [stretch]="stretch()" [wrap]="wrap()" [(value)]="lang" />`,
 })
 class Host {
   readonly stretch = signal(false);
+  readonly wrap = signal(false);
   readonly options = OPTIONS;
   readonly lang = signal('en');
 }
@@ -236,6 +237,24 @@ describe('UiSegmented with locked options', () => {
       const group = el.querySelector('[role="radiogroup"]') as HTMLElement;
       expect(group.classList.contains('w-full')).toBe(true);
       expect(radios().every((r) => r.classList.contains('flex-1'))).toBe(true);
+    });
+  });
+
+  describe('wrap', () => {
+    it('keeps the options in one row by default', () => {
+      const { el } = setup();
+      const group = el.querySelector('[role="radiogroup"]') as HTMLElement;
+      expect(group.classList.contains('flex-wrap')).toBe(false);
+    });
+
+    it('lets the options go on to a second row, each with a minimum width', () => {
+      const { fixture, host, el, radios } = setup();
+      host.stretch.set(true);
+      host.wrap.set(true);
+      fixture.detectChanges();
+      const group = el.querySelector('[role="radiogroup"]') as HTMLElement;
+      expect(group.classList.contains('flex-wrap')).toBe(true);
+      expect(radios().every((r) => r.classList.contains('min-w-16'))).toBe(true);
     });
   });
 });

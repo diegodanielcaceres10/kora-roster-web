@@ -256,14 +256,36 @@ describe('dictionaries', () => {
 
   describe('the texts that used to be written in the templates', () => {
     it.each([
-      ['en', 'Tactical team picker for friendly football', 'Organizer profile'],
-      ['es', 'Sorteador táctico de equipos para fútbol entre amigos', 'Perfil de Organizador'],
-      ['pt', 'Sorteador tático de times para futebol entre amigos', 'Perfil de organizador'],
-    ] as const)('name the footer and the account in %s', (lang, footer, account) => {
-      const dictionary = DICTIONARIES[lang];
-      expect(dictionary.footer.tagline).toBe(footer);
-      expect(dictionary.account.eyebrow).toBe(account);
+      ['en', 'Tactical team picker for friendly football'],
+      ['es', 'Sorteador táctico de equipos para fútbol entre amigos'],
+      ['pt', 'Sorteador tático de times para futebol entre amigos'],
+    ] as const)('name the footer in %s', (lang, footer) => {
+      expect(DICTIONARIES[lang].footer.tagline).toBe(footer);
     });
+
+    it.each([['en'], ['es'], ['pt']] as const)(
+      'introduce the account and say what it is for in %s',
+      (lang) => {
+        const { account } = DICTIONARIES[lang];
+        expect(account.title.length).toBeGreaterThan(4);
+        expect(account.subtitle.length).toBeGreaterThan(30);
+      },
+    );
+
+    it.each([
+      ['en', 'Any', '7v7 selected', '2 by default', 'Save preferences'],
+      ['es', 'Libre', '7v7 seleccionado', '2 por defecto', 'Guardar preferencias'],
+      ['pt', 'Livre', '7v7 selecionado', '2 por padrão', 'Salvar preferências'],
+    ] as const)(
+      'name the choices of the preferences in %s',
+      (lang, any, selected, byDefault, save) => {
+        const { preferences } = DICTIONARIES[lang];
+        expect(preferences.playersPerTeam.any).toBe(any);
+        expect(preferences.playersPerTeam.selected('7v7')).toBe(selected);
+        expect(preferences.teamCount.default(2)).toBe(byDefault);
+        expect(preferences.save).toBe(save);
+      },
+    );
 
     // The landing only promises what the app does. These words come from the behavior of the
     // parser and of the draw, so a promise that stops being true has to be taken out here too.

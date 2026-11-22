@@ -23,8 +23,9 @@ export const en = {
     },
   },
   account: {
-    eyebrow: 'Organizer profile',
     title: 'My account',
+    subtitle:
+      'Manage your account and customize how your teams and the message for your WhatsApp group look.',
     signInLink: 'Sign in',
     signInPrompt: 'Sign in with your Google account to save your preferences on this device.',
     unavailable: 'Signing in is not available yet.',
@@ -53,8 +54,12 @@ export const en = {
     templateSection: 'WhatsApp template',
     title: 'Preferences',
     description: 'They are saved on this device and used when you build teams while signed in.',
-    playersPerTeam: { label: 'Players per team', any: 'Any' },
-    teamCount: { label: 'Number of teams' },
+    playersPerTeam: {
+      label: 'Players per team',
+      any: 'Any',
+      selected: (label: string) => `${label} selected`,
+    },
+    teamCount: { label: 'Number of teams', default: (n: number) => `${n} by default` },
     teams: {
       iconLabel: (team: string) => `${team}: icon`,
       colorLabel: (team: string) => `${team}: color`,
@@ -71,7 +76,7 @@ export const en = {
       numberingNone: 'No numbers',
     },
     preview: { title: 'Preview' },
-    save: 'Save',
+    save: 'Save preferences',
     saved: 'Saved',
     restore: 'Restore defaults',
   },

@@ -59,7 +59,7 @@ button or the text next to it.
 - To add an icon, copy its markup from [Tabler Icons](https://tabler.io/icons) (MIT, outline set)
   into `icon/icons.ts` in alphabetical order, and add its name to the list here.
 
-Names: `adjustments-horizontal`, `alert-circle`, `arrow-back-up`, `arrow-left`, `arrow-right`, `arrows-shuffle`, `ball-football`, `bolt`, `book`, `camera`, `check`, `chevron-right`, `circle-check`, `clipboard`, `clipboard-check`, `copy`, `crown`, `device-mobile`, `download`, `flame`, `glove`, `grip-vertical`, `id`, `info-circle`, `lock`, `logout`, `message`, `moon`, `pencil`, `photo`, `player-play`, `plus`, `refresh`, `send`, `share`, `shield`, `skull`, `star`, `sun`, `trash`, `user`, `user-minus`, `user-plus`, `users`, `world`, `x`.
+Names: `adjustments-horizontal`, `alert-circle`, `arrow-back-up`, `arrow-left`, `arrow-right`, `arrows-shuffle`, `at`, `ball-football`, `bolt`, `book`, `camera`, `check`, `chevron-right`, `circle-check`, `clipboard`, `clipboard-check`, `copy`, `crown`, `device-mobile`, `download`, `flame`, `glove`, `grip-vertical`, `id`, `info-circle`, `lock`, `logout`, `message`, `moon`, `pencil`, `photo`, `player-play`, `plus`, `refresh`, `send`, `share`, `shield`, `skull`, `star`, `sun`, `trash`, `user`, `user-minus`, `user-plus`, `users`, `world`, `x`.
 
 `glove` is drawn for this project (it stands for the goalkeeper); the rest come from Tabler.
 
@@ -135,6 +135,7 @@ A labelled single-line field, for text or for a color.
 - `label` (required); `labelHidden` keeps it for screen readers but does not show it
 - `type`: `text` (default) or `color` (a native color picker whose value is `#rrggbb`)
 - `maxLength`, `placeholder`, `hint` (linked with `aria-describedby`)
+- `showCount`: shows `used/limit` beside the label (it needs `maxLength`; it is only for the eyes)
 - Two-way value: `[(value)]`
 - Call `focus()` and `select()` from outside through a `viewChild`
 
@@ -185,6 +186,7 @@ A radio group shown as segments, for choosing one of a few options (the language
 
 - `options` (required): `{ value, label }[]`; `label` (required): the group's accessible name
 - `stretch`: fills the whole width, with options of the same size (by default it takes only the room it needs)
+- `wrap`: lets the options go on to a second row when they do not fit (use it with `stretch`)
 - Two-way value: `[(value)]`
 - Arrow keys move and select, with wrap-around; Home and End jump; only the selected option is
   reachable with Tab
