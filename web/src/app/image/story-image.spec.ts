@@ -16,10 +16,13 @@ function fakeContext() {
   const filled: { fill: string; arcs: number; closed: boolean }[] = [];
   const texts: Drawn[] = [];
   const radii: number[] = [];
+  const outlines: { color: string; width: number }[] = [];
   let arcs = 0;
   let closed = false;
   const ctx = {
     fillStyle: '',
+    strokeStyle: '',
+    lineWidth: 0,
     font: '',
     textAlign: '',
     textBaseline: '',
@@ -42,6 +45,10 @@ function fakeContext() {
       filled.push({ fill: this.fillStyle, arcs, closed });
       events.push('rect');
     }),
+    stroke: vi.fn(function (this: typeof ctx) {
+      outlines.push({ color: this.strokeStyle, width: this.lineWidth });
+      events.push('stroke');
+    }),
     fillText: vi.fn(function (this: typeof ctx, text: string, x: number, y: number) {
       texts.push({
         text,
@@ -63,6 +70,7 @@ function fakeContext() {
     filled,
     texts,
     radii,
+    outlines,
   };
 }
 
@@ -73,6 +81,7 @@ const layout: StoryLayout = {
   commands: [
     {
       kind: 'text',
+      role: 'header',
       x: 540,
       y: 80,
       text: 'Header',
@@ -81,9 +90,19 @@ const layout: StoryLayout = {
       color: '#ffffff',
       align: 'center',
     },
-    { kind: 'rect', x: 48, y: 200, width: 984, height: 600, radius: 36, fill: '#e53935' },
+    {
+      kind: 'rect',
+      role: 'panel',
+      x: 48,
+      y: 200,
+      width: 984,
+      height: 600,
+      radius: 36,
+      fill: '#e53935',
+    },
     {
       kind: 'text',
+      role: 'title',
       x: 80,
       y: 260,
       text: '🔴 Team 1',
@@ -94,6 +113,7 @@ const layout: StoryLayout = {
     },
     {
       kind: 'text',
+      role: 'player',
       x: 80,
       y: 340,
       text: '1. Diego 🧤',
@@ -102,7 +122,16 @@ const layout: StoryLayout = {
       color: '#111111',
       align: 'left',
     },
-    { kind: 'rect', x: 48, y: 824, width: 40, height: 20, radius: 36, fill: '#1e88e5' },
+    {
+      kind: 'rect',
+      role: 'panel',
+      x: 48,
+      y: 824,
+      width: 40,
+      height: 20,
+      radius: 36,
+      fill: '#1e88e5',
+    },
   ],
 };
 
@@ -143,6 +172,57 @@ describe('drawStory', () => {
       ['🔴 Team 1', 80, 260, '#111111', 'left', 'middle'],
       ['1. Diego 🧤', 80, 340, '#111111', 'left', 'middle'],
     ]);
+  });
+
+  describe('an outline', () => {
+    const outlined: StoryLayout = {
+      width: 1080,
+      height: 1920,
+      background: '#eef2f7',
+      commands: [
+        {
+          kind: 'rect',
+          role: 'plate',
+          x: 36,
+          y: 36,
+          width: 1008,
+          height: 1848,
+          radius: 56,
+          fill: '#ffffff',
+          stroke: { color: '#d9e2ec', width: 3 },
+        },
+        {
+          kind: 'rect',
+          role: 'title-bar',
+          x: 60,
+          y: 60,
+          width: 400,
+          height: 80,
+          radius: 26,
+          fill: '#e53935',
+        },
+      ],
+    };
+
+    it('is drawn right after the fill of the rectangle that has one, with its color and width', () => {
+      const { ctx, events, outlines } = fakeContext();
+      drawStory(ctx, outlined);
+      expect(events.slice(1)).toEqual(['rect', 'stroke', 'rect']);
+      expect(outlines).toEqual([{ color: '#d9e2ec', width: 3 }]);
+    });
+
+    it('is not drawn for a rectangle that has none', () => {
+      const { ctx, outlines } = fakeContext();
+      drawStory(ctx, layout);
+      expect(outlines).toEqual([]);
+    });
+
+    it('follows the same rounded shape as the fill', () => {
+      const { ctx, radii } = fakeContext();
+      drawStory(ctx, outlined);
+      // One path per rectangle, four arcs each, and the outline reuses the path of its fill.
+      expect(radii).toHaveLength(8);
+    });
   });
 
   it('sets the weight and the size in the font, with emoji fonts as a fallback', () => {
@@ -191,6 +271,8 @@ describe('createStoryBlob', () => {
     header: 'Header',
     footer: '',
     numbering: 'dot',
+    confirmed: 'confirmed',
+    brand: 'Made with Kora Roster',
   };
 
   function fakeCanvas(options: { context?: boolean; blob?: boolean } = {}) {

@@ -765,6 +765,21 @@ describe('FriendlyStore', () => {
       expect(input?.teams.map((team) => team.color)).toEqual(['#00ff00', '#ffff00']);
     });
 
+    it('says that the teams are confirmed and who made them, in the language of the person', () => {
+      const { store, i18n } = drawn();
+      expect([store.storyInput()?.confirmed, store.storyInput()?.brand]).toEqual([
+        'confirmed',
+        'Made with Kora Roster',
+      ]);
+      i18n.setLang('es');
+      expect([store.storyInput()?.confirmed, store.storyInput()?.brand]).toEqual([
+        'confirmado',
+        'Generado con Kora Roster',
+      ]);
+      i18n.setLang('pt');
+      expect(store.storyInput()?.brand).toBe('Gerado com Kora Roster');
+    });
+
     it('has a block for each team in use, and the titles follow the language', () => {
       saveSession();
       const { store, i18n } = inPreview('Diego 🧤\nMati 🧤\nFede 🧤\n' + list(15));

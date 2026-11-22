@@ -292,6 +292,8 @@ export const en = {
       playersBadge: (n: number) => (n === 1 ? '1 player' : `${n} players`),
       statPlayers: 'Total players',
       statGoalkeepers: 'Goalkeepers',
+      storyConfirmed: 'confirmed',
+      storyBrand: 'Made with Kora Roster',
     },
   },
 };

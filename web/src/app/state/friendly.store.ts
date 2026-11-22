@@ -107,7 +107,7 @@ export const FriendlyStore = signalStore(
       storyInput: computed((): StoryInput | null => {
         const current = teams();
         if (!current) return null;
-        const { teamTitle } = i18n.t().tool;
+        const { teamTitle, result } = i18n.t().tool;
         const colors = teamColors();
         const prefs = preferences.active();
         return {
@@ -119,6 +119,8 @@ export const FriendlyStore = signalStore(
           header: prefs?.header ?? '',
           footer: prefs?.footer ?? '',
           numbering: prefs?.numbering ?? 'dot',
+          confirmed: result.storyConfirmed,
+          brand: result.storyBrand,
         };
       }),
       whatsappText: computed(() => {

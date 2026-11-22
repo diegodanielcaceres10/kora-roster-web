@@ -24,10 +24,14 @@ export function canvasMeasure(ctx: CanvasRenderingContext2D): Measure {
   };
 }
 
-// A rounded rectangle made of four arcs, which every browser draws the same way.
+// A rounded rectangle made of four arcs, which every browser draws the same way, with an
+// outline when it has one.
 function fillRoundedRect(
   ctx: CanvasRenderingContext2D,
-  { x, y, width, height, radius, fill }: Extract<StoryLayout['commands'][number], { kind: 'rect' }>,
+  { x, y, width, height, radius, fill, stroke }: Extract<
+    StoryLayout['commands'][number],
+    { kind: 'rect' }
+  >,
 ) {
   const r = Math.min(radius, width / 2, height / 2);
   ctx.fillStyle = fill;
@@ -39,6 +43,12 @@ function fillRoundedRect(
   ctx.arcTo(x, y, x + width, y, r);
   ctx.closePath();
   ctx.fill();
+  // The outline follows the same path, so it is drawn right after the fill.
+  if (stroke) {
+    ctx.lineWidth = stroke.width;
+    ctx.strokeStyle = stroke.color;
+    ctx.stroke();
+  }
 }
 
 export function drawStory(ctx: CanvasRenderingContext2D, layout: StoryLayout): void {

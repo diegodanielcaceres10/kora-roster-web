@@ -298,6 +298,8 @@ export const pt: Dictionary = {
       playersBadge: (n) => (n === 1 ? '1 jogador' : `${n} jogadores`),
       statPlayers: 'Total de jogadores',
       statGoalkeepers: 'Goleiros',
+      storyConfirmed: 'confirmado',
+      storyBrand: 'Gerado com Kora Roster',
     },
   },
 };
