@@ -117,8 +117,48 @@ describe('Shell', () => {
       expect(text).toContain(`© ${new Date().getFullYear()} Kora Roster`);
     });
 
-    it('links nowhere: there are no legal pages or version to point to yet', () => {
-      expect(setup('en').querySelectorAll('footer a')).toHaveLength(0);
+    describe('the link to the portfolio', () => {
+      // The shell is set up once per test, so the link is looked up in the page that was made.
+      const link = (lang: 'en' | 'es' | 'pt' = 'es') =>
+        setup(lang).querySelector('footer a') as HTMLAnchorElement;
+
+      it('goes to Nura, the portfolio of the author', () => {
+        const nura = link();
+        expect(nura.getAttribute('href')).toBe('https://diegodanielcaceres10.github.io/nura/');
+        expect(nura.firstChild?.textContent?.trim()).toBe('Nura');
+      });
+
+      it('opens in a new tab without giving the other page a hold on this one', () => {
+        const nura = link();
+        expect(nura.getAttribute('target')).toBe('_blank');
+        const rel = nura.getAttribute('rel') ?? '';
+        expect(rel).toContain('noopener');
+        expect(rel).toContain('noreferrer');
+      });
+
+      it.each(['en', 'es', 'pt'] as const)(
+        'says it is the portfolio before the link, and that it opens in a new tab, in %s',
+        (lang) => {
+          const footer = setup(lang).querySelector('footer') as HTMLElement;
+          const { footer: texts } = DICTIONARIES[lang];
+          expect(footer.textContent).toContain(`${texts.portfolio}:`);
+          const hint = footer.querySelector('a .sr-only') as HTMLElement;
+          expect(hint.textContent).toContain(texts.newTab);
+        },
+      );
+
+      it('sits in the line of the author, after the name', () => {
+        const nura = link();
+        const line = nura.closest('p') as HTMLElement;
+        expect(line.textContent).toContain('Diego Daniel Cáceres');
+        expect(line.textContent?.indexOf('Diego')).toBeLessThan(
+          line.textContent?.indexOf('Nura') ?? 0,
+        );
+      });
+
+      it('is the only link: there are no legal pages or version to point to yet', () => {
+        expect(setup('en').querySelectorAll('footer a')).toHaveLength(1);
+      });
     });
   });
 });

@@ -85,9 +85,23 @@ import { UiBadge, UiIcon, UiIconLink } from '../ui';
         <div
           class="mt-4 flex flex-col gap-1 border-t border-line pt-4 font-mono text-xs text-ink-faint sm:flex-row sm:items-center sm:justify-between"
         >
-          <p>
-            {{ i18n.t().footer.developedBy }}
-            <span class="font-bold text-ink">{{ author }}</span>
+          <p class="flex flex-wrap items-center gap-x-2 gap-y-1">
+            <span>
+              {{ i18n.t().footer.developedBy }}
+              <span class="font-bold text-ink">{{ author }}</span>
+            </span>
+            <span aria-hidden="true">·</span>
+            <span>
+              {{ i18n.t().footer.portfolio }}:
+              <a
+                [href]="portfolio.url"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="rounded font-bold text-ink underline decoration-primary decoration-2 underline-offset-4 transition-colors hover:text-amber-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink dark:hover:text-primary"
+                >{{ portfolio.name
+                }}<span class="sr-only"> ({{ i18n.t().footer.newTab }})</span></a
+              >
+            </span>
           </p>
           <p>{{ copyright() }}</p>
         </div>
@@ -100,6 +114,11 @@ export class Shell {
   protected readonly auth = inject(Auth);
 
   protected readonly author = 'Diego Daniel Cáceres';
+  // The portfolio of the author. It opens in another tab, so it leaves the app open.
+  protected readonly portfolio = {
+    name: 'Nura',
+    url: 'https://diegodanielcaceres10.github.io/nura/',
+  };
   private readonly year = new Date().getFullYear();
   protected readonly copyright = computed(
     () => `© ${this.year} Kora Roster. ${this.i18n.t().footer.rights}`,

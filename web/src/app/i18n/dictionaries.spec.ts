@@ -287,6 +287,15 @@ describe('dictionaries', () => {
       },
     );
 
+    it.each([
+      ['en', 'Portfolio', 'opens in a new tab'],
+      ['es', 'Portfolio', 'se abre en una pestaña nueva'],
+      ['pt', 'Portfólio', 'abre em uma nova aba'],
+    ] as const)('name the link to the portfolio in the footer in %s', (lang, portfolio, newTab) => {
+      expect(DICTIONARIES[lang].footer.portfolio).toBe(portfolio);
+      expect(DICTIONARIES[lang].footer.newTab).toBe(newTab);
+    });
+
     // The landing only promises what the app does. These words come from the behavior of the
     // parser and of the draw, so a promise that stops being true has to be taken out here too.
     it.each([['en'], ['es'], ['pt']] as const)(

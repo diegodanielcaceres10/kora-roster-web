@@ -88,6 +88,8 @@ export const pt: Dictionary = {
     tagline: 'Sorteador tático de times para futebol entre amigos',
     developedBy: 'Desenvolvido por',
     rights: 'Todos os direitos reservados.',
+    portfolio: 'Portfólio',
+    newTab: 'abre em uma nova aba',
   },
   landing: {
     hero: {
