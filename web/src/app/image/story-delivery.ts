@@ -1,9 +1,12 @@
 import { InjectionToken } from '@angular/core';
 
-// kora-roster-2026-11-07.png, with the date of the person and two digits for month and day.
+// kora-roster-2026-11-07-14-35-52.png: the date and the time of the person (24 hours), with two
+// digits for every part but the year. The seconds keep two images made in the same minute apart.
 export function storyFileName(date: Date): string {
   const pad = (n: number) => String(n).padStart(2, '0');
-  return `kora-roster-${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}.png`;
+  const day = [date.getFullYear(), pad(date.getMonth() + 1), pad(date.getDate())];
+  const time = [pad(date.getHours()), pad(date.getMinutes()), pad(date.getSeconds())];
+  return `kora-roster-${[...day, ...time].join('-')}.png`;
 }
 
 const fileOf = (blob: Blob, name: string) => new File([blob], name, { type: 'image/png' });

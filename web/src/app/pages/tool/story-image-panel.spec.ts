@@ -162,7 +162,7 @@ describe('StoryImagePanel', () => {
       expect(button(T.result.share)).toBeDefined();
       expect(delivery.canShare).toHaveBeenCalledWith(
         blob,
-        expect.stringMatching(/^kora-roster-\d{4}-\d{2}-\d{2}\.png$/),
+        expect.stringMatching(/^kora-roster-\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2}\.png$/),
       );
     });
 
@@ -214,7 +214,7 @@ describe('StoryImagePanel', () => {
         press(T.result.download);
         expect(delivery.download).toHaveBeenCalledWith(
           'blob:story-1',
-          expect.stringMatching(/^kora-roster-\d{4}-\d{2}-\d{2}\.png$/),
+          expect.stringMatching(/^kora-roster-\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2}\.png$/),
         );
       });
     });
@@ -226,7 +226,7 @@ describe('StoryImagePanel', () => {
         press(T.result.share);
         expect(delivery.share).toHaveBeenCalledWith(
           blob,
-          expect.stringMatching(/^kora-roster-\d{4}-\d{2}-\d{2}\.png$/),
+          expect.stringMatching(/^kora-roster-\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2}\.png$/),
         );
       });
 

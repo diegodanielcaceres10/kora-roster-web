@@ -9,15 +9,36 @@ function setNavigator(members: Record<string, unknown>) {
 }
 
 describe('storyFileName', () => {
-  it('is kora-roster plus the date, with two digits for the month and the day', () => {
-    expect(storyFileName(new Date(2026, 0, 5))).toBe('kora-roster-2026-01-05.png');
-    expect(storyFileName(new Date(2026, 10, 7))).toBe('kora-roster-2026-11-07.png');
-    expect(storyFileName(new Date(2027, 11, 31))).toBe('kora-roster-2027-12-31.png');
+  it('is kora-roster plus the date and the time, with two digits for each part but the year', () => {
+    expect(storyFileName(new Date(2026, 0, 5, 3, 4, 9))).toBe(
+      'kora-roster-2026-01-05-03-04-09.png',
+    );
+    expect(storyFileName(new Date(2026, 10, 7, 14, 35, 52))).toBe(
+      'kora-roster-2026-11-07-14-35-52.png',
+    );
+    expect(storyFileName(new Date(2027, 11, 31, 23, 59, 59))).toBe(
+      'kora-roster-2027-12-31-23-59-59.png',
+    );
   });
 
-  it('uses the date of the person, not the one in another time zone', () => {
+  it('uses 24 hours, so midnight is 00 and the afternoon is not confused with the morning', () => {
+    expect(storyFileName(new Date(2026, 5, 9, 0, 0, 0))).toBe(
+      'kora-roster-2026-06-09-00-00-00.png',
+    );
+    expect(storyFileName(new Date(2026, 5, 9, 15, 7, 1))).toBe(
+      'kora-roster-2026-06-09-15-07-01.png',
+    );
+  });
+
+  it('uses the date and the time of the person, not the ones in another time zone', () => {
     const lateAtNight = new Date(2026, 5, 9, 23, 59, 59);
-    expect(storyFileName(lateAtNight)).toBe('kora-roster-2026-06-09.png');
+    expect(storyFileName(lateAtNight)).toBe('kora-roster-2026-06-09-23-59-59.png');
+  });
+
+  it('gives a different name to two images made at different seconds', () => {
+    const first = storyFileName(new Date(2026, 5, 9, 10, 0, 0));
+    const second = storyFileName(new Date(2026, 5, 9, 10, 0, 1));
+    expect(first).not.toBe(second);
   });
 });
 
