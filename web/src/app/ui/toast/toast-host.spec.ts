@@ -30,6 +30,32 @@ describe('UiToastHost', () => {
     expect(region().textContent?.trim()).toBe('');
   });
 
+  describe('the colors of the message', () => {
+    const bubble = () => {
+      const { fixture, toast } = setup();
+      toast.show('Copiado');
+      fixture.detectChanges();
+      return fixture.nativeElement.querySelector('p') as HTMLElement;
+    };
+
+    // Tailwind cannot be measured in jsdom, so the classes that give each look are checked.
+    it('stays dark in the dark theme: the surface of the app with its own text, not inverted', () => {
+      const { classList } = bubble();
+      expect(classList.contains('dark:bg-surface')).toBe(true);
+      expect(classList.contains('dark:text-ink')).toBe(true);
+    });
+
+    it('keeps its edge visible in the dark theme', () => {
+      expect(bubble().classList.contains('dark:border-ink/20')).toBe(true);
+    });
+
+    it('stays dark in the light theme too, so it stands out from the page', () => {
+      const { classList } = bubble();
+      expect(classList.contains('bg-ink/95')).toBe(true);
+      expect(classList.contains('text-canvas')).toBe(true);
+    });
+  });
+
   it('shows the newest message when two arrive in a row', () => {
     const { fixture, region, toast } = setup();
     toast.show('Copiado');
