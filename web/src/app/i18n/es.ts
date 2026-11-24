@@ -89,7 +89,6 @@ export const es: Dictionary = {
     tagline: 'Sorteador táctico de equipos para fútbol entre amigos',
     developedBy: 'Desarrollado por',
     rights: 'Todos los derechos reservados.',
-    portfolio: 'Portfolio',
     newTab: 'se abre en una pestaña nueva',
   },
   landing: {

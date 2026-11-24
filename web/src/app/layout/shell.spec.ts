@@ -107,8 +107,7 @@ describe('Shell', () => {
   describe('the footer', () => {
     it.each(['en', 'es', 'pt'] as const)('credits the author and keeps the rights in %s', (lang) => {
       const text = setup(lang).querySelector('footer')?.textContent ?? '';
-      expect(text).toContain(DICTIONARIES[lang].footer.developedBy);
-      expect(text).toContain('Diego Daniel Cáceres');
+      expect(text).toContain(`${DICTIONARIES[lang].footer.developedBy} Diego Daniel Caceres`);
       expect(text).toContain(DICTIONARIES[lang].footer.rights);
     });
 
@@ -117,43 +116,40 @@ describe('Shell', () => {
       expect(text).toContain(`© ${new Date().getFullYear()} Kora Roster`);
     });
 
-    describe('the link to the portfolio', () => {
+    describe('the link on the name of the author', () => {
       // The shell is set up once per test, so the link is looked up in the page that was made.
       const link = (lang: 'en' | 'es' | 'pt' = 'es') =>
         setup(lang).querySelector('footer a') as HTMLAnchorElement;
 
-      it('goes to Nura, the portfolio of the author', () => {
-        const nura = link();
-        expect(nura.getAttribute('href')).toBe('https://diegodanielcaceres10.github.io/nura/');
-        expect(nura.firstChild?.textContent?.trim()).toBe('Nura');
+      it('goes to Nura, the portfolio of the author, from the name', () => {
+        const author = link();
+        expect(author.getAttribute('href')).toBe('https://diegodanielcaceres10.github.io/nura/');
+        expect(author.firstChild?.textContent?.trim()).toBe('Diego Daniel Caceres');
       });
 
       it('opens in a new tab without giving the other page a hold on this one', () => {
-        const nura = link();
-        expect(nura.getAttribute('target')).toBe('_blank');
-        const rel = nura.getAttribute('rel') ?? '';
+        const author = link();
+        expect(author.getAttribute('target')).toBe('_blank');
+        const rel = author.getAttribute('rel') ?? '';
         expect(rel).toContain('noopener');
         expect(rel).toContain('noreferrer');
       });
 
       it.each(['en', 'es', 'pt'] as const)(
-        'says it is the portfolio before the link, and that it opens in a new tab, in %s',
+        'says it opens in a new tab, for screen readers, in %s',
         (lang) => {
           const footer = setup(lang).querySelector('footer') as HTMLElement;
-          const { footer: texts } = DICTIONARIES[lang];
-          expect(footer.textContent).toContain(`${texts.portfolio}:`);
           const hint = footer.querySelector('a .sr-only') as HTMLElement;
-          expect(hint.textContent).toContain(texts.newTab);
+          expect(hint.textContent).toContain(DICTIONARIES[lang].footer.newTab);
         },
       );
 
-      it('sits in the line of the author, after the name', () => {
-        const nura = link();
-        const line = nura.closest('p') as HTMLElement;
-        expect(line.textContent).toContain('Diego Daniel Cáceres');
-        expect(line.textContent?.indexOf('Diego')).toBeLessThan(
-          line.textContent?.indexOf('Nura') ?? 0,
-        );
+      it('has no separate portfolio label or name any more', () => {
+        const text = setup('en').querySelector('footer')?.textContent ?? '';
+        expect(text).not.toContain('Nura');
+        expect(text).not.toContain('Portfolio');
+        expect(text).not.toContain('·');
+        expect(text).not.toContain('Cáceres');
       });
 
       it('is the only link: there are no legal pages or version to point to yet', () => {

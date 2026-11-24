@@ -84,7 +84,6 @@ export const en = {
     tagline: 'Tactical team picker for friendly football',
     developedBy: 'Developed by',
     rights: 'All rights reserved.',
-    portfolio: 'Portfolio',
     newTab: 'opens in a new tab',
   },
   landing: {

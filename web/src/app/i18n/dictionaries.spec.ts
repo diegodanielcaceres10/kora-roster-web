@@ -288,11 +288,10 @@ describe('dictionaries', () => {
     );
 
     it.each([
-      ['en', 'Portfolio', 'opens in a new tab'],
-      ['es', 'Portfolio', 'se abre en una pestaña nueva'],
-      ['pt', 'Portfólio', 'abre em uma nova aba'],
-    ] as const)('name the link to the portfolio in the footer in %s', (lang, portfolio, newTab) => {
-      expect(DICTIONARIES[lang].footer.portfolio).toBe(portfolio);
+      ['en', 'opens in a new tab'],
+      ['es', 'se abre en una pestaña nueva'],
+      ['pt', 'abre em uma nova aba'],
+    ] as const)('name the hint of the link in the footer in %s', (lang, newTab) => {
       expect(DICTIONARIES[lang].footer.newTab).toBe(newTab);
     });
 
