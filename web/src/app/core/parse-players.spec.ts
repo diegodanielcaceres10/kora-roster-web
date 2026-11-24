@@ -47,12 +47,79 @@ describe('parsePastedNames', () => {
     expect(names(input)).toEqual([expected]);
   });
 
-  it.each([['10 Diego'], ['Diego 2'], ['21:30 Cancha']])(
+  it.each([
+    ['1 Pelle', 'Pelle'],
+    ['10 Diego', 'Diego'],
+    ['16 Alejandro Osio', 'Alejandro Osio'],
+    ['7   Angel', 'Angel'],
+    ['5\tDiego C', 'Diego C'],
+    ['  12 Gian  ', 'Gian'],
+  ])('strips a number followed only by a space: %j', (input, expected) => {
+    expect(names(input)).toEqual([expected]);
+  });
+
+  it.each([['Diego 2'], ['21:30 Cancha'], ['1.5 Litros'], ['7']])(
     'keeps digits that are part of the text: %j',
     (input) => {
       expect(names(input)).toEqual([input]);
     },
   );
+
+  it('strips only the first number, so a number in the name stays', () => {
+    expect(names('3 Diego 2')).toEqual(['Diego 2']);
+  });
+
+  it('keeps the emojis after the name when the number is removed', () => {
+    expect(names('8 nacho mdq ⚽❤️⚽\n9 Ivan G 💙💛\n10 brian 💙💛💙')).toEqual([
+      'nacho mdq ⚽❤️⚽',
+      'Ivan G 💙💛',
+      'brian 💙💛💙',
+    ]);
+  });
+
+  it('cleans a list numbered with a bare number, as it is copied from a chat', () => {
+    const raw = [
+      '1 Pelle',
+      '2 Kike',
+      '3 Luis ',
+      '4 Nico ',
+      '5 Diego C',
+      '6 Claudio ',
+      '7 Angel ',
+      '8 nacho mdq ⚽❤️⚽',
+      '9 Ivan G 💙💛',
+      '10 brian 💙💛💙',
+      '11 chino',
+      '12 Gian ',
+      '13 juan Nicolas',
+      '14 brandon',
+      '15 Mati N',
+      '16 Alejandro Osio',
+    ].join('\n');
+    expect(names(raw)).toEqual([
+      'Pelle',
+      'Kike',
+      'Luis',
+      'Nico',
+      'Diego C',
+      'Claudio',
+      'Angel',
+      'nacho mdq ⚽❤️⚽',
+      'Ivan G 💙💛',
+      'brian 💙💛💙',
+      'chino',
+      'Gian',
+      'juan Nicolas',
+      'brandon',
+      'Mati N',
+      'Alejandro Osio',
+    ]);
+  });
+
+  it('still flags the goalkeeper when the line starts with a bare number', () => {
+    expect(keepers('1 Pelle (arquero)\n2 Kike')).toEqual(['Pelle']);
+    expect(keepers('1 🧤 Pelle\n2 Kike')).toEqual(['Pelle']);
+  });
 
   it('splits on new lines, commas and semicolons', () => {
     expect(names('1. Diego, 2. Mati; 3. Nico\nFede')).toEqual(['Diego', 'Mati', 'Nico', 'Fede']);
