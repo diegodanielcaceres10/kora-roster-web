@@ -1,45 +1,14 @@
-import { readableTextColor } from './contrast';
 import { GLOVE, Numbering, numberLabel } from './format-teams';
 
 export const STORY_WIDTH = 1080;
 export const STORY_HEIGHT = 1920;
 
-const GAP = 24;
-const RADIUS = 36;
+const GAP = 20;
+const RADIUS = 28;
 const LINE_HEIGHT = 1.25;
 const ELLIPSIS = '…';
 
-// The story is a white plate on a light page. Everything is drawn inside the plate.
-const BACKGROUND = '#eef2f7';
-const PLATE = { margin: 36, padding: 40, radius: 56, fill: '#ffffff', stroke: '#d9e2ec' };
-const INK = '#1b2a41';
-const MUTED = '#64748b';
-const BRAND = 'KORA ROSTER';
-const BRAND_SIZE = 28;
-const PILL = { height: 64, size: 26, padX: 28 };
-const AMBER = {
-  soft: '#fff4d6',
-  border: '#f8c24a',
-  ink: '#92400e',
-  solid: '#f59e0b',
-  onSolid: '#1b2a41',
-};
-// The space between the edge of a team panel and what is in it, and from there to the text.
-const INSET = 14;
-const TEXT_INSET = INSET + 22;
-const BAR_RADIUS = 26;
-const ROW_RADIUS = 18;
-const KEEPER_TINT = 0.2;
-
-const HEADER = { max: 64, min: 32, lines: 2 };
-const FOOTER = { max: 40, min: 26, lines: 2 };
-const TITLE = { max: 56, min: 28 };
-const NAME = { max: 52, min: 22 };
-// Below this size, 3 stacked teams give way to two columns, which leave room for bigger names.
-const READABLE_NAME = 36;
-
 export type FontWeight = 'normal' | 'bold';
-// Width in pixels of a text, supplied by whoever draws, because only the real font knows it.
 export type Measure = (text: string, size: number, weight: FontWeight) => number;
 
 export interface StoryPlayer {
@@ -58,14 +27,23 @@ export interface StoryInput {
   header: string;
   footer: string;
   numbering: Numbering;
-  // What the status pill says after the size of the teams ("confirmed"), and the line at the
-  // bottom ("Made with Kora Roster"), already in the language of the person.
   confirmed: string;
   brand: string;
+  theme?: 'light' | 'dark';
 }
 
-// Every command says what it is for, so that tests and other drawers do not depend on the order.
-export type RectRole = 'plate' | 'brand-pill' | 'status-pill' | 'panel' | 'title-bar' | 'highlight';
+export type RectRole =
+  | 'plate'
+  | 'brand-pill'
+  | 'status-pill'
+  | 'panel'
+  | 'title-bar'
+  | 'highlight'
+  | 'matchday-card'
+  | 'header-card'
+  | 'player-row'
+  | 'badge';
+
 export type TextRole =
   | 'brand-pill'
   | 'status-pill'
@@ -73,12 +51,13 @@ export type TextRole =
   | 'footer'
   | 'brand'
   | 'title'
-  | 'player';
+  | 'player'
+  | 'matchday'
+  | 'badge';
 
 export interface RectCommand {
   kind: 'rect';
   role: RectRole;
-  // The index of the team it belongs to, when it belongs to one.
   team?: number;
   x: number;
   y: number;
@@ -89,7 +68,6 @@ export interface RectCommand {
   stroke?: { color: string; width: number };
 }
 
-// y is the middle of the line, and x depends on the alignment.
 export interface TextCommand {
   kind: 'text';
   role: TextRole;
@@ -100,7 +78,7 @@ export interface TextCommand {
   size: number;
   weight: FontWeight;
   color: string;
-  align: 'left' | 'center';
+  align: 'left' | 'center' | 'right';
 }
 
 export type StoryCommand = RectCommand | TextCommand;
@@ -111,6 +89,55 @@ export interface StoryLayout {
   background: string;
   commands: StoryCommand[];
 }
+
+interface ThemeTokens {
+  bg: string;
+  plate: { fill: string; stroke: string };
+  brandPill: { fill: string; stroke: string; text: string };
+  statusPill: { fill: string; text: string };
+  infoCard: { fill: string; stroke: string; text: string; icon: string };
+  matchdayCard: { fill: string; stroke: string; label: string; text: string };
+  vsBadge: { fill: string; border: string; text: string; subtext: string };
+  teamPanel: { fill: string; stroke: string; title: string; count: string };
+  playerRow: { fill: string; stroke: string; num: string; text: string };
+  gkRow: { fill: string; stroke: string };
+  gkBadge: { fill: string; text: string };
+  footer: string;
+}
+
+const DARK_THEME: ThemeTokens = {
+  bg: '#0a0d12',
+  plate: { fill: '#10141b', stroke: '#1f2633' },
+  brandPill: { fill: '#1a1811', stroke: '#f59e0b40', text: '#f59e0b' },
+  statusPill: { fill: '#f59e0b', text: '#0a0d12' },
+  infoCard: { fill: '#161b24', stroke: '#242c3b', text: '#e2e8f0', icon: '#f59e0b' },
+  matchdayCard: { fill: '#161b24', stroke: '#242c3b', label: '#94a3b8', text: '#ffffff' },
+  vsBadge: { fill: '#0a0d12', border: '#f59e0b60', text: '#f59e0b', subtext: '#94a3b8' },
+  teamPanel: { fill: '#13171f', stroke: '#222938', title: '#f8fafc', count: '#94a3b8' },
+  playerRow: { fill: '#1a202c', stroke: '#252d3d', num: '#64748b', text: '#f8fafc' },
+  gkRow: { fill: '#242116', stroke: '#f59e0b50' },
+  gkBadge: { fill: '#f59e0b', text: '#0a0d12' },
+  footer: '#64748b',
+};
+
+const LIGHT_THEME: ThemeTokens = {
+  bg: '#eef2f7',
+  plate: { fill: '#ffffff', stroke: '#e2e8f0' },
+  brandPill: { fill: '#fff8e6', stroke: '#fde68a', text: '#b45309' },
+  statusPill: { fill: '#f59e0b', text: '#ffffff' },
+  infoCard: { fill: '#f8fafc', stroke: '#e2e8f0', text: '#1e293b', icon: '#b45309' },
+  matchdayCard: { fill: '#f8fafc', stroke: '#e2e8f0', label: '#64748b', text: '#0f172a' },
+  vsBadge: { fill: '#0f172a', border: '#f59e0b60', text: '#f59e0b', subtext: '#94a3b8' },
+  teamPanel: { fill: '#ffffff', stroke: '#e2e8f0', title: '#0f172a', count: '#64748b' },
+  playerRow: { fill: '#f8fafc', stroke: '#f1f5f9', num: '#94a3b8', text: '#0f172a' },
+  gkRow: { fill: '#fffbeb', stroke: '#fde68a' },
+  gkBadge: { fill: '#f59e0b', text: '#ffffff' },
+  footer: '#64748b',
+};
+
+const PLATE_MARGIN = 36;
+const PLATE_PADDING = 36;
+const BRAND_LABEL = 'KORA ROSTER';
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
@@ -130,287 +157,435 @@ function truncate(
   return ELLIPSIS;
 }
 
-function wrap(text: string, maxWidth: number, size: number, weight: FontWeight, measure: Measure) {
-  const lines: string[] = [];
-  let line = '';
-  for (const word of text.split(/\s+/).filter(Boolean)) {
-    const candidate = line ? `${line} ${word}` : word;
-    if (line && measure(candidate, size, weight) > maxWidth) {
-      lines.push(line);
-      line = word;
-    } else {
-      line = candidate;
-    }
-  }
-  if (line) lines.push(line);
-  return lines;
-}
-
-// The biggest size at which the text fits, using as few lines as possible: one line may be
-// up to 30% smaller than the biggest size before a second line is used, so a lone word is
-// not left on its own. If not even the smallest size fits, the last line ends with an ellipsis.
-function fit(
-  text: string,
-  maxWidth: number,
-  limits: { max: number; min: number; lines: number },
-  weight: FontWeight,
-  measure: Measure,
-) {
-  for (let count = 1; count <= limits.lines; count++) {
-    const floor =
-      count === limits.lines ? limits.min : Math.max(limits.min, Math.round(limits.max * 0.7));
-    for (let size = limits.max; size >= floor; size -= 2) {
-      const lines = wrap(text, maxWidth, size, weight, measure);
-      if (lines.length <= count && lines.every((l) => measure(l, size, weight) <= maxWidth)) {
-        return { size, lines };
-      }
-    }
-  }
-  const size = limits.min;
-  const lines = wrap(text, maxWidth, size, weight, measure);
-  const kept = lines.slice(0, limits.lines);
-  if (lines.length > limits.lines) {
-    kept[limits.lines - 1] = lines.slice(limits.lines - 1).join(' ');
-  }
-  return { size, lines: kept.map((l) => truncate(l, maxWidth, size, weight, measure)) };
-}
-
 const tidy = (text: string) => text.replace(/\s+/g, ' ').trim();
 
-// The color of a team, see through, to tint a row without hiding the name on top of it.
-function tint(color: string, alpha: number): string {
-  const match = /^#([0-9a-f]{6})$/i.exec(color.trim());
-  if (!match) return `rgba(27, 42, 65, ${alpha / 2})`;
-  const value = parseInt(match[1], 16);
-  return `rgba(${(value >> 16) & 255}, ${(value >> 8) & 255}, ${value & 255}, ${alpha})`;
-}
-
-// Works out where everything goes on a 1080 by 1920 story. It only decides positions,
-// sizes and colors, so it can be tested without a browser; drawing is somebody else's job.
-// From top to bottom: the pills, the header, a panel for each team, the footer and the brand.
 export function layoutStory(input: StoryInput, measure: Measure): StoryLayout {
   const commands: StoryCommand[] = [];
-  const plateWidth = STORY_WIDTH - 2 * PLATE.margin;
-  const plateHeight = STORY_HEIGHT - 2 * PLATE.margin;
+  const theme = input.theme === 'dark' ? DARK_THEME : LIGHT_THEME;
+
+  const plateWidth = STORY_WIDTH - 2 * PLATE_MARGIN;
+  const plateHeight = STORY_HEIGHT - 2 * PLATE_MARGIN;
+
   commands.push({
     kind: 'rect',
     role: 'plate',
-    x: PLATE.margin,
-    y: PLATE.margin,
+    x: PLATE_MARGIN,
+    y: PLATE_MARGIN,
     width: plateWidth,
     height: plateHeight,
-    radius: PLATE.radius,
-    fill: PLATE.fill,
-    stroke: { color: PLATE.stroke, width: 3 },
+    radius: 48,
+    fill: theme.plate.fill,
+    stroke: { color: theme.plate.stroke, width: 2 },
   });
-  const left = PLATE.margin + PLATE.padding;
-  const innerWidth = plateWidth - 2 * PLATE.padding;
-  const contentTop = PLATE.margin + PLATE.padding;
-  const contentBottom = STORY_HEIGHT - PLATE.margin - PLATE.padding;
-  const centered = (
-    role: 'header' | 'footer' | 'brand',
-    text: string,
-    y: number,
-    size: number,
-    weight: FontWeight,
-    color: string,
-  ) =>
-    commands.push({
-      kind: 'text',
-      role,
-      x: STORY_WIDTH / 2,
-      y,
-      text,
-      size,
-      weight,
-      color,
-      align: 'center',
-    });
 
-  // The pills: the brand at the left, and at the right what the teams are.
-  const pill = (
-    role: 'brand-pill' | 'status-pill',
-    text: string,
-    place: (width: number) => number,
-    fill: string,
-    color: string,
-    stroke?: string,
-  ) => {
-    const width = measure(text, PILL.size, 'bold') + 2 * PILL.padX;
-    const x = place(width);
-    commands.push({
-      kind: 'rect',
-      role,
-      x,
-      y: contentTop,
-      width,
-      height: PILL.height,
-      radius: PILL.height / 2,
-      fill,
-      ...(stroke ? { stroke: { color: stroke, width: 3 } } : {}),
-    });
-    commands.push({
-      kind: 'text',
-      role,
-      x: x + width / 2,
-      y: contentTop + PILL.height / 2,
-      text,
-      size: PILL.size,
-      weight: 'bold',
-      color,
-      align: 'center',
-    });
-  };
-  pill('brand-pill', BRAND, () => left, AMBER.soft, AMBER.ink, AMBER.border);
-  const longest = Math.max(0, ...input.teams.map((team) => team.players.length));
-  const status = [longest > 0 ? `${longest}V${longest}` : '', tidy(input.confirmed).toUpperCase()]
+  const left = PLATE_MARGIN + PLATE_PADDING;
+  const innerWidth = plateWidth - 2 * PLATE_PADDING;
+  const top = PLATE_MARGIN + PLATE_PADDING;
+  const bottom = STORY_HEIGHT - PLATE_MARGIN - PLATE_PADDING;
+
+  // 1. Top row: Brand pill and Status pill
+  const pillHeight = 56;
+  const pillSize = 24;
+  const pillPadX = 24;
+
+  const brandWidth = measure(BRAND_LABEL, pillSize, 'bold') + 2 * pillPadX;
+  commands.push({
+    kind: 'rect',
+    role: 'brand-pill',
+    x: left,
+    y: top,
+    width: brandWidth,
+    height: pillHeight,
+    radius: pillHeight / 2,
+    fill: theme.brandPill.fill,
+    stroke: { color: theme.brandPill.stroke, width: 2 },
+  });
+  commands.push({
+    kind: 'text',
+    role: 'brand-pill',
+    x: left + brandWidth / 2,
+    y: top + pillHeight / 2,
+    text: BRAND_LABEL,
+    size: pillSize,
+    weight: 'bold',
+    color: theme.brandPill.text,
+    align: 'center',
+  });
+
+  const longest = Math.max(0, ...input.teams.map((t) => t.players.length));
+  const statusText = [longest > 0 ? `${longest}V${longest}` : '', tidy(input.confirmed).toUpperCase()]
     .filter(Boolean)
     .join(' ');
-  if (status) pill('status-pill', status, (width) => left + innerWidth - width, AMBER.solid, AMBER.onSolid);
 
-  const brandZoneTop = contentBottom - BRAND_SIZE * 1.5;
-  const brand = tidy(input.brand).toUpperCase();
-  if (brand) centered('brand', brand, contentBottom - BRAND_SIZE / 2, BRAND_SIZE, 'bold', MUTED);
-
-  let areaTop = contentTop + PILL.height + GAP;
-  const header = tidy(input.header);
-  if (header) {
-    const { size, lines } = fit(header, innerWidth, HEADER, 'bold', measure);
-    const lineHeight = size * LINE_HEIGHT;
-    lines.forEach((line, i) =>
-      centered('header', line, areaTop + (i + 0.5) * lineHeight, size, 'bold', INK),
-    );
-    areaTop += lines.length * lineHeight + GAP;
-  }
-
-  let areaBottom = brandZoneTop - GAP;
-  const footer = tidy(input.footer);
-  if (footer) {
-    const { size, lines } = fit(footer, innerWidth, FOOTER, 'bold', measure);
-    const lineHeight = size * LINE_HEIGHT;
-    const top = brandZoneTop - 8 - lines.length * lineHeight;
-    lines.forEach((line, i) =>
-      centered('footer', line, top + (i + 0.5) * lineHeight, size, 'bold', INK),
-    );
-    areaBottom = top - GAP;
-  }
-
-  const count = input.teams.length;
-  if (count === 0)
-    return { width: STORY_WIDTH, height: STORY_HEIGHT, background: BACKGROUND, commands };
-
-  const rowsOfPlayers = Math.max(1, longest);
-  const arrange = (columns: number) => {
-    const rows = Math.ceil(count / columns);
-    const cellWidth = (innerWidth - GAP * (columns - 1)) / columns;
-    const cellHeight = (areaBottom - areaTop - GAP * (rows - 1)) / rows;
-    const titleSize = clamp(Math.round(cellHeight * 0.09), TITLE.min + 4, TITLE.max);
-    const barHeight = titleSize * 1.4 + 2 * INSET;
-    const rowsTop = INSET + barHeight + INSET;
-    const rowHeight = (cellHeight - rowsTop - INSET) / rowsOfPlayers;
-    // The same size for every name on the page, from the team with most players.
-    const nameSize = clamp(Math.floor(rowHeight / LINE_HEIGHT), NAME.min, NAME.max);
-    return { columns, cellWidth, cellHeight, titleSize, barHeight, rowsTop, rowHeight, nameSize };
-  };
-
-  // Up to 3 teams are stacked; from 4 on, in two columns. Three teams with so many players
-  // that stacking them makes the names small also go in two columns, if that makes them
-  // bigger. A last row that is not full is centered.
-  let grid = arrange(count >= 4 ? 2 : 1);
-  if (count === 3 && grid.nameSize < READABLE_NAME) {
-    const twoColumns = arrange(2);
-    if (twoColumns.nameSize > grid.nameSize) grid = twoColumns;
-  }
-  const { columns, cellWidth, cellHeight, titleSize, barHeight, rowsTop, rowHeight, nameSize } =
-    grid;
-  const textWidth = cellWidth - 2 * TEXT_INSET;
-
-  input.teams.forEach((team, index) => {
-    const row = Math.floor(index / columns);
-    const inRow = Math.min(columns, count - row * columns);
-    const x = left + (index % columns) * (cellWidth + GAP) + ((columns - inRow) * (cellWidth + GAP)) / 2;
-    const y = areaTop + row * (cellHeight + GAP);
-
+  if (statusText) {
+    const statusWidth = measure(statusText, pillSize, 'bold') + 2 * pillPadX;
+    const statusX = left + innerWidth - statusWidth;
     commands.push({
       kind: 'rect',
-      role: 'panel',
-      team: index,
-      x,
-      y,
-      width: cellWidth,
-      height: cellHeight,
-      radius: RADIUS,
-      fill: '#ffffff',
-      stroke: { color: team.color, width: 5 },
+      role: 'status-pill',
+      x: statusX,
+      y: top,
+      width: statusWidth,
+      height: pillHeight,
+      radius: pillHeight / 2,
+      fill: theme.statusPill.fill,
     });
-    commands.push({
-      kind: 'rect',
-      role: 'title-bar',
-      team: index,
-      x: x + INSET,
-      y: y + INSET,
-      width: cellWidth - 2 * INSET,
-      height: barHeight,
-      radius: BAR_RADIUS,
-      fill: team.color,
-    });
-
-    const title = fit(
-      team.title,
-      textWidth,
-      { ...TITLE, max: titleSize, lines: 1 },
-      'bold',
-      measure,
-    );
     commands.push({
       kind: 'text',
-      role: 'title',
-      team: index,
-      x: x + TEXT_INSET,
-      y: y + INSET + barHeight / 2,
-      text: title.lines[0],
-      size: title.size,
+      role: 'status-pill',
+      x: statusX + statusWidth / 2,
+      y: top + pillHeight / 2,
+      text: statusText,
+      size: pillSize,
       weight: 'bold',
-      color: readableTextColor(team.color),
+      color: theme.statusPill.text,
+      align: 'center',
+    });
+  }
+
+  let currentY = top + pillHeight + GAP;
+
+  // 2. Info / Header Card (if header is provided)
+  const headerText = tidy(input.header);
+  if (headerText) {
+    const infoHeight = 56;
+    commands.push({
+      kind: 'rect',
+      role: 'header-card',
+      x: left,
+      y: currentY,
+      width: innerWidth,
+      height: infoHeight,
+      radius: 18,
+      fill: theme.infoCard.fill,
+      stroke: { color: theme.infoCard.stroke, width: 1.5 },
+    });
+
+    const infoFormatted = headerText.toUpperCase();
+    const displayInfo = truncate(infoFormatted, innerWidth - 40, 22, 'bold', measure);
+    commands.push({
+      kind: 'text',
+      role: 'header',
+      x: left + 20,
+      y: currentY + infoHeight / 2,
+      text: displayInfo,
+      size: 22,
+      weight: 'bold',
+      color: theme.infoCard.text,
       align: 'left',
     });
 
-    team.players.forEach((player, i) => {
-      const rowTop = y + rowsTop + i * rowHeight;
-      if (player.isGoalkeeper) {
-        commands.push({
-          kind: 'rect',
-          role: 'highlight',
-          team: index,
-          x: x + INSET,
-          y: rowTop + 2,
-          width: cellWidth - 2 * INSET,
-          height: rowHeight - 4,
-          radius: ROW_RADIUS,
-          fill: tint(team.color, KEEPER_TINT),
-        });
-      }
-      const prefix = numberLabel(i + 1, input.numbering);
-      const suffix = player.isGoalkeeper ? ` ${GLOVE}` : '';
-      // Only the name is cut, so the number and the glove of a goalkeeper always stay.
-      const around: Measure = (text, size, weight) =>
-        measure(`${prefix}${text}${suffix}`, size, weight);
-      const weight: FontWeight = player.isGoalkeeper ? 'bold' : 'normal';
-      const name = truncate(player.name, textWidth, nameSize, weight, around);
+    currentY += infoHeight + GAP;
+  }
+
+  // 3. Matchday / VS Card (when exactly 2 teams)
+  const isTwoTeams = input.teams.length === 2;
+  if (isTwoTeams) {
+    const matchdayHeight = 116;
+    commands.push({
+      kind: 'rect',
+      role: 'matchday-card',
+      x: left,
+      y: currentY,
+      width: innerWidth,
+      height: matchdayHeight,
+      radius: 24,
+      fill: theme.matchdayCard.fill,
+      stroke: { color: theme.matchdayCard.stroke, width: 1.5 },
+    });
+
+    const midX = left + innerWidth / 2;
+    const midY = currentY + matchdayHeight / 2;
+
+    // Team A (Left)
+    const teamA = input.teams[0];
+    const dotRadius = 8;
+    commands.push({
+      kind: 'rect',
+      role: 'matchday-card',
+      x: left + 24,
+      y: midY - 26,
+      width: dotRadius * 2,
+      height: dotRadius * 2,
+      radius: dotRadius,
+      fill: teamA.color,
+    });
+    commands.push({
+      kind: 'text',
+      role: 'matchday',
+      x: left + 24 + dotRadius * 2 + 10,
+      y: midY - 26 + dotRadius,
+      text: 'LADO A',
+      size: 16,
+      weight: 'bold',
+      color: theme.matchdayCard.label,
+      align: 'left',
+    });
+    const titleA = truncate(teamA.title.toUpperCase(), midX - left - 120, 32, 'bold', measure);
+    commands.push({
+      kind: 'text',
+      role: 'matchday',
+      x: left + 24,
+      y: midY + 18,
+      text: titleA,
+      size: 32,
+      weight: 'bold',
+      color: teamA.color,
+      align: 'left',
+    });
+
+    // Center VS circle
+    const vsCircleRadius = 38;
+    commands.push({
+      kind: 'rect',
+      role: 'matchday-card',
+      x: midX - vsCircleRadius,
+      y: midY - vsCircleRadius - 6,
+      width: vsCircleRadius * 2,
+      height: vsCircleRadius * 2,
+      radius: vsCircleRadius,
+      fill: theme.vsBadge.fill,
+      stroke: { color: theme.vsBadge.border, width: 2 },
+    });
+    commands.push({
+      kind: 'text',
+      role: 'matchday',
+      x: midX,
+      y: midY - 6,
+      text: 'VS',
+      size: 26,
+      weight: 'bold',
+      color: theme.vsBadge.text,
+      align: 'center',
+    });
+    commands.push({
+      kind: 'text',
+      role: 'matchday',
+      x: midX,
+      y: midY + vsCircleRadius + 4,
+      text: 'MATCHDAY',
+      size: 13,
+      weight: 'bold',
+      color: theme.vsBadge.subtext,
+      align: 'center',
+    });
+
+    // Team B (Right)
+    const teamB = input.teams[1];
+    commands.push({
+      kind: 'rect',
+      role: 'matchday-card',
+      x: left + innerWidth - 24 - dotRadius * 2,
+      y: midY - 26,
+      width: dotRadius * 2,
+      height: dotRadius * 2,
+      radius: dotRadius,
+      fill: teamB.color,
+    });
+    commands.push({
+      kind: 'text',
+      role: 'matchday',
+      x: left + innerWidth - 24 - dotRadius * 2 - 10,
+      y: midY - 26 + dotRadius,
+      text: 'LADO B',
+      size: 16,
+      weight: 'bold',
+      color: theme.matchdayCard.label,
+      align: 'right',
+    });
+    const titleB = truncate(teamB.title.toUpperCase(), midX - left - 120, 32, 'bold', measure);
+    commands.push({
+      kind: 'text',
+      role: 'matchday',
+      x: left + innerWidth - 24,
+      y: midY + 18,
+      text: titleB,
+      size: 32,
+      weight: 'bold',
+      color: theme.matchdayCard.text,
+      align: 'right',
+    });
+
+    currentY += matchdayHeight + GAP;
+  }
+
+  // 4. Footer & Brand at the bottom
+  const brandHeight = 36;
+  const footerY = bottom - brandHeight / 2;
+  const brandText = tidy(input.brand || 'GENERADO CON KORA ROSTER').toUpperCase();
+  commands.push({
+    kind: 'text',
+    role: 'brand',
+    x: STORY_WIDTH / 2,
+    y: footerY,
+    text: brandText,
+    size: 22,
+    weight: 'bold',
+    color: theme.footer,
+    align: 'center',
+  });
+
+  const availableBottom = bottom - brandHeight - GAP;
+
+  // 5. Team Columns & Player Lists
+  const teamCount = input.teams.length;
+  if (teamCount === 0) {
+    return { width: STORY_WIDTH, height: STORY_HEIGHT, background: theme.bg, commands };
+  }
+
+  const columns = teamCount === 1 ? 1 : 2;
+  const rows = Math.ceil(teamCount / columns);
+  const colWidth = (innerWidth - GAP * (columns - 1)) / columns;
+  const rowHeight = (availableBottom - currentY - GAP * (rows - 1)) / rows;
+
+  input.teams.forEach((team, teamIdx) => {
+    const colIdx = teamIdx % columns;
+    const gridRowIdx = Math.floor(teamIdx / columns);
+    const panelX = left + colIdx * (colWidth + GAP);
+    const panelY = currentY + gridRowIdx * (rowHeight + GAP);
+
+    // Panel container
+    commands.push({
+      kind: 'rect',
+      role: 'panel',
+      team: teamIdx,
+      x: panelX,
+      y: panelY,
+      width: colWidth,
+      height: rowHeight,
+      radius: RADIUS,
+      fill: theme.teamPanel.fill,
+      stroke: { color: team.color || theme.teamPanel.stroke, width: 2.5 },
+    });
+
+    // Panel Header (e.g. "TEAM ORO" ... "7 JUG.")
+    const headerH = 56;
+    const headerPadX = 18;
+    const titleUpper = team.title.toUpperCase();
+    const teamTitleText = titleUpper.startsWith('TEAM') ? titleUpper : `TEAM ${titleUpper}`;
+    const countText = `${team.players.length} JUG.`;
+
+    commands.push({
+      kind: 'text',
+      role: 'title',
+      team: teamIdx,
+      x: panelX + headerPadX,
+      y: panelY + headerH / 2,
+      text: teamTitleText,
+      size: 22,
+      weight: 'bold',
+      color: team.color,
+      align: 'left',
+    });
+
+    commands.push({
+      kind: 'text',
+      role: 'title',
+      team: teamIdx,
+      x: panelX + colWidth - headerPadX,
+      y: panelY + headerH / 2,
+      text: countText,
+      size: 18,
+      weight: 'bold',
+      color: theme.teamPanel.count,
+      align: 'right',
+    });
+
+    // Player Rows
+    const playersAreaTop = panelY + headerH + 8;
+    const playersAreaH = rowHeight - headerH - 20;
+    const maxP = Math.max(1, team.players.length);
+    const slotH = clamp(Math.floor((playersAreaH - (maxP - 1) * 8) / maxP), 38, 56);
+    const playerRowPadX = 14;
+
+    team.players.forEach((player, pIdx) => {
+      const pY = playersAreaTop + pIdx * (slotH + 8);
+      const isGk = player.isGoalkeeper;
+
+      // Row background
+      commands.push({
+        kind: 'rect',
+        role: isGk ? 'highlight' : 'player-row',
+        team: teamIdx,
+        x: panelX + playerRowPadX,
+        y: pY,
+        width: colWidth - 2 * playerRowPadX,
+        height: slotH,
+        radius: 12,
+        fill: isGk ? theme.gkRow.fill : theme.playerRow.fill,
+        stroke: { color: isGk ? theme.gkRow.stroke : theme.playerRow.stroke, width: 1.5 },
+      });
+
+      // Number (e.g. "1", "2")
+      const numStr = numberLabel(pIdx + 1, input.numbering);
       commands.push({
         kind: 'text',
         role: 'player',
-        team: index,
-        x: x + TEXT_INSET,
-        y: rowTop + rowHeight / 2,
-        text: `${prefix}${name}${suffix}`,
-        size: nameSize,
-        weight,
-        color: INK,
+        team: teamIdx,
+        x: panelX + playerRowPadX + 16,
+        y: pY + slotH / 2,
+        text: numStr,
+        size: 18,
+        weight: 'bold',
+        color: isGk ? theme.gkBadge.fill : theme.playerRow.num,
+        align: 'left',
+      });
+
+      // GK Badge (right side)
+      let reservedRight = playerRowPadX + 16;
+      if (isGk) {
+        const badgeW = 48;
+        const badgeH = 26;
+        const badgeX = panelX + colWidth - playerRowPadX - badgeW - 12;
+        const badgeY = pY + (slotH - badgeH) / 2;
+
+        commands.push({
+          kind: 'rect',
+          role: 'badge',
+          team: teamIdx,
+          x: badgeX,
+          y: badgeY,
+          width: badgeW,
+          height: badgeH,
+          radius: 8,
+          fill: theme.gkBadge.fill,
+        });
+
+        commands.push({
+          kind: 'text',
+          role: 'badge',
+          team: teamIdx,
+          x: badgeX + badgeW / 2,
+          y: badgeY + badgeH / 2,
+          text: 'GK',
+          size: 14,
+          weight: 'bold',
+          color: theme.gkBadge.text,
+          align: 'center',
+        });
+
+        reservedRight = colWidth - badgeX + 10;
+      }
+
+      // Player Name
+      const nameStartX = panelX + playerRowPadX + 46;
+      const maxNameWidth = colWidth - nameStartX - reservedRight;
+      const playerName = truncate(player.name, maxNameWidth, 20, isGk ? 'bold' : 'normal', measure);
+
+      commands.push({
+        kind: 'text',
+        role: 'player',
+        team: teamIdx,
+        x: nameStartX,
+        y: pY + slotH / 2,
+        text: playerName,
+        size: 20,
+        weight: isGk ? 'bold' : 'normal',
+        color: theme.playerRow.text,
         align: 'left',
       });
     });
   });
 
-  return { width: STORY_WIDTH, height: STORY_HEIGHT, background: BACKGROUND, commands };
+  return { width: STORY_WIDTH, height: STORY_HEIGHT, background: theme.bg, commands };
 }

@@ -15,6 +15,7 @@ import { I18n } from '../i18n/i18n';
 import { Entitlements } from '../plans/entitlements';
 import { DEFAULT_PREFERENCES } from '../preferences/preferences';
 import { PreferencesService } from '../preferences/preferences-service';
+import { Theme } from '../theme/theme';
 
 export interface Player {
   id: string;
@@ -59,6 +60,7 @@ export const FriendlyStore = signalStore(
     const i18n = inject(I18n);
     const preferences = inject(PreferencesService);
     const entitlements = inject(Entitlements);
+    const theme = inject(Theme);
 
     // What the person picked, or else what they prefer, and never more teams than the plan
     // allows, so signing out brings it back to 2.
@@ -121,6 +123,7 @@ export const FriendlyStore = signalStore(
           numbering: prefs?.numbering ?? 'dot',
           confirmed: result.storyConfirmed,
           brand: result.storyBrand,
+          theme: theme.mode(),
         };
       }),
       whatsappText: computed(() => {
