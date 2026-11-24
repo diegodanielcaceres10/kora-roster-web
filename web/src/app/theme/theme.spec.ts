@@ -38,26 +38,49 @@ describe('Theme', () => {
     vi.restoreAllMocks();
   });
 
-  // The system is not followed yet: until every screen uses the color tokens, dark would show
-  // up half done. When the redesign is finished, bring the "follows the system" tests back
-  // (see the history of this file) and read the preference again in Theme and index.html.
   describe('first mode', () => {
-    it.each<System>(['light', 'dark', 'unknown'])(
-      'is light when nothing is saved, whatever the system (%s) prefers',
-      (scheme) => {
-        setSystem(scheme);
-        expect(create().mode()).toBe('light');
+    it.each<[System, 'light' | 'dark']>([
+      ['light', 'light'],
+      ['dark', 'dark'],
+      ['unknown', 'light'],
+    ])('follows the system (%s) when nothing is saved', (scheme, expected) => {
+      setSystem(scheme);
+      expect(create().mode()).toBe(expected);
+    });
+
+    it('puts the dark class on the page when the system is dark and nothing is saved', () => {
+      setSystem('dark');
+      create();
+      expect(isDarkPage()).toBe(true);
+    });
+
+    it('does not save what the system chose, so it is still not a choice of the person', () => {
+      setSystem('dark');
+      create();
+      expect(localStorage.getItem(THEME_STORAGE_KEY)).toBeNull();
+    });
+
+    it.each<'light' | 'dark'>(['light', 'dark'])(
+      'uses the saved choice (%s) over the system',
+      (saved) => {
+        setSystem(saved === 'dark' ? 'light' : 'dark');
+        localStorage.setItem(THEME_STORAGE_KEY, saved);
+        expect(create().mode()).toBe(saved);
       },
     );
 
-    it.each<'light' | 'dark'>(['light', 'dark'])('uses the saved choice (%s)', (saved) => {
-      localStorage.setItem(THEME_STORAGE_KEY, saved);
-      expect(create().mode()).toBe(saved);
+    it('ignores a saved value it does not know and follows the system', () => {
+      localStorage.setItem(THEME_STORAGE_KEY, 'sepia');
+      setSystem('dark');
+      expect(create().mode()).toBe('dark');
     });
 
-    it('ignores a saved value it does not know', () => {
-      localStorage.setItem(THEME_STORAGE_KEY, 'sepia');
-      expect(create().mode()).toBe('light');
+    it('follows the system when the browser blocks reading the saved choice', () => {
+      setSystem('dark');
+      vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+        throw new Error('blocked');
+      });
+      expect(create().mode()).toBe('dark');
     });
   });
 

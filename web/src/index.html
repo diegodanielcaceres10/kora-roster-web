@@ -8,15 +8,23 @@
     <link rel="icon" type="image/png" href="favicon.png" />
     <link rel="icon" type="image/x-icon" href="favicon.ico" sizes="48x48" />
     <script>
-      // Puts the saved theme on the page before it is painted, so a dark visit does not flash
-      // white. Keep the key equal to THEME_STORAGE_KEY in theme/theme.ts, and the rule for a
-      // first visit equal to Theme's (light for now).
+      // Puts the theme on the page before it is painted, so a dark visit does not flash white.
+      // Keep the key equal to THEME_STORAGE_KEY in theme/theme.ts and the rule equal to Theme's:
+      // the saved choice wins, and without one the system preference decides.
       (function () {
+        var saved = null;
         try {
-          if (localStorage.getItem('kora:theme') === 'dark') {
-            document.documentElement.classList.add('dark');
-          }
+          saved = localStorage.getItem('kora:theme');
         } catch (e) {}
+        var dark = saved === 'dark';
+        if (saved !== 'dark' && saved !== 'light') {
+          try {
+            dark = !!(
+              window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+            );
+          } catch (e) {}
+        }
+        if (dark) document.documentElement.classList.add('dark');
       })();
     </script>
   </head>

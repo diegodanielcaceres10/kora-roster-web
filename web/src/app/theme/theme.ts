@@ -12,12 +12,10 @@ function isMode(value: unknown): value is ThemeMode {
 }
 
 // The look of the app: light or dark. The person picks one and the choice is kept in the
-// browser. The mode shows up as the `dark` class on <html>, which is what the color tokens in
-// styles.css react to.
-//
-// For now a first visit is light, not whatever the system prefers: until every screen uses
-// the tokens, dark would show up half done. When the redesign is finished, make the first
-// visit follow `(prefers-color-scheme: dark)` again here and in the script of index.html.
+// browser. Until they do, the system (or the browser) decides through
+// `(prefers-color-scheme: dark)`, and that is not saved, so it is still not a choice. The mode
+// shows up as the `dark` class on <html>, which is what the color tokens in styles.css react to.
+// The script of index.html applies the same rule before the page is painted.
 @Injectable({ providedIn: 'root' })
 export class Theme {
   private readonly document = inject(DOCUMENT);
@@ -52,7 +50,13 @@ export class Theme {
     } catch {
       saved = null;
     }
-    return isMode(saved) ? saved : 'light';
+    return isMode(saved) ? saved : this.systemMode();
+  }
+
+  // Light when the system prefers it or when there is no way to ask (the server, old browsers).
+  private systemMode(): ThemeMode {
+    const view = this.document.defaultView;
+    return view?.matchMedia?.('(prefers-color-scheme: dark)')?.matches ? 'dark' : 'light';
   }
 
   private apply(mode: ThemeMode): void {
