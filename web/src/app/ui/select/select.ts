@@ -12,7 +12,6 @@ let nextId = 0;
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'block' },
   templateUrl: './select.html',
-  styleUrl: './select.css',
 })
 export class UiSelect {
   readonly label = input.required<string>();

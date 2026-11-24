@@ -12,7 +12,6 @@ export type ButtonSize = 'sm' | 'md' | 'lg';
     '[class.pointer-events-none]': 'disabled()',
   },
   templateUrl: './button.html',
-  styleUrl: './button.css',
 })
 export class UiButton {
   readonly variant = input<ButtonVariant>('primary');

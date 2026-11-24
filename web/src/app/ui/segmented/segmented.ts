@@ -33,7 +33,6 @@ const LOCKED = 'bg-transparent text-ink-faint hover:bg-ink/10';
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { '[class]': "stretch() ? 'block' : 'inline-block'" },
   templateUrl: './segmented.html',
-  styleUrl: './segmented.css',
 })
 export class UiSegmented {
   readonly options = input.required<SegmentedOption[]>();

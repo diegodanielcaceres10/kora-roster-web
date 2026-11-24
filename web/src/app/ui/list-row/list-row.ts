@@ -16,7 +16,6 @@ import {
     '[class]': 'stateClasses()',
   },
   templateUrl: './list-row.html',
-  styleUrl: './list-row.css',
 })
 export class UiListRow {
   readonly highlight = input(false);

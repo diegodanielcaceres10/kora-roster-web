@@ -18,7 +18,6 @@ const NOTE_LOOKS: Record<StatNoteTone, string> = {
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'block rounded-xl border border-line bg-surface-muted/60 p-3' },
   templateUrl: './stat.html',
-  styleUrl: './stat.css',
 })
 export class UiStat {
   readonly label = input.required<string>();

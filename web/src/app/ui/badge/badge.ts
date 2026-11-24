@@ -18,7 +18,6 @@ const TONES: Record<BadgeTone, string> = {
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'inline-block' },
   templateUrl: './badge.html',
-  styleUrl: './badge.css',
 })
 export class UiBadge {
   readonly tone = input<BadgeTone>('neutral');

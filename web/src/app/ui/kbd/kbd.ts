@@ -6,6 +6,5 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'inline-flex' },
   templateUrl: './kbd.html',
-  styleUrl: './kbd.css',
 })
 export class UiKbd {}

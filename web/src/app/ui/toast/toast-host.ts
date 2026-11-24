@@ -7,7 +7,6 @@ import { UiIcon } from '../icon/icon';
   imports: [UiIcon],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './toast-host.html',
-  styleUrl: './toast-host.css',
 })
 export class UiToastHost {
   protected readonly toast = inject(ToastService);

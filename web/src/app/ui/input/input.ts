@@ -21,7 +21,6 @@ const COLOR_FIELD =
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'block' },
   templateUrl: './input.html',
-  styleUrl: './input.css',
 })
 export class UiInput {
   readonly label = input.required<string>();

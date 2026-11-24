@@ -13,7 +13,6 @@ const ACCENTS: Record<CardAccent, string> = {
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'block' },
   templateUrl: './card.html',
-  styleUrl: './card.css',
 })
 export class UiCard {
   readonly accent = input<CardAccent | undefined>(undefined);

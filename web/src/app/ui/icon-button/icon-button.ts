@@ -18,7 +18,6 @@ export type IconButtonVariant = 'default' | 'danger';
     '[class.pointer-events-none]': 'disabled()',
   },
   templateUrl: './icon-button.html',
-  styleUrl: './icon-button.css',
 })
 export class UiIconButton {
   readonly label = input.required<string>();

@@ -17,7 +17,6 @@ const DEFAULT_ROWS = 6;
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'block' },
   templateUrl: './textarea.html',
-  styleUrl: './textarea.css',
 })
 export class UiTextarea {
   readonly label = input.required<string>();

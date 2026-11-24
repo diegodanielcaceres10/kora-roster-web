@@ -25,7 +25,6 @@ const LOOKS: Record<StepState, string> = {
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'block' },
   templateUrl: './step-header.html',
-  styleUrl: './step-header.css',
 })
 export class UiStepHeader {
   readonly title = input.required<string>();

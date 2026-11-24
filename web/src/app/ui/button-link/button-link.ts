@@ -11,7 +11,6 @@ import { BUTTON_BASE, BUTTON_SIZES, BUTTON_VARIANTS } from '../button/button-sty
   imports: [RouterLink],
   host: { class: 'inline-block' },
   templateUrl: './button-link.html',
-  styleUrl: './button-link.css',
 })
 export class UiButtonLink {
   // Same as routerLink: a path or the list of its parts, for example ['/', 'es', 'friendly'].

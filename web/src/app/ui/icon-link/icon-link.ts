@@ -12,7 +12,6 @@ export type IconLinkVariant = 'default' | 'primary';
   imports: [RouterLink],
   host: { class: 'inline-flex' },
   templateUrl: './icon-link.html',
-  styleUrl: './icon-link.css',
 })
 export class UiIconLink {
   // Same as routerLink: a path or the list of its parts, for example ['/', 'es', 'account'].
