@@ -230,6 +230,16 @@ describe('dictionaries', () => {
     );
   });
 
+  describe('the button of step 01 that goes on to review the list', () => {
+    it.each([
+      ['en', 'Advanced'],
+      ['es', 'Avanzado'],
+      ['pt', 'Avançado'],
+    ] as const)('is called %s in %s', (lang, label) => {
+      expect(DICTIONARIES[lang].tool.paste.advanced).toBe(label);
+    });
+  });
+
   describe('the way to the teams without drawing', () => {
     it.each([
       ['en', 'Continue', 'Sign in to build the teams by hand.'],

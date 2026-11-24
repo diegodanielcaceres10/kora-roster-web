@@ -20,7 +20,7 @@ function setup(initialText = '') {
   const buttons = () => Array.from(el.querySelectorAll('ui-button button')) as HTMLButtonElement[];
   const named = (text: string) =>
     buttons().find((b) => b.textContent?.trim() === text) as HTMLButtonElement;
-  const next = () => named(T.paste.continue);
+  const next = () => named(T.paste.advanced);
   const clear = () => named(T.paste.clear);
   const type = (text: string) => {
     textarea().value = text;
@@ -94,7 +94,7 @@ describe('PasteStep', () => {
 
   it('enables Continue as soon as there is a name', () => {
     const { next, type } = setup();
-    expect(next().textContent?.trim()).toBe(T.paste.continue);
+    expect(next().textContent?.trim()).toBe(T.paste.advanced);
     type('Diego');
     expect(next().disabled).toBe(false);
   });

@@ -344,7 +344,7 @@ describe('app routes', () => {
           (b) => b.textContent?.trim() === text,
         ) as HTMLButtonElement;
 
-      button(T.paste.continue).click();
+      button(T.paste.advanced).click();
       harness.fixture.detectChanges();
       expect(root.textContent).toContain(T.paste.reviewSignIn);
       expect(root.querySelector('app-lock-notice a[href="/es/account"]')).not.toBeNull();

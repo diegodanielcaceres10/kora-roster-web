@@ -180,7 +180,7 @@ export const pt: Dictionary = {
       clear: 'Limpar',
       label: 'Lista do WhatsApp',
       placeholder: 'Cole aqui a lista do seu grupo do WhatsApp',
-      continue: 'Continuar',
+      advanced: 'Avançado',
     },
     preview: {
       settings: 'Ajustes da partida',

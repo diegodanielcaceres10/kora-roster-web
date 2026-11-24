@@ -56,7 +56,7 @@ import { countStatus } from './count-status';
             <div class="flex flex-wrap items-center justify-between gap-3">
               <ui-button size="lg" variant="outline" [disabled]="!hasNames()" (click)="review()">
                 <ui-icon [name]="reviewLocked() ? 'lock' : 'arrow-right'" />
-                {{ t().paste.continue }}
+                {{ t().paste.advanced }}
               </ui-button>
               <ui-button size="lg" [disabled]="!canDraw()" (click)="drawNow()">
                 <ui-icon name="bolt" />

@@ -176,7 +176,7 @@ export const en = {
       clear: 'Clear',
       label: 'WhatsApp list',
       placeholder: 'Paste the list from your WhatsApp group here',
-      continue: 'Continue',
+      advanced: 'Advanced',
     },
     preview: {
       settings: 'Match settings',
