@@ -9,11 +9,7 @@ import { Theme } from './theme';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [UiIconButton, UiIcon],
   host: { class: 'inline-flex' },
-  template: `
-    <ui-icon-button [label]="label()" (click)="theme.toggle()">
-      <ui-icon [name]="theme.mode() === 'dark' ? 'sun' : 'moon'" />
-    </ui-icon-button>
-  `,
+  templateUrl: './theme-toggle.html',
 })
 export class ThemeToggle {
   protected readonly theme = inject(Theme);

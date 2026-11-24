@@ -7,11 +7,7 @@ import { pickLanguage } from './languages';
 @Component({
   selector: 'app-redirect-to-language',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <noscript>
-      <nav><a href="/en">English</a> · <a href="/es">Español</a> · <a href="/pt">Português</a></nav>
-    </noscript>
-  `,
+  templateUrl: './redirect-to-language.html',
 })
 export class RedirectToLanguage {
   constructor() {

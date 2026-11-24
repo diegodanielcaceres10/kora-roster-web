@@ -1,0 +1,25 @@
+<ui-icon-button [label]="i18n.t().language.label" [expanded]="open()" (click)="toggle()">
+  <ui-icon name="world" />
+</ui-icon-button>
+@if (open()) {
+  <ul
+    class="absolute right-0 top-full z-50 mt-2 w-44 rounded-xl border border-line bg-surface p-1 shadow-lg"
+  >
+    @for (option of options; track option.lang) {
+      <li>
+        <button
+          type="button"
+          [attr.lang]="option.lang"
+          [attr.aria-current]="option.lang === i18n.lang() ? 'true' : null"
+          class="flex min-h-11 w-full items-center justify-between gap-2 rounded-lg px-3 text-left text-sm font-semibold text-ink transition-colors hover:bg-ink/5 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-ink aria-[current=true]:bg-primary/15"
+          (click)="choose(option.lang)"
+        >
+          <span>{{ option.name }}</span>
+          @if (option.lang === i18n.lang()) {
+            <ui-icon name="check" class="text-amber-700 dark:text-primary" />
+          }
+        </button>
+      </li>
+    }
+  </ul>
+}

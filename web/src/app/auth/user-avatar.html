@@ -1,0 +1,18 @@
+@if (user().picture) {
+  <img
+    [src]="user().picture"
+    alt=""
+    [attr.width]="size()"
+    [attr.height]="size()"
+    referrerpolicy="no-referrer"
+    class="rounded-full object-cover"
+  />
+} @else {
+  <span
+    aria-hidden="true"
+    class="inline-flex items-center justify-center rounded-full bg-primary font-bold text-secondary"
+    [style.width.px]="size()"
+    [style.height.px]="size()"
+    >{{ initial() }}</span
+  >
+}

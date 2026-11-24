@@ -10,22 +10,7 @@ import { LockReason } from './entitlements';
   selector: 'app-lock-notice',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterLink],
-  template: `
-    <div role="status">
-      @if (message(); as text) {
-        <p class="text-sm text-ink-muted">
-          {{ text }}
-          @if (reason() === 'sign-in') {
-            <a
-              [routerLink]="['/', i18n.lang(), 'account']"
-              class="font-semibold text-ink underline underline-offset-4"
-              >{{ i18n.t().locks.signInLink }}</a
-            >
-          }
-        </p>
-      }
-    </div>
-  `,
+  templateUrl: './lock-notice.html',
 })
 export class LockNotice {
   protected readonly i18n = inject(I18n);

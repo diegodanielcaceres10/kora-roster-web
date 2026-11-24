@@ -1,0 +1,14 @@
+<div role="status">
+  @if (message(); as text) {
+    <p class="text-sm text-ink-muted">
+      {{ text }}
+      @if (reason() === 'sign-in') {
+        <a
+          [routerLink]="['/', i18n.lang(), 'account']"
+          class="font-semibold text-ink underline underline-offset-4"
+          >{{ i18n.t().locks.signInLink }}</a
+        >
+      }
+    </p>
+  }
+</div>
