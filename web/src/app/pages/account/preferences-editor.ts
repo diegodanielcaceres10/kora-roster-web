@@ -8,12 +8,10 @@ import {
   DEFAULT_PREFERENCES,
   HEADER_MAX,
   Preferences,
-  TEAM_ICONS,
 } from '../../preferences/preferences';
 import { PreferencesService } from '../../preferences/preferences-service';
 import {
   SegmentedOption,
-  SelectOption,
   ToastService,
   UiBadge,
   UiButton,
@@ -36,6 +34,7 @@ const SAMPLE_TEAMS = SAMPLE_NAMES.map((names) =>
 );
 
 const NUMBERINGS: readonly Numbering[] = ['dot', 'paren', 'dash', 'none'];
+const HEX_COLOR = /^#[0-9a-f]{6}$/i;
 
 const TILE =
   'inline-flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-xl text-amber-700 dark:text-primary';
@@ -64,10 +63,6 @@ export class PreferencesEditor {
   protected readonly tile = TILE;
   protected readonly sectionTitle = SECTION_TITLE;
   protected readonly fieldLabel = FIELD_LABEL;
-  protected readonly iconOptions: SelectOption[] = TEAM_ICONS.map((icon) => ({
-    value: icon,
-    label: icon,
-  }));
 
   protected readonly draft = signal<Preferences>(
     copyOf(this.preferences.active() ?? DEFAULT_PREFERENCES),
@@ -148,22 +143,33 @@ export class PreferencesEditor {
     });
   }
 
-  protected setIcon(index: number, icon: string): void {
+  protected setColor(index: number, color: string): void {
+    const normalized = color.toLowerCase();
+    if (!HEX_COLOR.test(normalized)) return;
     this.draft.update((d) => {
       const next = copyOf(d);
-      const other = next.teams.findIndex((team, i) => i !== index && team.icon === icon);
-      if (other >= 0) next.teams[other].icon = next.teams[index].icon;
-      next.teams[index].icon = icon;
+      next.teams[index].color = normalized;
       return next;
     });
   }
 
-  protected setColor(index: number, color: string): void {
-    this.draft.update((d) => {
-      const next = copyOf(d);
-      next.teams[index].color = color;
-      return next;
-    });
+  protected hexDisplay(color: string): string {
+    return color.replace(/^#/, '').toUpperCase();
+  }
+
+  protected onHexInput(index: number, event: Event): void {
+    const input = event.target as HTMLInputElement;
+    let raw = input.value.trim();
+    if (raw.startsWith('#')) raw = raw.slice(1);
+    raw = raw.replace(/[^0-9a-fA-F]/g, '').slice(0, 6);
+    if (raw.length === 6) {
+      this.setColor(index, `#${raw}`);
+    }
+  }
+
+  protected onHexBlur(index: number, event: Event): void {
+    const input = event.target as HTMLInputElement;
+    input.value = this.hexDisplay(this.draft().teams[index].color);
   }
 
   protected setHeader(header: string): void {

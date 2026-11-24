@@ -81,7 +81,6 @@ function setup(saved?: Preferences) {
       (b) => b.textContent?.trim() === text,
     ) as HTMLButtonElement;
   const preview = () => el.querySelector('pre')?.textContent ?? '';
-  const iconGroup = (team: number) => P.teams.iconLabel(T.tool.teamTitle(team));
   const colorLabel = (team: number) => P.teams.colorLabel(T.tool.teamTitle(team));
 
   return {
@@ -95,7 +94,6 @@ function setup(saved?: Preferences) {
     pick,
     button,
     preview,
-    iconGroup,
     colorLabel,
     service: TestBed.inject(PreferencesService),
     toast: TestBed.inject(ToastService),
@@ -112,10 +110,8 @@ describe('PreferencesEditor', () => {
 
   describe('the form', () => {
     it('shows the preferences the account saved', () => {
-      const { field, checkedIcon, iconGroup, colorLabel } = setup(mine);
+      const { field, checkedIcon, colorLabel } = setup(mine);
       expect(checkedIcon(P.playersPerTeam.label)).toBe('7v7');
-      expect(checkedIcon(iconGroup(1))).toBe('🟢');
-      expect(checkedIcon(iconGroup(2))).toBe('🟡');
       expect((field(colorLabel(1)) as HTMLInputElement).value).toBe('#00ff00');
       expect((field(colorLabel(2)) as HTMLInputElement).value).toBe('#ffff00');
       expect((field(P.template.header) as HTMLInputElement).value).toBe('⚽ Amistoso');
@@ -124,10 +120,8 @@ describe('PreferencesEditor', () => {
     });
 
     it('starts from the defaults when nothing was saved', () => {
-      const { field, checkedIcon, iconGroup, colorLabel } = setup();
+      const { field, checkedIcon, colorLabel } = setup();
       expect(checkedIcon(P.playersPerTeam.label)).toBe(P.playersPerTeam.any);
-      expect(checkedIcon(iconGroup(1))).toBe('🔴');
-      expect(checkedIcon(iconGroup(2))).toBe('🔵');
       expect((field(colorLabel(1)) as HTMLInputElement).value).toBe('#e53935');
       expect((field(P.template.header) as HTMLInputElement).value).toBe('');
       expect(checkedIcon(P.template.numbering)).toBe(P.template.numberingDot);
@@ -229,26 +223,26 @@ describe('PreferencesEditor', () => {
     });
 
     it('follows the icon of each team', () => {
-      const { preview, pick, iconGroup } = setup();
-      pick(iconGroup(1), '🟣');
-      expect(preview()).toContain(`🟣 ${T.tool.teamTitle(1)}`);
-      expect(preview()).toContain(`🔵 ${T.tool.teamTitle(2)}`);
+      const { preview } = setup(mine);
+      expect(preview()).toContain(`🟢 ${T.tool.teamTitle(1)}`);
+      expect(preview()).toContain(`🟡 ${T.tool.teamTitle(2)}`);
     });
   });
 
-  describe('team icons', () => {
-    it('swaps with the other team when its icon is chosen, so they are never the same', () => {
-      const { checkedIcon, pick, iconGroup } = setup();
-      pick(iconGroup(1), '🔵');
-      expect(checkedIcon(iconGroup(1))).toBe('🔵');
-      expect(checkedIcon(iconGroup(2))).toBe('🔴');
+  describe('team colors', () => {
+    it('updates color from color picker input', () => {
+      const { field, colorLabel, typeInto } = setup();
+      typeInto(colorLabel(1), '#123456');
+      expect((field(colorLabel(1)) as HTMLInputElement).value).toBe('#123456');
     });
 
-    it('works the same from the second team', () => {
-      const { checkedIcon, pick, iconGroup } = setup();
-      pick(iconGroup(2), '🔴');
-      expect(checkedIcon(iconGroup(1))).toBe('🔵');
-      expect(checkedIcon(iconGroup(2))).toBe('🔴');
+    it('updates color from hex text input', () => {
+      const { el, field, colorLabel, fixture } = setup();
+      const hexInput = el.querySelectorAll('fieldset input[type="text"]')[0] as HTMLInputElement;
+      hexInput.value = 'AABBCC';
+      hexInput.dispatchEvent(new Event('input'));
+      fixture.detectChanges();
+      expect((field(colorLabel(1)) as HTMLInputElement).value).toBe('#aabbcc');
     });
   });
 
@@ -262,10 +256,8 @@ describe('PreferencesEditor', () => {
     });
 
     it('saves every field for the account, says it was saved, and uses it right away', () => {
-      const { typeInto, choose, pick, iconGroup, colorLabel, button, service, toast } = setup();
+      const { typeInto, choose, colorLabel, button, service, toast } = setup();
       choose(P.playersPerTeam.label, '7');
-      pick(iconGroup(1), '🟢');
-      pick(iconGroup(2), '🟡');
       typeInto(colorLabel(1), '#00ff00');
       typeInto(colorLabel(2), '#ffff00');
       typeInto(P.template.header, '⚽ Amistoso');
@@ -273,10 +265,22 @@ describe('PreferencesEditor', () => {
       choose(P.template.numbering, 'paren');
       button(P.save).click();
 
-      expect(service.active()).toEqual(mine);
+      const expected = {
+        ...DEFAULT_PREFERENCES,
+        playersPerTeam: 7,
+        header: '⚽ Amistoso',
+        footer: 'Confirmen',
+        numbering: 'paren' as const,
+        teams: [
+          { icon: '🔴', color: '#00ff00' },
+          { icon: '🔵', color: '#ffff00' },
+          ...DEFAULT_PREFERENCES.teams.slice(2),
+        ],
+      };
+      expect(service.active()).toEqual(expected);
       expect(JSON.parse(localStorage.getItem(KEY) as string)).toEqual({
         version: 2,
-        preferences: mine,
+        preferences: expected,
       });
       expect(toast.message()).toBe(P.saved);
     });
@@ -301,11 +305,10 @@ describe('PreferencesEditor', () => {
 
   describe('restoring the defaults', () => {
     it('puts the default values in the form but saves nothing by itself', () => {
-      const { fixture, field, checkedIcon, iconGroup, button, service } = setup(mine);
+      const { fixture, field, checkedIcon, button, service } = setup(mine);
       button(P.restore).click();
       fixture.detectChanges();
       expect(checkedIcon(P.playersPerTeam.label)).toBe(P.playersPerTeam.any);
-      expect(checkedIcon(iconGroup(1))).toBe('🔴');
       expect((field(P.template.header) as HTMLInputElement).value).toBe('');
       expect(service.active()).toEqual(mine);
     });
@@ -422,26 +425,6 @@ describe('PreferencesEditor', () => {
       choose(ctx, 2);
       choose(ctx, 4);
       expect((ctx.field(ctx.colorLabel(4)) as HTMLInputElement).value).toBe('#123456');
-    });
-
-    it('swaps icons with a team that is not shown, so the six circles stay different', () => {
-      const ctx = setup();
-      ctx.pick(ctx.iconGroup(1), '🟠');
-      expect(ctx.checkedIcon(ctx.iconGroup(1))).toBe('🟠');
-      ctx.button(P.save).click();
-      const icons = ctx.service.active()?.teams.map((team) => team.icon) ?? [];
-      expect(icons[0]).toBe('🟠');
-      expect(icons[5]).toBe('🔴');
-      expect(new Set(icons).size).toBe(6);
-    });
-
-    it('gives its old icon to a team that is not shown yet when its icon is taken, before saving', () => {
-      const ctx = setup();
-      // Team 3 is hidden and has 🟢: taking it for team 1 must hand team 1's old icon to team 3.
-      ctx.pick(ctx.iconGroup(1), '🟢');
-      choose(ctx, 3);
-      expect(ctx.checkedIcon(ctx.iconGroup(1))).toBe('🟢');
-      expect(ctx.checkedIcon(ctx.iconGroup(3))).toBe('🔴');
     });
 
     it('goes back to 2 teams when the defaults are restored', () => {
