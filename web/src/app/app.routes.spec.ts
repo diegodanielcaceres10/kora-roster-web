@@ -427,14 +427,13 @@ describe('app routes', () => {
       field.value = Array.from({ length: 12 }, (_, i) => `Player ${i + 1}`).join('\n');
       field.dispatchEvent(new Event('input'));
       harness.fixture.detectChanges();
-      // The button of the image carries its proportion (9:16) after the label.
       const button = (text: string) =>
         Array.from(root.querySelectorAll('ui-button button')).find((b) =>
           b.textContent?.trim().startsWith(text),
         ) as HTMLButtonElement;
       button(DICTIONARIES.es.tool.preview.draw).click();
       harness.fixture.detectChanges();
-      button(DICTIONARIES.es.tool.result.createImage).click();
+      button(DICTIONARIES.es.tool.result.downloadImage).click();
       harness.fixture.detectChanges();
       expect(root.textContent).toContain(DICTIONARIES.es.tool.result.imageSignIn);
       expect(root.querySelector('app-lock-notice a[href="/es/account"]')).not.toBeNull();

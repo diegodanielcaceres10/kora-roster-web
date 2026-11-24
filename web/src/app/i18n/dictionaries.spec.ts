@@ -459,19 +459,30 @@ describe('dictionaries', () => {
     );
 
     it.each([
-      ['en', 'Copy for WhatsApp', 'Image for stories', '1 player', '12 players'],
-      ['es', 'Copiar para WhatsApp', 'Imagen para stories', '1 jugador', '12 jugadores'],
-      ['pt', 'Copiar para WhatsApp', 'Imagem para stories', '1 jogador', '12 jogadores'],
+      ['en', 'Copy for WhatsApp', 'Download image', 'Share image', '1 player', '12 players'],
+      ['es', 'Copiar para WhatsApp', 'Descargar imagen', 'Compartir imagen', '1 jugador', '12 jugadores'],
+      ['pt', 'Copiar para WhatsApp', 'Baixar imagem', 'Compartilhar imagem', '1 jogador', '12 jogadores'],
     ] as const)(
       'name the actions and the count of the confirmed teams in %s',
-      (lang, copy, image, one, many) => {
+      (lang, copy, download, share, one, many) => {
         const { result } = DICTIONARIES[lang].tool;
         expect(result.copy).toBe(copy);
-        expect(result.createImage).toBe(image);
+        expect(result.downloadImage).toBe(download);
+        expect(result.shareImage).toBe(share);
         expect(result.playersBadge(1)).toBe(one);
         expect(result.playersBadge(12)).toBe(many);
         expect(result.statPlayers.length).toBeGreaterThan(4);
         expect(result.statGoalkeepers.length).toBeGreaterThan(4);
+      },
+    );
+
+    it.each([['en'], ['es'], ['pt']] as const)(
+      'no longer carry the texts of the preview of the image in %s',
+      (lang) => {
+        const { result } = DICTIONARIES[lang].tool;
+        for (const key of ['createImage', 'imageTitle', 'imageAlt', 'closeImage', 'download', 'share']) {
+          expect(result, key).not.toHaveProperty(key);
+        }
       },
     );
 

@@ -465,33 +465,31 @@ describe('ResultStep', () => {
 
   describe('the story image', () => {
     const rowOf = (el: HTMLElement, text: string) =>
-      Array.from(el.querySelectorAll('ui-button')).find(
-        // The button of the image also carries its proportion (9:16) after the label.
-        (host) => host.querySelector('button')?.textContent?.trim().startsWith(text),
+      Array.from(el.querySelectorAll('ui-button')).find((host) =>
+        host.querySelector('button')?.textContent?.trim().startsWith(text),
       )?.parentElement;
 
-    it('is created from a button in the same row as copying and starting over', () => {
+    it('is downloaded from a button in the same row as copying and starting over', () => {
       const { el } = setup(undefined, true);
       const row = rowOf(el, T.result.copy);
       expect(row).toBeDefined();
       expect(rowOf(el, T.result.startOver)).toBe(row);
-      expect(rowOf(el, T.result.createImage)).toBe(row);
+      expect(rowOf(el, T.result.downloadImage)).toBe(row);
     });
 
     it('sits between the buttons to copy and to start over', () => {
+      // The browser of the tests cannot share files, so only the button to download shows.
       const { el } = setup(undefined, true);
       const texts = Array.from(el.querySelectorAll('ui-button button')).map((b) =>
-        b.textContent?.trim().replace(/\s*9:16$/, ''),
+        b.textContent?.trim(),
       );
-      expect(texts).toEqual([T.result.copy, T.result.createImage, T.result.startOver]);
+      expect(texts).toEqual([T.result.copy, T.result.downloadImage, T.result.startOver]);
     });
 
-    it('keeps the image below the buttons once it is created', () => {
+    it('has no preview: the image goes straight to the device', () => {
       const { el } = setup(undefined, true);
-      const panel = el.querySelector('app-story-image-panel') as HTMLElement;
-      const row = rowOf(el, T.result.createImage) as HTMLElement;
-      expect(panel.contains(row)).toBe(true);
-      expect(row.nextElementSibling).not.toBeNull();
+      expect(el.querySelector('app-story-image-panel img')).toBeNull();
+      expect(el.querySelector('app-story-image-panel ui-card')).toBeNull();
     });
   });
 
@@ -968,7 +966,7 @@ describe('ResultStep', () => {
       expect(el.querySelector('pre')).toBeNull();
       expect(named(el, T.result.copy)).toBeDefined();
       expect(el.querySelector('app-story-image-panel')?.textContent).toContain(
-        T.result.createImage,
+        T.result.downloadImage,
       );
     });
 
@@ -997,15 +995,15 @@ describe('ResultStep', () => {
       expect(b.className).toContain('border-t-slate-600');
     });
 
-    it('puts the actions in order: copy, the image, and start over', () => {
+    it('puts the actions in order: copy, download the image, and start over', () => {
       const { el } = setup(undefined, true);
       const labels = Array.from(el.querySelectorAll('app-story-image-panel ui-button button')).map(
         (b) => b.textContent?.trim() ?? '',
       );
       const at = (text: string) => labels.findIndex((label) => label.startsWith(text));
       expect(at(T.result.copy)).toBeGreaterThanOrEqual(0);
-      expect(at(T.result.copy)).toBeLessThan(at(T.result.createImage));
-      expect(at(T.result.createImage)).toBeLessThan(at(T.result.startOver));
+      expect(at(T.result.copy)).toBeLessThan(at(T.result.downloadImage));
+      expect(at(T.result.downloadImage)).toBeLessThan(at(T.result.startOver));
     });
 
     it('lets the copy button take the whole row on a phone', () => {

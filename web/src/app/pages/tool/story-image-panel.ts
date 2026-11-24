@@ -1,35 +1,24 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  DestroyRef,
-  effect,
-  inject,
-  signal,
-  untracked,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { I18n } from '../../i18n/i18n';
 import { STORY_DELIVERY, storyFileName } from '../../image/story-delivery';
 import { STORY_BLOB } from '../../image/story-image';
 import { Entitlements, LockReason } from '../../plans/entitlements';
 import { LockNotice } from '../../plans/lock-notice';
 import { FriendlyStore } from '../../state/friendly.store';
-import { ToastService, UiBadge, UiButton, UiCard, UiIcon } from '../../ui';
+import { ToastService, UiButton, UiIcon } from '../../ui';
 
-interface MadeImage {
-  url: string;
-  blob: Blob;
-  name: string;
-  canShare: boolean;
-  teams: unknown;
-}
+// The browser starts a download as soon as the link is clicked, but it is given time to read the
+// image before it is freed.
+const FREE_AFTER_MS = 60_000;
 
 let nextHint = 0;
 
+// The actions of the confirmed teams that put the story image on the device: it is made when one
+// of the buttons is pressed and goes straight to the download or to the sharing panel.
 @Component({
   selector: 'app-story-image-panel',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [LockNotice, UiBadge, UiButton, UiCard, UiIcon],
+  imports: [LockNotice, UiButton, UiIcon],
   template: `
     <div class="space-y-4">
       <div
@@ -38,59 +27,23 @@ let nextHint = 0;
         <ng-content select="[panel-start]" />
         <ui-button
           variant="outline"
-          class="sm:col-auto"
           [disabled]="busy()"
           [describedBy]="hintId"
-          (click)="create()"
+          (click)="download()"
         >
-          <ui-icon [name]="locked() ? 'lock' : 'photo'" />
-          {{ t().createImage }}
-          <ui-badge>9:16</ui-badge>
+          <ui-icon [name]="locked() ? 'lock' : 'download'" />
+          {{ t().downloadImage }}
         </ui-button>
+        @if (canShare) {
+          <ui-button variant="outline" [disabled]="busy()" [describedBy]="hintId" (click)="share()">
+            <ui-icon [name]="locked() ? 'lock' : 'share'" />
+            {{ t().shareImage }}
+          </ui-button>
+        }
         <ng-content select="[panel-end]" />
       </div>
       <p [id]="hintId" class="sr-only">{{ t().imageHint }}</p>
       <app-lock-notice [reason]="notice()?.reason ?? null" [message]="notice()?.message ?? null" />
-
-      @if (image(); as made) {
-        <ui-card accent="alternative">
-          <div card-header class="flex items-center justify-between gap-3">
-            <h3
-              class="flex items-center gap-2 font-display text-base font-black uppercase tracking-tight text-ink"
-            >
-              <ui-icon name="device-mobile" class="text-alternative" />
-              {{ t().imageTitle }}
-            </h3>
-            <ui-button variant="ghost" size="sm" (click)="close()">
-              <ui-icon name="x" />
-              {{ t().closeImage }}
-            </ui-button>
-          </div>
-
-          <div class="space-y-4">
-            <div class="overflow-hidden rounded-xl bg-slate-900 p-2 shadow-inner">
-              <img
-                [src]="made.url"
-                [alt]="t().imageAlt"
-                class="mx-auto max-h-[65vh] w-auto rounded-lg shadow-md"
-              />
-            </div>
-            <div class="flex flex-wrap items-center gap-3">
-              <ui-button (click)="download()">
-                <ui-icon name="download" />
-                {{ t().download }}
-              </ui-button>
-              @if (made.canShare) {
-                <ui-button variant="outline" (click)="share()">
-                  <ui-icon name="share" />
-                  {{ t().share }}
-                </ui-button>
-              }
-              <ui-button variant="ghost" (click)="close()">{{ t().closeImage }}</ui-button>
-            </div>
-          </div>
-        </ui-card>
-      }
     </div>
   `,
 })
@@ -108,69 +61,52 @@ export class StoryImagePanel {
   protected readonly busy = signal(false);
   protected readonly notice = signal<{ reason: LockReason; message: string } | null>(null);
 
-  private readonly made = signal<MadeImage | null>(null);
-  protected readonly image = this.made.asReadonly();
+  // The image is not made yet, so the browser is asked about a stand-in file of the same kind.
+  protected readonly canShare = this.delivery.canShare(
+    new Blob([], { type: 'image/png' }),
+    'kora-roster.png',
+  );
 
-  constructor() {
-    inject(DestroyRef).onDestroy(() => this.forget());
-    effect(() => {
-      const made = this.made();
-      if (made && made.teams !== this.store.teams()) untracked(() => this.forget());
-    });
-  }
-
-  protected async create(): Promise<void> {
-    const lock = this.entitlements.storyImageLock();
-    if (lock) {
-      this.notice.set({ reason: lock, message: this.t().imageSignIn });
-      return;
-    }
-    const input = this.store.storyInput();
-    if (!input || this.busy()) return;
-    const teams = this.store.teams();
-    this.busy.set(true);
-    this.notice.set(null);
-    try {
-      const blob = await this.createBlob(input);
-      this.forget();
-      const name = storyFileName(new Date());
-      this.made.set({
-        url: URL.createObjectURL(blob),
-        blob,
-        name,
-        canShare: this.delivery.canShare(blob, name),
-        teams,
-      });
-    } catch {
-      this.toast.show(this.t().imageFailed, 4000);
-    } finally {
-      this.busy.set(false);
-    }
-  }
-
-  protected download(): void {
-    const made = this.image();
-    // The name carries the moment of the click, so every download gets its own.
-    if (made) this.delivery.download(made.url, storyFileName(new Date()));
+  protected async download(): Promise<void> {
+    // The name carries the moment of the click, even if making the image takes a while.
+    const name = storyFileName(new Date());
+    const blob = await this.make();
+    if (!blob) return;
+    const url = URL.createObjectURL(blob);
+    this.delivery.download(url, name);
+    setTimeout(() => URL.revokeObjectURL(url), FREE_AFTER_MS);
   }
 
   protected async share(): Promise<void> {
-    const made = this.image();
-    if (!made) return;
+    const name = storyFileName(new Date());
+    const blob = await this.make();
+    if (!blob) return;
     try {
-      await this.delivery.share(made.blob, made.name);
+      await this.delivery.share(blob, name);
     } catch {
       this.toast.show(this.t().shareFailed, 4000);
     }
   }
 
-  protected close(): void {
-    this.forget();
-  }
-
-  private forget(): void {
-    const made = this.made();
-    if (made) URL.revokeObjectURL(made.url);
-    this.made.set(null);
+  // Makes the image of the teams as they are now, or says why it cannot: there is no account, or
+  // the image could not be drawn. It returns nothing in both cases.
+  private async make(): Promise<Blob | null> {
+    const lock = this.entitlements.storyImageLock();
+    if (lock) {
+      this.notice.set({ reason: lock, message: this.t().imageSignIn });
+      return null;
+    }
+    const input = this.store.storyInput();
+    if (!input || this.busy()) return null;
+    this.busy.set(true);
+    this.notice.set(null);
+    try {
+      return await this.createBlob(input);
+    } catch {
+      this.toast.show(this.t().imageFailed, 4000);
+      return null;
+    } finally {
+      this.busy.set(false);
+    }
   }
 }

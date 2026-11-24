@@ -262,13 +262,9 @@ export const pt: Dictionary = {
         count === 1
           ? 'Falta 1 jogador para colocar em um time.'
           : `Faltam ${count} jogadores para colocar em um time.`,
-      createImage: 'Imagem para stories',
+      downloadImage: 'Baixar imagem',
+      shareImage: 'Compartilhar imagem',
       imageSignIn: 'Entre para criar a imagem.',
-      imageTitle: 'Imagem para stories',
-      imageAlt: 'Imagem com os times, pronta para compartilhar',
-      download: 'Baixar',
-      share: 'Compartilhar',
-      closeImage: 'Fechar',
       imageFailed: 'Não foi possível criar a imagem. Tente de novo.',
       shareFailed: 'Não foi possível compartilhar. Tente baixá-la.',
       hintTitle: 'Interação tática:',

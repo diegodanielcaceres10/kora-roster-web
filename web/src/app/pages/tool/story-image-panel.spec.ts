@@ -7,7 +7,7 @@ import { STORY_DELIVERY } from '../../image/story-delivery';
 import { STORY_BLOB } from '../../image/story-image';
 import { Preferences } from '../../preferences/preferences';
 import { saveSession } from '../../preferences/testing';
-import { FriendlyStore, Player } from '../../state/friendly.store';
+import { FriendlyStore } from '../../state/friendly.store';
 import { ToastService } from '../../ui';
 import { StoryImagePanel } from './story-image-panel';
 
@@ -58,13 +58,6 @@ function setup(options: Options = {}) {
     button(label)?.click();
     fixture.detectChanges();
   };
-  const created = async () => {
-    press(T.result.createImage);
-    await vi.waitFor(() => {
-      fixture.detectChanges();
-      expect(image()).not.toBeNull();
-    });
-  };
   return {
     fixture,
     el,
@@ -76,15 +69,9 @@ function setup(options: Options = {}) {
     image,
     notice,
     press,
-    created,
     toast: TestBed.inject(ToastService),
   };
 }
-
-const swapTwo = (store: InstanceType<typeof FriendlyStore>) => {
-  const [x, y] = store.teams() as Player[][];
-  store.swapPlayers(x[0].id, y[0].id);
-};
 
 describe('StoryImagePanel', () => {
   let counter = 0;
@@ -95,128 +82,124 @@ describe('StoryImagePanel', () => {
     URL.revokeObjectURL = vi.fn();
   });
   afterEach(() => {
+    vi.useRealTimers();
     localStorage.clear();
     document.documentElement.lang = 'en';
     Reflect.deleteProperty(URL, 'createObjectURL');
     Reflect.deleteProperty(URL, 'revokeObjectURL');
   });
 
-  describe('without an account', () => {
-    it('shows the button with a lock', () => {
-      const { button } = setup();
-      const create = button(T.result.createImage) as HTMLButtonElement;
-      expect(create.querySelector('ui-icon[data-icon="lock"]')).not.toBeNull();
-      expect(create.querySelector('ui-icon[data-icon="photo"]')).toBeNull();
-    });
+  const FILE_NAME = /^kora-roster-\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2}\.png$/;
+  const iconOf = (button: HTMLButtonElement | undefined, name: string) =>
+    button?.querySelector(`ui-icon[data-icon="${name}"]`) ?? null;
 
-    it('explains it and offers to sign in, instead of creating anything', () => {
-      const { press, notice, create, image, el } = setup();
-      press(T.result.createImage);
-      expect(notice()).toContain(T.result.imageSignIn);
-      expect(el.querySelector('app-lock-notice a')?.getAttribute('href')).toBe('/es/account');
-      expect(create).not.toHaveBeenCalled();
+  describe('the buttons', () => {
+    it('are one to download the image and one to share it, and nothing to preview it', () => {
+      const { button, image, el } = setup({ signedIn: true, canShare: true });
+      expect(button(T.result.downloadImage)).toBeDefined();
+      expect(button(T.result.shareImage)).toBeDefined();
       expect(image()).toBeNull();
-    });
-  });
-
-  describe('with an account', () => {
-    it('shows the button with an image icon and no lock', () => {
-      const { button } = setup({ signedIn: true });
-      const create = button(T.result.createImage) as HTMLButtonElement;
-      expect(create.querySelector('ui-icon[data-icon="photo"]')).not.toBeNull();
-      expect(create.querySelector('ui-icon[data-icon="lock"]')).toBeNull();
+      expect(el.querySelector('ui-card')).toBeNull();
     });
 
-    it('shows nothing else until the image is created', () => {
-      const { image, button, notice } = setup({ signedIn: true });
-      expect(image()).toBeNull();
-      expect(button(T.result.download)).toBeUndefined();
-      expect(notice()).toBe('');
+    it('do not show the old button that opened a preview', () => {
+      const { el } = setup({ signedIn: true, canShare: true });
+      const labels = Array.from(el.querySelectorAll('ui-button button')).map((b) =>
+        b.textContent?.trim(),
+      );
+      expect(labels).toEqual([T.result.downloadImage, T.result.shareImage]);
     });
 
-    it('creates the image from what the store says about the teams', async () => {
-      const { created, create, store } = setup({ signedIn: true });
-      await created();
-      expect(create).toHaveBeenCalledTimes(1);
-      expect(create).toHaveBeenCalledWith(store.storyInput());
+    it('hide the one to share when the browser cannot share files', () => {
+      const { button } = setup({ signedIn: true, canShare: false });
+      expect(button(T.result.downloadImage)).toBeDefined();
+      expect(button(T.result.shareImage)).toBeUndefined();
     });
 
-    it('shows the image, with a description, and the buttons to download it and close it', async () => {
-      const { created, image, button } = setup({ signedIn: true });
-      await created();
-      expect(image()?.getAttribute('src')).toBe('blob:story-1');
-      expect(image()?.getAttribute('alt')).toBe(T.result.imageAlt);
-      expect(button(T.result.download)).toBeDefined();
-      expect(button(T.result.closeImage)).toBeDefined();
-    });
-
-    it('does not offer to share when the browser cannot share files', async () => {
-      const { created, button } = setup({ signedIn: true, canShare: false });
-      await created();
-      expect(button(T.result.share)).toBeUndefined();
-    });
-
-    it('offers to share when the browser can share that file', async () => {
-      const { created, button, delivery, blob } = setup({ signedIn: true, canShare: true });
-      await created();
-      expect(button(T.result.share)).toBeDefined();
+    it('ask the browser about sharing with a stand-in image, as the real one is not made yet', () => {
+      const { delivery } = setup({ signedIn: true, canShare: true });
       expect(delivery.canShare).toHaveBeenCalledWith(
-        blob,
-        expect.stringMatching(/^kora-roster-\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2}\.png$/),
+        expect.any(Blob),
+        expect.stringMatching(/\.png$/),
       );
     });
 
-    it('cannot be asked again while the image is being made, and is ready afterwards', async () => {
-      let release!: (blob: Blob) => void;
-      const pending = new Promise<Blob>((resolve) => (release = resolve));
-      const { button, create, fixture, blob } = setup({ signedIn: true, create: () => pending });
-      const make = button(T.result.createImage) as HTMLButtonElement;
-      // Two taps that arrive before the screen has had time to show the button as disabled.
-      make.click();
-      make.click();
-      fixture.detectChanges();
-      expect(create).toHaveBeenCalledTimes(1);
-      expect(make.disabled).toBe(true);
-      release(blob);
-      await vi.waitFor(() => {
-        fixture.detectChanges();
-        expect(make.disabled).toBe(false);
-      });
+    it('are described by the hint, which is only for assistive technology', () => {
+      const { el, button } = setup({ signedIn: true, canShare: true });
+      for (const label of [T.result.downloadImage, T.result.shareImage]) {
+        const hintId = button(label)?.getAttribute('aria-describedby') as string;
+        const hint = el.querySelector(`#${hintId}`) as HTMLElement;
+        expect(hint.textContent?.trim()).toBe(T.result.imageHint);
+        expect(hint.classList.contains('sr-only')).toBe(true);
+      }
+    });
+  });
+
+  describe('without an account', () => {
+    it('show a lock instead of their icon', () => {
+      const { button } = setup({ canShare: true });
+      const download = button(T.result.downloadImage);
+      const share = button(T.result.shareImage);
+      expect(iconOf(download, 'lock')).not.toBeNull();
+      expect(iconOf(download, 'download')).toBeNull();
+      expect(iconOf(share, 'lock')).not.toBeNull();
+      expect(iconOf(share, 'share')).toBeNull();
     });
 
-    it('says so, and lets the person try again, when the image could not be made', async () => {
-      const { press, button, toast, image, fixture } = setup({
-        signedIn: true,
-        create: () => Promise.reject(new Error('no canvas')),
-      });
-      press(T.result.createImage);
-      await vi.waitFor(() => expect(toast.message()).toBe(T.result.imageFailed));
-      fixture.detectChanges();
-      expect(image()).toBeNull();
-      expect((button(T.result.createImage) as HTMLButtonElement).disabled).toBe(false);
+    it.each([[T.result.downloadImage], [T.result.shareImage]])(
+      'explain it and offer to sign in when %s is pressed, instead of making anything',
+      (label) => {
+        const { press, notice, create, delivery, el } = setup({ canShare: true });
+        press(label);
+        expect(notice()).toContain(T.result.imageSignIn);
+        expect(el.querySelector('app-lock-notice a')?.getAttribute('href')).toBe('/es/account');
+        expect(create).not.toHaveBeenCalled();
+        expect(delivery.download).not.toHaveBeenCalled();
+        expect(delivery.share).not.toHaveBeenCalled();
+      },
+    );
+  });
+
+  describe('with an account', () => {
+    it('show their own icon and no lock', () => {
+      const { button } = setup({ signedIn: true, canShare: true });
+      const download = button(T.result.downloadImage);
+      const share = button(T.result.shareImage);
+      expect(iconOf(download, 'download')).not.toBeNull();
+      expect(iconOf(download, 'lock')).toBeNull();
+      expect(iconOf(share, 'share')).not.toBeNull();
+      expect(iconOf(share, 'lock')).toBeNull();
     });
 
-    it('replaces the image when it is created again, freeing the old one', async () => {
-      const { created, image, press, fixture } = setup({ signedIn: true });
-      await created();
-      press(T.result.createImage);
-      await vi.waitFor(() => {
-        fixture.detectChanges();
-        expect(image()?.getAttribute('src')).toBe('blob:story-2');
-      });
-      expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:story-1');
+    it('make nothing until one of them is pressed', () => {
+      const { create, notice } = setup({ signedIn: true, canShare: true });
+      expect(create).not.toHaveBeenCalled();
+      expect(notice()).toBe('');
     });
 
     describe('downloading', () => {
-      afterEach(() => vi.useRealTimers());
+      it('makes the image from what the store says about the teams and downloads it', async () => {
+        const { press, create, delivery, store } = setup({ signedIn: true });
+        press(T.result.downloadImage);
+        await vi.waitFor(() => expect(delivery.download).toHaveBeenCalledTimes(1));
+        expect(create).toHaveBeenCalledWith(store.storyInput());
+        expect(delivery.download).toHaveBeenCalledWith(
+          'blob:story-1',
+          expect.stringMatching(FILE_NAME),
+        );
+        expect(delivery.share).not.toHaveBeenCalled();
+      });
 
-      it('names the file with the moment of the click, not the moment the image was made', async () => {
+      it('names the file with the moment of the click, even if making the image takes a while', async () => {
         vi.useFakeTimers({ toFake: ['Date'] });
-        vi.setSystemTime(new Date(2026, 10, 24, 9, 0, 0));
-        const { created, press, delivery } = setup({ signedIn: true });
-        await created();
         vi.setSystemTime(new Date(2026, 10, 24, 9, 15, 42));
-        press(T.result.download);
+        let release!: (blob: Blob) => void;
+        const pending = new Promise<Blob>((resolve) => (release = resolve));
+        const { press, delivery, blob } = setup({ signedIn: true, create: () => pending });
+        press(T.result.downloadImage);
+        vi.setSystemTime(new Date(2026, 10, 24, 9, 15, 50));
+        release(blob);
+        await vi.waitFor(() => expect(delivery.download).toHaveBeenCalled());
         expect(delivery.download).toHaveBeenCalledWith(
           'blob:story-1',
           'kora-roster-2026-11-24-09-15-42.png',
@@ -225,105 +208,107 @@ describe('StoryImagePanel', () => {
 
       it('gives each download the name of its own click', async () => {
         vi.useFakeTimers({ toFake: ['Date'] });
-        vi.setSystemTime(new Date(2026, 10, 24, 9, 0, 0));
-        const { created, press, delivery } = setup({ signedIn: true });
-        await created();
+        const { press, delivery } = setup({ signedIn: true });
         vi.setSystemTime(new Date(2026, 10, 24, 9, 1, 5));
-        press(T.result.download);
+        press(T.result.downloadImage);
+        await vi.waitFor(() => expect(delivery.download).toHaveBeenCalledTimes(1));
         vi.setSystemTime(new Date(2026, 10, 24, 9, 1, 9));
-        press(T.result.download);
+        press(T.result.downloadImage);
+        await vi.waitFor(() => expect(delivery.download).toHaveBeenCalledTimes(2));
         expect(vi.mocked(delivery.download).mock.calls.map((call) => call[1])).toEqual([
           'kora-roster-2026-11-24-09-01-05.png',
           'kora-roster-2026-11-24-09-01-09.png',
         ]);
       });
 
-      it('hands the image and its file name to the browser', async () => {
-        const { created, press, delivery } = setup({ signedIn: true });
-        await created();
-        press(T.result.download);
-        expect(delivery.download).toHaveBeenCalledWith(
-          'blob:story-1',
-          expect.stringMatching(/^kora-roster-\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2}\.png$/),
-        );
+      it('frees the image a little after handing it over, so the download can start first', async () => {
+        vi.useFakeTimers({ toFake: ['setTimeout'] });
+        const { press, delivery } = setup({ signedIn: true });
+        press(T.result.downloadImage);
+        await vi.waitFor(() => expect(delivery.download).toHaveBeenCalled());
+        expect(URL.revokeObjectURL).not.toHaveBeenCalled();
+        vi.advanceTimersByTime(60_000);
+        expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:story-1');
       });
     });
 
     describe('sharing', () => {
-      it('shares the image with its file name', async () => {
-        const { created, press, delivery, blob } = setup({ signedIn: true, canShare: true });
-        await created();
-        press(T.result.share);
-        expect(delivery.share).toHaveBeenCalledWith(
-          blob,
-          expect.stringMatching(/^kora-roster-\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2}\.png$/),
-        );
+      it('makes the image and shares it with its file name, without downloading it', async () => {
+        const { press, create, delivery, blob, store } = setup({ signedIn: true, canShare: true });
+        press(T.result.shareImage);
+        await vi.waitFor(() => expect(delivery.share).toHaveBeenCalledTimes(1));
+        expect(create).toHaveBeenCalledWith(store.storyInput());
+        expect(delivery.share).toHaveBeenCalledWith(blob, expect.stringMatching(FILE_NAME));
+        expect(delivery.download).not.toHaveBeenCalled();
+      });
+
+      it('names the file with the moment of the click', async () => {
+        vi.useFakeTimers({ toFake: ['Date'] });
+        vi.setSystemTime(new Date(2026, 10, 24, 18, 30, 7));
+        const { press, delivery, blob } = setup({ signedIn: true, canShare: true });
+        press(T.result.shareImage);
+        await vi.waitFor(() => expect(delivery.share).toHaveBeenCalled());
+        expect(delivery.share).toHaveBeenCalledWith(blob, 'kora-roster-2026-11-24-18-30-07.png');
       });
 
       it('says nothing when the person closes the sharing panel', async () => {
-        const { created, press, toast } = setup({ signedIn: true, canShare: true });
-        await created();
-        press(T.result.share);
+        const { press, toast, delivery } = setup({ signedIn: true, canShare: true });
+        press(T.result.shareImage);
+        await vi.waitFor(() => expect(delivery.share).toHaveBeenCalled());
         await Promise.resolve();
         expect(toast.message()).toBeNull();
       });
 
       it('suggests downloading it when it could not be shared', async () => {
-        const { created, press, toast, delivery } = setup({ signedIn: true, canShare: true });
+        const { press, toast, delivery } = setup({ signedIn: true, canShare: true });
         delivery.share.mockRejectedValueOnce(new Error('not allowed') as never);
-        await created();
-        press(T.result.share);
+        press(T.result.shareImage);
         await vi.waitFor(() => expect(toast.message()).toBe(T.result.shareFailed));
       });
     });
 
-    describe('closing and forgetting', () => {
-      it('hides the image and frees it when it is closed', async () => {
-        const { created, press, image } = setup({ signedIn: true });
-        await created();
-        press(T.result.closeImage);
-        expect(image()).toBeNull();
-        expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:story-1');
-      });
-
-      it('frees the image when the panel goes away', async () => {
-        const { created, fixture } = setup({ signedIn: true });
-        await created();
-        fixture.destroy();
-        expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:story-1');
-      });
-
-      it('drops an image that no longer matches the teams, because two players were swapped', async () => {
-        const { created, store, fixture, image } = setup({ signedIn: true });
-        await created();
-        swapTwo(store);
-        fixture.detectChanges();
-        expect(image()).toBeNull();
-        expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:story-1');
-      });
-
-      it('drops it too when the teams are drawn again', async () => {
-        const { created, store, fixture, image } = setup({ signedIn: true });
-        await created();
-        store.draw(() => 0.9);
-        fixture.detectChanges();
-        expect(image()).toBeNull();
-      });
-
-      it('throws away an image that finished after the teams had already changed', async () => {
+    describe('while the image is being made', () => {
+      it('cannot be asked again, and is ready afterwards', async () => {
         let release!: (blob: Blob) => void;
         const pending = new Promise<Blob>((resolve) => (release = resolve));
-        const { press, store, fixture, image, blob } = setup({
+        const { button, create, fixture, blob, delivery } = setup({
           signedIn: true,
+          canShare: true,
           create: () => pending,
         });
-        press(T.result.createImage);
-        store.draw(() => 0.9);
-        release(blob);
-        await vi.waitFor(() => expect(URL.createObjectURL).toHaveBeenCalled());
+        const download = button(T.result.downloadImage) as HTMLButtonElement;
+        const share = button(T.result.shareImage) as HTMLButtonElement;
+        // Taps that arrive before the screen has had time to show the buttons as disabled.
+        download.click();
+        download.click();
+        share.click();
         fixture.detectChanges();
-        expect(image()).toBeNull();
-        expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:story-1');
+        expect(create).toHaveBeenCalledTimes(1);
+        expect(download.disabled).toBe(true);
+        expect(share.disabled).toBe(true);
+        release(blob);
+        await vi.waitFor(() => {
+          fixture.detectChanges();
+          expect(download.disabled).toBe(false);
+        });
+        expect(share.disabled).toBe(false);
+        expect(delivery.download).toHaveBeenCalledTimes(1);
+        expect(delivery.share).not.toHaveBeenCalled();
+      });
+
+      it('says so, hands nothing over and lets the person try again when it could not be made', async () => {
+        const { press, button, toast, delivery, fixture } = setup({
+          signedIn: true,
+          canShare: true,
+          create: () => Promise.reject(new Error('no canvas')),
+        });
+        press(T.result.downloadImage);
+        await vi.waitFor(() => expect(toast.message()).toBe(T.result.imageFailed));
+        fixture.detectChanges();
+        expect(delivery.download).not.toHaveBeenCalled();
+        expect(URL.createObjectURL).not.toHaveBeenCalled();
+        expect((button(T.result.downloadImage) as HTMLButtonElement).disabled).toBe(false);
+        expect((button(T.result.shareImage) as HTMLButtonElement).disabled).toBe(false);
       });
     });
   });
@@ -340,7 +325,7 @@ describe('StoryImagePanel', () => {
     })
     class Host {}
 
-    function bar() {
+    it('puts what it is given at the start and at the end, around the buttons of the image', () => {
       saveSession();
       TestBed.inject(I18n).setLang('es');
       const store = TestBed.inject(FriendlyStore);
@@ -349,36 +334,14 @@ describe('StoryImagePanel', () => {
       store.draw(() => 0.3);
       const fixture = TestBed.createComponent(Host);
       fixture.detectChanges();
-      return fixture.nativeElement as HTMLElement;
-    }
-
-    it('puts what it is given at the start and at the end, around its own button', () => {
-      const el = bar();
+      const el = fixture.nativeElement as HTMLElement;
       const first = el.querySelector('#first') as HTMLElement;
-      const image = Array.from(el.querySelectorAll('ui-button button')).find((b) =>
-        b.textContent?.includes(T.result.createImage),
+      const download = Array.from(el.querySelectorAll('ui-button button')).find((b) =>
+        b.textContent?.includes(T.result.downloadImage),
       ) as HTMLElement;
       const last = el.querySelector('#last') as HTMLElement;
-      expect(first.compareDocumentPosition(image)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
-      expect(image.compareDocumentPosition(last)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
-    });
-
-    it('shows the proportion of the image on its button', () => {
-      const el = bar();
-      const image = Array.from(el.querySelectorAll('ui-button button')).find((b) =>
-        b.textContent?.includes(T.result.createImage),
-      ) as HTMLElement;
-      expect(image.textContent).toContain('9:16');
-    });
-
-    it('describes the button with the hint, which is only for assistive technology', () => {
-      const el = bar();
-      const image = Array.from(el.querySelectorAll('ui-button button')).find((b) =>
-        b.textContent?.includes(T.result.createImage),
-      ) as HTMLElement;
-      const hint = el.querySelector(`#${image.getAttribute('aria-describedby')}`) as HTMLElement;
-      expect(hint.textContent?.trim()).toBe(T.result.imageHint);
-      expect(hint.classList.contains('sr-only')).toBe(true);
+      expect(first.compareDocumentPosition(download)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+      expect(download.compareDocumentPosition(last)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
     });
   });
 });
