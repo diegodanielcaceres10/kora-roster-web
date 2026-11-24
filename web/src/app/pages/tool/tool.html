@@ -1,0 +1,36 @@
+<section class="mx-auto max-w-6xl space-y-6 px-4 py-6 sm:px-6 sm:py-8">
+  <ui-step-header
+    [title]="header().title"
+    [subtitle]="header().subtitle"
+    [steps]="steps()"
+    [stepsLabel]="i18n.t().tool.progressLabel"
+    [doneLabel]="i18n.t().tool.stepDone"
+    [accentLast]="isConfirmed()"
+  >
+    @if (isConfirmed()) {
+      <div header-aside class="grid grid-cols-2 gap-2">
+        <ui-stat [label]="i18n.t().tool.result.statPlayers" [value]="String(totalPlayers())" />
+        <ui-stat
+          [label]="i18n.t().tool.result.statGoalkeepers"
+          [value]="String(goalkeepers())"
+          valueTone="primary"
+        />
+      </div>
+    }
+  </ui-step-header>
+
+  <!-- Active Step Container with discrete entrance animation -->
+  <div class="animate-fade-in">
+    @switch (store.step()) {
+      @case ('paste') {
+        <app-paste-step />
+      }
+      @case ('preview') {
+        <app-preview-step />
+      }
+      @case ('result') {
+        <app-result-step />
+      }
+    }
+  </div>
+</section>

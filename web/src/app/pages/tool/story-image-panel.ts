@@ -19,33 +19,7 @@ let nextHint = 0;
   selector: 'app-story-image-panel',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [LockNotice, UiButton, UiIcon],
-  template: `
-    <div class="space-y-4">
-      <div
-        class="grid grid-cols-2 gap-3 rounded-2xl border border-line bg-surface p-3 shadow-xs sm:flex sm:flex-wrap sm:items-center"
-      >
-        <ng-content select="[panel-start]" />
-        <ui-button
-          variant="outline"
-          [disabled]="busy()"
-          [describedBy]="hintId"
-          (click)="download()"
-        >
-          <ui-icon [name]="locked() ? 'lock' : 'download'" />
-          {{ t().downloadImage }}
-        </ui-button>
-        @if (canShare) {
-          <ui-button variant="outline" [disabled]="busy()" [describedBy]="hintId" (click)="share()">
-            <ui-icon [name]="locked() ? 'lock' : 'share'" />
-            {{ t().shareImage }}
-          </ui-button>
-        }
-        <ng-content select="[panel-end]" />
-      </div>
-      <p [id]="hintId" class="sr-only">{{ t().imageHint }}</p>
-      <app-lock-notice [reason]="notice()?.reason ?? null" [message]="notice()?.message ?? null" />
-    </div>
-  `,
+  templateUrl: './story-image-panel.html',
 })
 export class StoryImagePanel {
   protected readonly hintId = `story-image-hint-${nextHint++}`;

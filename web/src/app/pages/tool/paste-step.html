@@ -1,0 +1,87 @@
+<section class="grid grid-cols-1 items-start gap-6 lg:grid-cols-3">
+  <div class="lg:col-span-2">
+    <ui-card>
+      <div card-header class="flex flex-wrap items-center gap-x-2 gap-y-2">
+        <h2 class="mr-auto flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-wider text-ink">
+          <ui-icon name="clipboard" class="text-amber-700 dark:text-primary" />
+          {{ t().paste.title }}
+        </h2>
+        @if (detectedCount(); as count) {
+          <ui-badge tone="primary" class="order-last basis-full sm:order-none sm:basis-auto">
+            <ui-icon name="users" />
+            {{ t().paste.detected(count) }}
+          </ui-badge>
+        }
+        <ui-button size="sm" variant="outline" [disabled]="!rawText()" (click)="clear()">
+          <ui-icon name="trash" />
+          {{ t().paste.clear }}
+        </ui-button>
+      </div>
+
+      <ui-textarea
+        hideLabel
+        [label]="t().paste.label"
+        [placeholder]="t().paste.placeholder"
+        [rows]="10"
+        [value]="rawText()"
+        (valueChange)="store.setRawText($event)"
+      />
+
+      <div card-footer class="space-y-2">
+        @if (drawNote(); as note) {
+          <p data-draw-note class="text-right text-xs text-ink-muted">{{ note }}</p>
+        }
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <ui-button size="lg" variant="outline" [disabled]="!hasNames()" (click)="review()">
+            <ui-icon [name]="reviewLocked() ? 'lock' : 'arrow-right'" />
+            {{ t().paste.advanced }}
+          </ui-button>
+          <ui-button size="lg" [disabled]="!canDraw()" (click)="drawNow()">
+            <ui-icon name="bolt" />
+            {{ t().preview.draw }}
+          </ui-button>
+        </div>
+        <div data-review-notice>
+          <app-lock-notice
+            [reason]="reviewNotice()?.reason ?? null"
+            [message]="reviewNotice()?.message ?? null"
+          />
+        </div>
+      </div>
+    </ui-card>
+  </div>
+
+  <ui-card data-guide class="lg:col-span-1">
+    <div card-header class="flex items-center justify-between gap-2">
+      <h3 class="flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-wider text-ink">
+        <ui-icon name="book" class="text-amber-700 dark:text-primary" />
+        {{ t().paste.guide.title }}
+      </h3>
+      <ui-badge>{{ t().paste.guide.tag }}</ui-badge>
+    </div>
+    <ol class="space-y-5">
+      @for (step of guideSteps(); track step.number) {
+        <li class="flex items-start gap-3">
+          <span
+            data-step-number
+            class="inline-flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/15 font-mono text-sm font-bold text-amber-700 dark:text-primary"
+          >
+            {{ step.number }}
+          </span>
+          <div>
+            <h4 class="font-display text-sm font-bold uppercase tracking-tight text-ink">
+              {{ step.title }}
+            </h4>
+            <p class="mt-1 text-sm text-ink-muted">
+              {{ step.before }}
+              @for (word of step.words; track word) {
+                <code class="rounded bg-ink/8 px-1.5 py-0.5 font-mono text-xs text-ink">{{ word }}</code>
+              }
+              {{ step.after }}
+            </p>
+          </div>
+        </li>
+      }
+    </ol>
+  </ui-card>
+</section>
