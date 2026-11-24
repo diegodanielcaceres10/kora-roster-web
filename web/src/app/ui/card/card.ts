@@ -16,8 +16,10 @@ const ACCENTS: Record<CardAccent, string> = {
 })
 export class UiCard {
   readonly accent = input<CardAccent | undefined>(undefined);
+  readonly accentColor = input<string | undefined>(undefined);
 
   protected readonly accentClass = computed(() => {
+    if (this.accentColor()) return '';
     const accent = this.accent();
     return accent ? ACCENTS[accent] : '';
   });

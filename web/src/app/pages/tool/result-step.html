@@ -16,7 +16,7 @@
 
     <div [class]="gridClass()">
       @for (team of teams(); track $index; let i = $index) {
-        <ui-card [accent]="teamAccent(i)">
+        <ui-card [accentColor]="store.teamColors()[i]">
           <div card-header class="flex items-center gap-3">
             <span data-team-icon [class]="iconTile">{{ store.teamIcons()[i] }}</span>
             <h3
@@ -188,7 +188,7 @@
       <!-- The teams -->
       <div data-teams [class]="teamsClass()">
         @for (team of teams(); track $index; let i = $index) {
-          <ui-card>
+          <ui-card [accentColor]="store.teamColors()[i]">
             <div card-header class="flex flex-wrap items-center gap-3">
               <span data-team-icon [class]="iconTile">{{ store.teamIcons()[i] }}</span>
               <div class="mr-auto min-w-0">

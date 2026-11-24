@@ -13,7 +13,7 @@ import { parsePastedNames } from '../core/parse-players';
 import { StoryInput } from '../core/story-layout';
 import { I18n } from '../i18n/i18n';
 import { Entitlements } from '../plans/entitlements';
-import { DEFAULT_PREFERENCES } from '../preferences/preferences';
+import { colorToIcon, DEFAULT_PREFERENCES } from '../preferences/preferences';
 import { PreferencesService } from '../preferences/preferences-service';
 import { Theme } from '../theme/theme';
 
@@ -79,7 +79,10 @@ export const FriendlyStore = signalStore(
     // The icons and colors of the person who is signed in, or the defaults for everybody else.
     // The preferences always hold the six teams, with six different icons.
     const teamIcons = computed(
-      () => preferences.active()?.teams.map((team) => team.icon) ?? DEFAULT_TEAM_ICONS,
+      () =>
+        preferences
+          .active()
+          ?.teams.map((team) => colorToIcon(team.color)) ?? DEFAULT_TEAM_ICONS,
     );
     const teamColors = computed(() =>
       (preferences.active() ?? DEFAULT_PREFERENCES).teams.map((team) => team.color),

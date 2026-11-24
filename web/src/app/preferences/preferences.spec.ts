@@ -1,6 +1,7 @@
 import { MAX_TEAM_SIZE, MAX_TEAMS, MIN_TEAM_SIZE, MIN_TEAMS } from '../core/draw-teams';
 import { DEFAULT_TEAM_ICONS } from '../core/format-teams';
 import {
+  colorToIcon,
   DEFAULT_PREFERENCES,
   HEADER_MAX,
   Preferences,
@@ -232,6 +233,21 @@ describe('sanitizePreferences', () => {
 
     it.each([['roman'], [''], [1], [undefined]])('turns %j into dot', (numbering) => {
       expect(sanitizePreferences({ numbering }).numbering).toBe('dot');
+    });
+  });
+
+  describe('colorToIcon', () => {
+    it.each([
+      ['#ffffff', '⚪'],
+      ['#ffea00', '🟡'],
+      ['#e53935', '🔴'],
+      ['#1e88e5', '🔵'],
+      ['#43a047', '🟢'],
+      ['#8e24aa', '🟣'],
+      ['#fb8c00', '🟠'],
+      ['#000000', '⚫'],
+    ])('maps %s to %s', (hex, expected) => {
+      expect(colorToIcon(hex)).toBe(expected);
     });
   });
 });

@@ -20,9 +20,46 @@ export interface Preferences {
 }
 
 export const TEAM_ICONS = DEFAULT_TEAM_ICONS;
+export const ALL_TEAM_ICONS = ['🔴', '🔵', '🟢', '🟡', '🟣', '🟠', '⚪', '⚫', '🟤'];
 export const HEADER_MAX = 200;
 
 const DEFAULT_COLORS = ['#e53935', '#1e88e5', '#43a047', '#fdd835', '#8e24aa', '#fb8c00'];
+
+const COLOR_PALETTE: readonly { icon: string; r: number; g: number; b: number }[] = [
+  { icon: '⚪', r: 255, g: 255, b: 255 },
+  { icon: '⚫', r: 20, g: 20, b: 20 },
+  { icon: '🔴', r: 229, g: 57, b: 53 },
+  { icon: '🟠', r: 251, g: 140, b: 0 },
+  { icon: '🟡', r: 253, g: 216, b: 53 },
+  { icon: '🟢', r: 67, g: 160, b: 71 },
+  { icon: '🔵', r: 30, g: 136, b: 229 },
+  { icon: '🟣', r: 142, g: 36, b: 170 },
+  { icon: '🟤', r: 121, g: 85, b: 72 },
+];
+
+export function colorToIcon(hex: string): string {
+  if (!HEX_COLOR.test(hex)) return '⚪';
+  const num = parseInt(hex.slice(1), 16);
+  const r = (num >> 16) & 255;
+  const g = (num >> 8) & 255;
+  const b = num & 255;
+
+  let bestIcon = '⚪';
+  let minDistance = Infinity;
+
+  for (const item of COLOR_PALETTE) {
+    const rmean = (r + item.r) / 2;
+    const dr = r - item.r;
+    const dg = g - item.g;
+    const db = b - item.b;
+    const distance = (2 + rmean / 256) * dr * dr + 4 * dg * dg + (2 + (255 - rmean) / 256) * db * db;
+    if (distance < minDistance) {
+      minDistance = distance;
+      bestIcon = item.icon;
+    }
+  }
+  return bestIcon;
+}
 
 export const DEFAULT_PREFERENCES: Preferences = {
   playersPerTeam: null,
@@ -34,24 +71,23 @@ export const DEFAULT_PREFERENCES: Preferences = {
 };
 
 const NUMBERINGS: readonly Numbering[] = ['dot', 'paren', 'dash', 'none'];
-const HEX_COLOR = /^#[0-9a-f]{6}$/i;
+export const HEX_COLOR = /^#[0-9a-f]{6}$/i;
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
 
 function team(value: unknown, fallback: TeamPreference, taken: string[]): TeamPreference {
   const raw = isRecord(value) ? value : {};
-  let icon =
-    typeof raw['icon'] === 'string' && TEAM_ICONS.includes(raw['icon'])
-      ? raw['icon']
-      : fallback.icon;
-  // No two teams share an icon: the later one takes the first one that is free.
-  if (taken.includes(icon))
-    icon = TEAM_ICONS.find((free) => !taken.includes(free)) ?? fallback.icon;
   const color =
     typeof raw['color'] === 'string' && HEX_COLOR.test(raw['color'])
       ? raw['color'].toLowerCase()
       : fallback.color;
+  let icon =
+    typeof raw['icon'] === 'string' && ALL_TEAM_ICONS.includes(raw['icon'])
+      ? raw['icon']
+      : colorToIcon(color);
+  if (taken.includes(icon))
+    icon = ALL_TEAM_ICONS.find((free) => !taken.includes(free)) ?? fallback.icon;
   return { icon, color };
 }
 

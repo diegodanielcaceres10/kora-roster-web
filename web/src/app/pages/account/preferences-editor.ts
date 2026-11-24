@@ -5,6 +5,7 @@ import { I18n } from '../../i18n/i18n';
 import { Entitlements, LockReason } from '../../plans/entitlements';
 import { LockNotice } from '../../plans/lock-notice';
 import {
+  colorToIcon,
   DEFAULT_PREFERENCES,
   HEADER_MAX,
   Preferences,
@@ -43,7 +44,10 @@ const FIELD_LABEL = 'block font-mono text-[11px] font-bold uppercase tracking-wi
 
 const copyOf = (preferences: Preferences): Preferences => ({
   ...preferences,
-  teams: preferences.teams.map((team) => ({ ...team })),
+  teams: preferences.teams.map((team) => ({
+    ...team,
+    icon: colorToIcon(team.color),
+  })),
 });
 
 @Component({
@@ -149,6 +153,7 @@ export class PreferencesEditor {
     this.draft.update((d) => {
       const next = copyOf(d);
       next.teams[index].color = normalized;
+      next.teams[index].icon = colorToIcon(normalized);
       return next;
     });
   }

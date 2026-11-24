@@ -5,7 +5,7 @@ import { CardAccent, UiCard } from './card';
 @Component({
   imports: [UiCard],
   template: `
-    <ui-card [accent]="accent()">
+    <ui-card [accent]="accent()" [accentColor]="accentColor()">
       <h3 card-header>Equipo A</h3>
       <p>Diego, Mati</p>
     </ui-card>
@@ -13,6 +13,7 @@ import { CardAccent, UiCard } from './card';
 })
 class Host {
   readonly accent = signal<CardAccent | undefined>(undefined);
+  readonly accentColor = signal<string | undefined>(undefined);
 }
 
 @Component({ imports: [UiCard], template: `<ui-card><p>Solo cuerpo</p></ui-card>` })
@@ -78,5 +79,14 @@ describe('UiCard', () => {
       looks.add(section().className);
     }
     expect(looks.size).toBe(4);
+  });
+
+  it('applies custom border top color when accentColor is given', () => {
+    const fixture = TestBed.createComponent(Host);
+    fixture.componentInstance.accentColor.set('#ffea00');
+    fixture.detectChanges();
+    const section = fixture.nativeElement.querySelector('section') as HTMLElement;
+    expect(section.style.borderTopColor).toBe('rgb(255, 234, 0)');
+    expect(section.style.borderTopWidth).toBe('4px');
   });
 });

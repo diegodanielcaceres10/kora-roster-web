@@ -272,8 +272,8 @@ describe('PreferencesEditor', () => {
         footer: 'Confirmen',
         numbering: 'paren' as const,
         teams: [
-          { icon: '🔴', color: '#00ff00' },
-          { icon: '🔵', color: '#ffff00' },
+          { icon: '🟢', color: '#00ff00' },
+          { icon: '🟡', color: '#ffff00' },
           ...DEFAULT_PREFERENCES.teams.slice(2),
         ],
       };
