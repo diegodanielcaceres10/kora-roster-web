@@ -118,11 +118,10 @@ and is read as a link.
 
 ### `UiTextarea` · `<ui-textarea>`
 
-A labelled multi-line field.
+A labelled multi-line field. It behaves as a regular textarea: it wraps long lines, scrolls when
+the text is longer than its rows, and can be resized in height only.
 
 - `label` (required), `placeholder`, `rows` (default 6), `hint` (linked with `aria-describedby`)
-- `numbered`: shows a two-digit number beside every line, in a monospace field that grows with its
-  lines (up to a height, then it scrolls) and does not wrap them, so a number is always one line
 - `hideLabel`: keeps the label for assistive technology only, when the screen already names the
   field (the header of a card, say)
 - `focus()`: moves the focus into the field

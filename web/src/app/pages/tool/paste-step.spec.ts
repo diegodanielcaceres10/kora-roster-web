@@ -44,15 +44,12 @@ describe('PasteStep', () => {
   });
 
   describe('the editor', () => {
-    it('numbers the lines of the list', () => {
-      const { el, type } = setup();
+    it('is a regular textarea: no line numbers, 10 rows and it wraps long lines', () => {
+      const { el, textarea, type } = setup();
       type(Array.from({ length: 12 }, (_, i) => `Jugador ${i + 1}`).join('\n'));
-      const numbers = Array.from(el.querySelectorAll('[data-gutter] > div')).map((n) =>
-        n.textContent?.trim(),
-      );
-      expect(numbers).toHaveLength(12);
-      expect(numbers[0]).toBe('01');
-      expect(numbers[11]).toBe('12');
+      expect(el.querySelector('[data-gutter]')).toBeNull();
+      expect(textarea().rows).toBe(10);
+      expect(textarea().hasAttribute('wrap')).toBe(false);
     });
 
     it('is named by the card header, so its own label is only for assistive technology', () => {

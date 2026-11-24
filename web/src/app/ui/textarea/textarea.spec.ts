@@ -10,7 +10,6 @@ import { UiTextarea } from './textarea';
       [placeholder]="placeholder()"
       [rows]="rows()"
       [hint]="hint()"
-      [numbered]="numbered()"
       [hideLabel]="hideLabel()"
       [(value)]="text"
     />
@@ -18,7 +17,6 @@ import { UiTextarea } from './textarea';
 })
 class Host {
   readonly control = viewChild.required(UiTextarea);
-  readonly numbered = signal(false);
   readonly hideLabel = signal(false);
   readonly text = signal('');
   readonly placeholder = signal('Pegá la lista acá');
@@ -102,56 +100,30 @@ describe('UiTextarea', () => {
     expect(el.querySelector(`#${hintId}`)?.textContent).toContain('Una línea por jugador');
   });
 
-  describe('numbered', () => {
-    const numbers = (el: HTMLElement) =>
-      Array.from(el.querySelectorAll('[data-gutter] > div')).map((n) => n.textContent?.trim());
-
-    it('shows no line numbers by default', () => {
-      const { el } = setup();
+  describe('as a regular textarea', () => {
+    it('has no line numbers', () => {
+      const { el, update } = setup();
+      update((h) => h.text.set('Diego\nMati'));
       expect(el.querySelector('[data-gutter]')).toBeNull();
     });
 
-    it('numbers the lines with two digits, at least as many as the rows', () => {
-      const { el, update } = setup();
+    it('keeps its rows however many lines the value has, and scrolls instead of growing', () => {
+      const { field, update } = setup();
       update((h) => {
-        h.numbered.set(true);
-        h.rows.set(4);
-        h.text.set('Diego\nMati');
-      });
-      expect(numbers(el)).toEqual(['01', '02', '03', '04']);
-    });
-
-    it('keeps numbering as the list grows past the rows', () => {
-      const { el, update } = setup();
-      update((h) => {
-        h.numbered.set(true);
         h.rows.set(3);
         h.text.set(Array.from({ length: 11 }, (_, i) => `Jugador ${i + 1}`).join('\n'));
       });
-      expect(numbers(el)).toHaveLength(11);
-      expect(numbers(el)[10]).toBe('11');
+      expect(field().rows).toBe(3);
     });
 
-    it('grows the field with its lines, so the numbers always match them', () => {
-      const { field, update } = setup();
-      update((h) => {
-        h.numbered.set(true);
-        h.rows.set(3);
-        h.text.set('a\nb\nc\nd\ne');
-      });
-      expect(field().rows).toBe(5);
+    it('wraps long lines as any textarea does', () => {
+      const { field } = setup();
+      expect(field().hasAttribute('wrap')).toBe(false);
     });
 
-    it('does not wrap lines, so one line is one number', () => {
-      const { field, update } = setup();
-      update((h) => h.numbered.set(true));
-      expect(field().getAttribute('wrap')).toBe('off');
-    });
-
-    it('keeps the numbers out of assistive technology', () => {
-      const { el, update } = setup();
-      update((h) => h.numbered.set(true));
-      expect(el.querySelector('[data-gutter]')?.getAttribute('aria-hidden')).toBe('true');
+    it('can only be resized in height, so it never breaks the layout', () => {
+      const { field } = setup();
+      expect(field().classList.contains('resize-y')).toBe(true);
     });
   });
 

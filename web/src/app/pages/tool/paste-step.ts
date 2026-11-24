@@ -41,7 +41,6 @@ import { countStatus } from './count-status';
           </div>
 
           <ui-textarea
-            numbered
             hideLabel
             [label]="t().paste.label"
             [placeholder]="t().paste.placeholder"
