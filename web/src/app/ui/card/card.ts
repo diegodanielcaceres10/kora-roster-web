@@ -12,16 +12,8 @@ const ACCENTS: Record<CardAccent, string> = {
   selector: 'ui-card',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'block' },
-  template: `
-    <section
-      class="overflow-hidden rounded-2xl border border-line bg-surface shadow-xs transition-shadow duration-200 hover:shadow-md"
-      [class]="accentClass()"
-    >
-      <header class="border-b border-line bg-surface-muted/60 px-4 py-3 sm:px-5 empty:hidden"><ng-content select="[card-header]" /></header>
-      <div class="p-4 sm:p-5"><ng-content /></div>
-      <footer class="border-t border-line bg-surface-muted/60 px-4 py-3 sm:px-5 empty:hidden"><ng-content select="[card-footer]" /></footer>
-    </section>
-  `,
+  templateUrl: './card.html',
+  styleUrl: './card.css',
 })
 export class UiCard {
   readonly accent = input<CardAccent | undefined>(undefined);

@@ -32,36 +32,8 @@ const LOCKED = 'bg-transparent text-ink-faint hover:bg-ink/10';
   imports: [UiIcon],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { '[class]': "stretch() ? 'block' : 'inline-block'" },
-  template: `
-    <div
-      role="radiogroup"
-      [attr.aria-label]="label()"
-      class="gap-1 rounded-xl border border-line bg-surface-muted p-1 shadow-inner"
-      [class]="groupClass()"
-    >
-      @for (option of options(); track option.value; let i = $index) {
-        <button
-          #option
-          type="button"
-          role="radio"
-          [attr.aria-checked]="isSelected(option)"
-          [attr.aria-disabled]="option.locked ? 'true' : null"
-          [tabindex]="i === tabbableIndex() ? 0 : -1"
-          [class]="optionClass(option)"
-          (click)="activate(i)"
-          (keydown)="onKeydown($event, i)"
-        >
-          {{ option.label }}
-          @if (option.locked) {
-            <ui-icon name="lock" class="ml-1 text-xs" />
-            @if (option.lockedLabel) {
-              <span class="ml-1 text-xs font-bold uppercase">{{ option.lockedLabel }}</span>
-            }
-          }
-        </button>
-      }
-    </div>
-  `,
+  templateUrl: './segmented.html',
+  styleUrl: './segmented.css',
 })
 export class UiSegmented {
   readonly options = input.required<SegmentedOption[]>();

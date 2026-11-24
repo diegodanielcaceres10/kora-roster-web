@@ -11,17 +11,8 @@ export type ButtonSize = 'sm' | 'md' | 'lg';
     class: 'inline-block',
     '[class.pointer-events-none]': 'disabled()',
   },
-  template: `
-    <button
-      [attr.type]="type()"
-      [disabled]="disabled()"
-      [attr.aria-label]="ariaLabel() ?? null"
-      [attr.aria-describedby]="describedBy() ?? null"
-      [class]="classes()"
-    >
-      <ng-content />
-    </button>
-  `,
+  templateUrl: './button.html',
+  styleUrl: './button.css',
 })
 export class UiButton {
   readonly variant = input<ButtonVariant>('primary');

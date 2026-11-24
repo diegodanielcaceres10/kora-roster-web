@@ -17,19 +17,8 @@ export type IconButtonVariant = 'default' | 'danger';
     class: 'inline-block',
     '[class.pointer-events-none]': 'disabled()',
   },
-  template: `
-    <button
-      #control
-      type="button"
-      [attr.aria-label]="label()"
-      [attr.aria-pressed]="pressed()"
-      [attr.aria-expanded]="expanded()"
-      [disabled]="disabled()"
-      [class]="classes()"
-    >
-      <ng-content />
-    </button>
-  `,
+  templateUrl: './icon-button.html',
+  styleUrl: './icon-button.css',
 })
 export class UiIconButton {
   readonly label = input.required<string>();

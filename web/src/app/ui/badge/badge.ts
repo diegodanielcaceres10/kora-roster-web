@@ -17,7 +17,8 @@ const TONES: Record<BadgeTone, string> = {
   selector: 'ui-badge',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'inline-block' },
-  template: `<span [class]="classes()"><ng-content /></span>`,
+  templateUrl: './badge.html',
+  styleUrl: './badge.css',
 })
 export class UiBadge {
   readonly tone = input<BadgeTone>('neutral');

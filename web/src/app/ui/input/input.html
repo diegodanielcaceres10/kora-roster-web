@@ -1,0 +1,25 @@
+<div class="flex items-end justify-between gap-2">
+  <label [attr.for]="fieldId" [class]="labelClass()">{{ label() }}</label>
+  @if (showCount() && maxLength()) {
+    <span
+      data-count
+      aria-hidden="true"
+      class="mb-1.5 font-mono text-[11px] font-bold tabular-nums text-ink-faint"
+      >{{ value().length }}/{{ maxLength() }}</span
+    >
+  }
+</div>
+<input
+  #field
+  [id]="fieldId"
+  [attr.type]="type()"
+  [attr.maxlength]="maxLength() ?? null"
+  [placeholder]="placeholder()"
+  [attr.aria-describedby]="hint() ? hintId : null"
+  [value]="value()"
+  (input)="onInput($event)"
+  [class]="fieldClass()"
+/>
+@if (hint()) {
+  <p [id]="hintId" class="mt-1.5 text-xs text-ink-muted">{{ hint() }}</p>
+}

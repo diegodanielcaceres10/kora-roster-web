@@ -1,0 +1,13 @@
+<div
+  role="status"
+  class="pointer-events-none fixed inset-x-0 bottom-0 z-50 flex justify-center px-4 pb-[calc(env(safe-area-inset-bottom)+1.25rem)]"
+>
+  @if (toast.message(); as text) {
+    <p
+      class="animate-toast inline-flex items-center gap-2.5 rounded-xl border border-canvas/15 bg-ink/95 px-5 py-3 text-sm font-semibold tracking-tight text-canvas shadow-2xl backdrop-blur-md dark:border-ink/20 dark:bg-surface dark:text-ink"
+    >
+      <ui-icon name="circle-check" class="text-primary" />
+      <span>{{ text }}</span>
+    </p>
+  }
+</div>

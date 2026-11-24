@@ -5,9 +5,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
   selector: 'ui-kbd',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'inline-flex' },
-  template: `<kbd
-    class="rounded-md border border-line bg-surface-muted px-1.5 py-0.5 font-mono text-[11px] font-bold uppercase leading-none text-ink-muted shadow-xs"
-    ><ng-content
-  /></kbd>`,
+  templateUrl: './kbd.html',
+  styleUrl: './kbd.css',
 })
 export class UiKbd {}

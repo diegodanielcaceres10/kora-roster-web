@@ -15,7 +15,8 @@ const SVG_OPEN =
     '[attr.data-icon]': 'name()',
     '[innerHTML]': 'markup()',
   },
-  template: '',
+  templateUrl: './icon.html',
+  styleUrl: './icon.css',
 })
 export class UiIcon {
   readonly name = input.required<IconName>();

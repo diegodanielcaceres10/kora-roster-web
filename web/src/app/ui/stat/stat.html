@@ -1,0 +1,18 @@
+<span
+  data-label
+  class="block font-mono text-[10px] font-bold uppercase tracking-wider text-ink-muted"
+>
+  {{ label() }}
+</span>
+<span
+  data-value
+  class="mt-1 block font-display text-2xl font-black leading-tight tabular-nums"
+  [class]="valueLook()"
+>
+  {{ value() }}
+</span>
+@if (note()) {
+  <span data-note class="mt-0.5 block font-mono text-[11px] font-bold" [class]="noteLook()">
+    {{ note() }}
+  </span>
+}

@@ -10,11 +10,8 @@ import { BUTTON_BASE, BUTTON_SIZES, BUTTON_VARIANTS } from '../button/button-sty
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterLink],
   host: { class: 'inline-block' },
-  template: `
-    <a [routerLink]="link()" [class]="classes()">
-      <ng-content />
-    </a>
-  `,
+  templateUrl: './button-link.html',
+  styleUrl: './button-link.css',
 })
 export class UiButtonLink {
   // Same as routerLink: a path or the list of its parts, for example ['/', 'es', 'friendly'].

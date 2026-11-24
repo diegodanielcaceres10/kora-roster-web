@@ -11,11 +11,8 @@ export type IconLinkVariant = 'default' | 'primary';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterLink],
   host: { class: 'inline-flex' },
-  template: `
-    <a [routerLink]="link()" [attr.aria-label]="label()" [class]="classes()">
-      <ng-content />
-    </a>
-  `,
+  templateUrl: './icon-link.html',
+  styleUrl: './icon-link.css',
 })
 export class UiIconLink {
   // Same as routerLink: a path or the list of its parts, for example ['/', 'es', 'account'].

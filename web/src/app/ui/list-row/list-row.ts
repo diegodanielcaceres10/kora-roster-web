@@ -15,11 +15,8 @@ import {
       'flex items-center gap-3 rounded-lg border border-transparent px-3 py-2.5 transition-colors duration-150 hover:border-line hover:bg-surface-muted',
     '[class]': 'stateClasses()',
   },
-  template: `
-    <div class="shrink-0"><ng-content select="[row-start]" /></div>
-    <div class="min-w-0 flex-1"><ng-content /></div>
-    <div class="flex shrink-0 items-center gap-1.5"><ng-content select="[row-end]" /></div>
-  `,
+  templateUrl: './list-row.html',
+  styleUrl: './list-row.css',
 })
 export class UiListRow {
   readonly highlight = input(false);
