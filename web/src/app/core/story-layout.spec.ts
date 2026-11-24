@@ -151,6 +151,28 @@ describe('layoutStory', () => {
       const firstPlayer = teamTexts(layout, 0, 'player')[0];
       expect(firstPlayer.text).toBe('1-');
     });
+
+    it('does not truncate normal player names in team 2 with an ellipsis', () => {
+      const layout = layoutStory(
+        input([
+          team(0, 8),
+          {
+            title: 'Equipo 2',
+            color: '#1e88e5',
+            players: [
+              { name: 'N. Romero', isGoalkeeper: true },
+              { name: 'F. Torres', isGoalkeeper: false },
+            ],
+          },
+        ]),
+        measure,
+      );
+      const team2Names = teamTexts(layout, 1, 'player').filter(
+        (t) => t.text.includes('Romero') || t.text.includes('Torres'),
+      );
+      expect(team2Names[0].text).toBe('N. Romero');
+      expect(team2Names[1].text).toBe('F. Torres');
+    });
   });
 
   describe('header and footer', () => {
