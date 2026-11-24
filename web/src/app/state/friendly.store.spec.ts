@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { Auth } from '../auth/auth';
+import { makeCredential, provideFakeGoogle } from '../auth/testing';
 import { drawTeams } from '../core/draw-teams';
 import { DEFAULT_TEAM_ICONS } from '../core/format-teams';
 import { I18n } from '../i18n/i18n';
@@ -294,6 +295,127 @@ describe('FriendlyStore', () => {
       expect(store.players()).toEqual([]);
       expect(store.teams()).toBeNull();
       expect(store.whatsappText()).toBe('');
+    });
+  });
+
+  describe('when the person signs out', () => {
+    beforeEach(() => localStorage.clear());
+    afterEach(() => localStorage.clear());
+
+    // Everybody here signed in first, because the review and the editing of the teams need an
+    // account. The effects that watch the session run when the app ticks.
+    async function signOut(auth = TestBed.inject(Auth)) {
+      await auth.signOut();
+      TestBed.tick();
+    }
+
+    function expectEmpty(store: ReturnType<typeof setup>['store']) {
+      expect(store.step()).toBe('paste');
+      expect(store.rawText()).toBe('');
+      expect(store.players()).toEqual([]);
+      expect(store.teams()).toBeNull();
+      expect(store.pool()).toEqual([]);
+      expect(store.confirmed()).toBe(false);
+      expect(store.whatsappText()).toBe('');
+    }
+
+    it('cleans the pasted list', async () => {
+      saveSession();
+      const { store } = setup();
+      TestBed.tick();
+      store.setRawText(list(12));
+      await signOut();
+      expectEmpty(store);
+    });
+
+    it('goes back to the first step from the review of the list, with its edits gone', async () => {
+      saveSession();
+      const { store } = inPreview(list(12));
+      TestBed.tick();
+      store.removePlayer(store.players()[0].id);
+      await signOut();
+      expectEmpty(store);
+    });
+
+    it('goes back to the first step from the teams that are being edited', async () => {
+      saveSession();
+      const { store } = inPreview(list(12));
+      TestBed.tick();
+      store.draw(seeded(1));
+      expect(store.step()).toBe('result');
+      await signOut();
+      expectEmpty(store);
+    });
+
+    it('goes back to the first step from the teams that are being built by hand', async () => {
+      saveSession();
+      const { store } = inPreview(list(12));
+      TestBed.tick();
+      store.startManual();
+      expect(store.pool().length).toBe(12);
+      await signOut();
+      expectEmpty(store);
+    });
+
+    it('goes back to the first step from the confirmed teams', async () => {
+      saveSession();
+      const { store } = inPreview(list(12));
+      TestBed.tick();
+      store.draw(seeded(1));
+      store.confirm();
+      expect(store.confirmed()).toBe(true);
+      await signOut();
+      expectEmpty(store);
+    });
+
+    it('forgets the number of teams the person picked', async () => {
+      saveSession();
+      const { store } = inPreview(list(15));
+      TestBed.tick();
+      store.setTeamCount(3);
+      expect(store.teamCount()).toBe(3);
+      await signOut();
+      expect(store.teamCount()).toBe(2);
+    });
+
+    it('lets the next person start from an empty tool, with a list of their own', async () => {
+      saveSession();
+      const { store } = inPreview(list(12));
+      TestBed.tick();
+      await signOut();
+      store.setRawText('Ana\nBea');
+      store.continueToPreview();
+      expect(store.players().map((p) => p.name)).toEqual(['Ana', 'Bea']);
+      expect(store.step()).toBe('preview');
+    });
+
+    it('does not touch the list of somebody who was never signed in', () => {
+      const { store } = setup();
+      TestBed.tick();
+      store.setRawText(list(12));
+      store.continueToPreview();
+      store.draw(seeded(1));
+      store.confirm();
+      TestBed.tick();
+      expect(store.step()).toBe('result');
+      expect(store.confirmed()).toBe(true);
+      expect(store.players()).toHaveLength(12);
+    });
+
+    it('does not touch the list of somebody who signs in', async () => {
+      const { fake, providers } = provideFakeGoogle();
+      TestBed.configureTestingModule({ providers });
+      const auth = TestBed.inject(Auth);
+      const { store } = setup();
+      TestBed.tick();
+      store.setRawText(list(12));
+      store.continueToPreview();
+      await auth.renderButton(document.createElement('div'));
+      fake.pick(makeCredential());
+      TestBed.tick();
+      expect(auth.user()).not.toBeNull();
+      expect(store.step()).toBe('preview');
+      expect(store.players()).toHaveLength(12);
     });
   });
 

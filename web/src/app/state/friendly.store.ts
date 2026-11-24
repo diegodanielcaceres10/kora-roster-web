@@ -1,5 +1,13 @@
-import { computed, inject } from '@angular/core';
-import { patchState, signalStore, withComputed, withMethods, withState } from '@ngrx/signals';
+import { computed, effect, inject } from '@angular/core';
+import {
+  patchState,
+  signalStore,
+  withComputed,
+  withHooks,
+  withMethods,
+  withState,
+} from '@ngrx/signals';
+import { Auth } from '../auth/auth';
 import {
   checkPlayerCount,
   completeTeams,
@@ -301,5 +309,19 @@ export const FriendlyStore = signalStore(
         patchState(store, initialState);
       },
     };
+  }),
+  withHooks({
+    onInit(store) {
+      const auth = inject(Auth);
+      let wasSignedIn = auth.user() !== null;
+      // Reviewing the list and editing the teams are for people with an account, so when the
+      // session ends nothing of it stays: the list, the teams and the step go away, and the
+      // next person starts from the first step. Signing in keeps whatever was pasted.
+      effect(() => {
+        const signedIn = auth.user() !== null;
+        if (wasSignedIn && !signedIn) store.reset();
+        wasSignedIn = signedIn;
+      });
+    },
   }),
 );
