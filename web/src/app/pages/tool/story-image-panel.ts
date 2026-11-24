@@ -150,7 +150,8 @@ export class StoryImagePanel {
 
   protected download(): void {
     const made = this.image();
-    if (made) this.delivery.download(made.url, made.name);
+    // The name carries the moment of the click, so every download gets its own.
+    if (made) this.delivery.download(made.url, storyFileName(new Date()));
   }
 
   protected async share(): Promise<void> {

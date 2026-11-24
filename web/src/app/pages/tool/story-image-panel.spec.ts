@@ -208,6 +208,36 @@ describe('StoryImagePanel', () => {
     });
 
     describe('downloading', () => {
+      afterEach(() => vi.useRealTimers());
+
+      it('names the file with the moment of the click, not the moment the image was made', async () => {
+        vi.useFakeTimers({ toFake: ['Date'] });
+        vi.setSystemTime(new Date(2026, 10, 24, 9, 0, 0));
+        const { created, press, delivery } = setup({ signedIn: true });
+        await created();
+        vi.setSystemTime(new Date(2026, 10, 24, 9, 15, 42));
+        press(T.result.download);
+        expect(delivery.download).toHaveBeenCalledWith(
+          'blob:story-1',
+          'kora-roster-2026-11-24-09-15-42.png',
+        );
+      });
+
+      it('gives each download the name of its own click', async () => {
+        vi.useFakeTimers({ toFake: ['Date'] });
+        vi.setSystemTime(new Date(2026, 10, 24, 9, 0, 0));
+        const { created, press, delivery } = setup({ signedIn: true });
+        await created();
+        vi.setSystemTime(new Date(2026, 10, 24, 9, 1, 5));
+        press(T.result.download);
+        vi.setSystemTime(new Date(2026, 10, 24, 9, 1, 9));
+        press(T.result.download);
+        expect(vi.mocked(delivery.download).mock.calls.map((call) => call[1])).toEqual([
+          'kora-roster-2026-11-24-09-01-05.png',
+          'kora-roster-2026-11-24-09-01-09.png',
+        ]);
+      });
+
       it('hands the image and its file name to the browser', async () => {
         const { created, press, delivery } = setup({ signedIn: true });
         await created();
