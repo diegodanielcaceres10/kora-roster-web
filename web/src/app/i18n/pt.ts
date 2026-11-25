@@ -158,6 +158,7 @@ export const pt: Dictionary = {
       },
     },
     teamTitle: (n) => `Time ${n}`,
+    playerName: (n) => `Jogador ${n}`,
     paste: {
       reviewSignIn: 'Entre para revisar a lista e editar os times.',
       detected: (n) => (n === 1 ? '1 jogador detectado' : `${n} jogadores detectados`),

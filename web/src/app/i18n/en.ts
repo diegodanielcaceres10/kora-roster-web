@@ -155,6 +155,8 @@ export const en = {
       },
     },
     teamTitle: (n: number) => `Team ${n}`,
+    // The examples of the app use numbered players, never real names.
+    playerName: (n: number) => `Player ${n}`,
     paste: {
       reviewSignIn: 'Sign in to review the list and edit the teams.',
       detected: (n: number) => (n === 1 ? '1 player detected' : `${n} players detected`),

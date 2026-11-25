@@ -22,17 +22,14 @@ import {
   UiSegmented,
 } from '../../ui';
 
-const SAMPLE_NAMES = [
-  ['Diego', 'Mati', 'Nico'],
-  ['Fede', 'Lucho', 'Santi'],
-  ['Gonza', 'Tomi', 'Ale'],
-  ['Joaco', 'Bruno', 'Axel'],
-  ['Lauti', 'Thiago', 'Ian'],
-  ['Maxi', 'Tano', 'Facu'],
-];
-const SAMPLE_TEAMS = SAMPLE_NAMES.map((names) =>
-  names.map((name, i) => ({ name, isGoalkeeper: i === 0 })),
-);
+// Three numbered players for each of the six teams, the first one in goal.
+const sampleTeamsOf = (name: (n: number) => string) =>
+  Array.from({ length: 6 }, (_, team) =>
+    Array.from({ length: 3 }, (_, i) => ({
+      name: name(team * 3 + i + 1),
+      isGoalkeeper: i === 0,
+    })),
+  );
 
 const NUMBERINGS: readonly Numbering[] = ['dot', 'paren', 'dash', 'none'];
 const HEX_COLOR = /^#[0-9a-f]{6}$/i;
@@ -117,7 +114,8 @@ export class PreferencesEditor {
     const styles = teams
       .slice(0, teamCount)
       .map((team, i) => ({ icon: team.icon, title: this.teamTitle(i) }));
-    return formatTeamsForWhatsApp(SAMPLE_TEAMS.slice(0, teamCount), styles, {
+    const sample = sampleTeamsOf(this.i18n.t().tool.playerName);
+    return formatTeamsForWhatsApp(sample.slice(0, teamCount), styles, {
       header,
       footer,
       numbering,

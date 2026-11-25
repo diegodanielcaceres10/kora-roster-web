@@ -219,7 +219,15 @@ describe('PreferencesEditor', () => {
           (line) =>
             line && !line.includes(T.tool.teamTitle(1)) && !line.includes(T.tool.teamTitle(2)),
         );
-      expect(playerLines).toEqual(['Diego 🧤', 'Mati', 'Nico', 'Fede 🧤', 'Lucho', 'Santi']);
+      const player = T.tool.playerName;
+      expect(playerLines).toEqual([
+        `${player(1)} 🧤`,
+        player(2),
+        player(3),
+        `${player(4)} 🧤`,
+        player(5),
+        player(6),
+      ]);
     });
 
     it('follows the icon of each team', () => {

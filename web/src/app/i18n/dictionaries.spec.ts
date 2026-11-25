@@ -72,6 +72,15 @@ describe('dictionaries', () => {
       expect(DICTIONARIES[lang].tool.teamTitle(2)).toBe(title);
     });
 
+    // The examples of the app have no real names: a numbered player in the language of the page.
+    it.each([
+      ['en', 'Player 7'],
+      ['es', 'Jugador 7'],
+      ['pt', 'Jogador 7'],
+    ] as const)('names the seventh player of an example in %s', (lang, name) => {
+      expect(DICTIONARIES[lang].tool.playerName(7)).toBe(name);
+    });
+
     it.each([
       ['en', 'Edit Diego', 'Remove Diego'],
       ['es', 'Editar a Diego', 'Quitar a Diego'],

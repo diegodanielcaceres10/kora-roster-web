@@ -98,9 +98,24 @@ describe('Landing', () => {
       }
       const all = [...names(a), ...names(b)].sort();
       expect(new Set(all).size).toBe(10);
-      expect(all).toContain('Nico');
-      expect(all).toContain('Tomi');
+      expect(all).toContain(DICTIONARIES.es.tool.playerName(1));
+      expect(all).toContain(DICTIONARIES.es.tool.playerName(5));
     });
+
+    it.each(LANGS)(
+      'uses numbered players in the language of the page, never real names in %s',
+      (lang) => {
+        const el = demo(lang);
+        const { playerName } = DICTIONARIES[lang].tool;
+        const pasted = Array.from(el.querySelectorAll('ol li')).map((li) => text(li));
+        expect(pasted).toHaveLength(10);
+        pasted.forEach((line, i) => expect(line).toContain(playerName(i + 1)));
+        const shown = teams(el).flatMap(names);
+        expect(shown.sort()).toEqual(
+          Array.from({ length: 10 }, (_, i) => playerName(i + 1)).sort(),
+        );
+      },
+    );
 
     it('names the teams like the tool does', () => {
       const el = demo();

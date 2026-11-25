@@ -159,6 +159,7 @@ export const es: Dictionary = {
       },
     },
     teamTitle: (n) => `Equipo ${n}`,
+    playerName: (n) => `Jugador ${n}`,
     paste: {
       reviewSignIn: 'Inicia sesión para revisar la lista y editar los equipos.',
       detected: (n) => (n === 1 ? '1 jugador detectado' : `${n} jugadores detectados`),

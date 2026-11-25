@@ -3,7 +3,7 @@ export interface ParsedPlayerName {
   isGoalkeeper: boolean;
 }
 
-// List markers: "1.", "1)", "1 -", "1:", a bare number followed by a space ("1 Pelle", as a chat
+// List markers: "1.", "1)", "1 -", "1:", a bare number followed by a space ("1 Jugador", as a chat
 // copies it), keycap digits, the keycap ten, or a bullet.
 // A separator followed by a digit is not a marker ("21:30", "1.5"), a number that is alone on its
 // line is the text, and a "*" only counts as a bullet when whitespace or the end of the line

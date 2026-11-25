@@ -48,12 +48,12 @@ describe('parsePastedNames', () => {
   });
 
   it.each([
-    ['1 Pelle', 'Pelle'],
-    ['10 Diego', 'Diego'],
-    ['16 Alejandro Osio', 'Alejandro Osio'],
-    ['7   Angel', 'Angel'],
-    ['5\tDiego C', 'Diego C'],
-    ['  12 Gian  ', 'Gian'],
+    ['1 Jugador 1', 'Jugador 1'],
+    ['10 Jugador 10', 'Jugador 10'],
+    ['16 Jugador 16 B', 'Jugador 16 B'],
+    ['7   Jugador 7', 'Jugador 7'],
+    ['5\tJugador 5 C', 'Jugador 5 C'],
+    ['  12 Jugador 12  ', 'Jugador 12'],
   ])('strips a number followed only by a space: %j', (input, expected) => {
     expect(names(input)).toEqual([expected]);
   });
@@ -70,55 +70,55 @@ describe('parsePastedNames', () => {
   });
 
   it('keeps the emojis after the name when the number is removed', () => {
-    expect(names('8 nacho mdq ⚽❤️⚽\n9 Ivan G 💙💛\n10 brian 💙💛💙')).toEqual([
-      'nacho mdq ⚽❤️⚽',
-      'Ivan G 💙💛',
-      'brian 💙💛💙',
+    expect(names('8 Jugador 8 ⚽❤️⚽\n9 Jugador 9 💙💛\n10 Jugador 10 💙💛💙')).toEqual([
+      'Jugador 8 ⚽❤️⚽',
+      'Jugador 9 💙💛',
+      'Jugador 10 💙💛💙',
     ]);
   });
 
   it('cleans a list numbered with a bare number, as it is copied from a chat', () => {
     const raw = [
-      '1 Pelle',
-      '2 Kike',
-      '3 Luis ',
-      '4 Nico ',
-      '5 Diego C',
-      '6 Claudio ',
-      '7 Angel ',
-      '8 nacho mdq ⚽❤️⚽',
-      '9 Ivan G 💙💛',
-      '10 brian 💙💛💙',
-      '11 chino',
-      '12 Gian ',
-      '13 juan Nicolas',
-      '14 brandon',
-      '15 Mati N',
-      '16 Alejandro Osio',
+      '1 Jugador 1',
+      '2 Jugador 2',
+      '3 Jugador 3 ',
+      '4 Jugador 4 ',
+      '5 Jugador 5 C',
+      '6 Jugador 6 ',
+      '7 Jugador 7 ',
+      '8 Jugador 8 ⚽❤️⚽',
+      '9 Jugador 9 💙💛',
+      '10 Jugador 10 💙💛💙',
+      '11 Jugador 11',
+      '12 Jugador 12 ',
+      '13 jugador 13',
+      '14 Jugador 14',
+      '15 Jugador 15 D',
+      '16 Jugador 16 Apellido',
     ].join('\n');
     expect(names(raw)).toEqual([
-      'Pelle',
-      'Kike',
-      'Luis',
-      'Nico',
-      'Diego C',
-      'Claudio',
-      'Angel',
-      'nacho mdq ⚽❤️⚽',
-      'Ivan G 💙💛',
-      'brian 💙💛💙',
-      'chino',
-      'Gian',
-      'juan Nicolas',
-      'brandon',
-      'Mati N',
-      'Alejandro Osio',
+      'Jugador 1',
+      'Jugador 2',
+      'Jugador 3',
+      'Jugador 4',
+      'Jugador 5 C',
+      'Jugador 6',
+      'Jugador 7',
+      'Jugador 8 ⚽❤️⚽',
+      'Jugador 9 💙💛',
+      'Jugador 10 💙💛💙',
+      'Jugador 11',
+      'Jugador 12',
+      'jugador 13',
+      'Jugador 14',
+      'Jugador 15 D',
+      'Jugador 16 Apellido',
     ]);
   });
 
   it('still flags the goalkeeper when the line starts with a bare number', () => {
-    expect(keepers('1 Pelle (arquero)\n2 Kike')).toEqual(['Pelle']);
-    expect(keepers('1 🧤 Pelle\n2 Kike')).toEqual(['Pelle']);
+    expect(keepers('1 Jugador 1 (arquero)\n2 Jugador 2')).toEqual(['Jugador 1']);
+    expect(keepers('1 🧤 Jugador 1\n2 Jugador 2')).toEqual(['Jugador 1']);
   });
 
   it('splits on new lines, commas and semicolons', () => {
