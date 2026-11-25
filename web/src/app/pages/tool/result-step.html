@@ -142,7 +142,7 @@
               </ul>
             }
 
-            <ui-button variant="outline" [disabled]="pool().length === 0" (click)="drawRemaining()">
+            <ui-button stretch variant="outline" [disabled]="pool().length === 0" (click)="drawRemaining()">
               <ui-icon name="refresh" />
               {{ t().result.drawRemaining }}
             </ui-button>
@@ -163,19 +163,19 @@
           <h3 class="font-mono text-[11px] font-bold uppercase tracking-wider text-ink-muted">
             {{ t().result.toolsTitle }}
           </h3>
-          <div class="grid grid-cols-2 gap-2 lg:grid-cols-1">
-            <ui-button variant="outline" (click)="store.draw()">
+          <div class="flex flex-col gap-2">
+            <ui-button stretch variant="outline" (click)="store.draw()">
               <ui-icon name="arrows-shuffle" class="text-amber-700 dark:text-primary" />
               <span class="flex-1 text-left">{{ t().result.redraw }}</span>
-              <span class="hidden font-mono text-[10px] font-bold text-ink-faint sm:inline">
+              <span class="font-mono text-[10px] font-bold uppercase text-ink-faint">
                 {{ t().result.redrawNote }}
               </span>
             </ui-button>
             @if (manual()) {
-              <ui-button variant="outline" [disabled]="allWaiting()" (click)="clearTeams()">
-                <ui-icon name="user-minus" class="text-red-600 dark:text-red-300" />
+              <ui-button stretch variant="outline" [disabled]="allWaiting()" (click)="clearTeams()">
+                <ui-icon name="alert-circle" class="text-red-600 dark:text-red-300" />
                 <span class="flex-1 text-left">{{ t().result.clearTeams }}</span>
-                <span class="hidden font-mono text-[10px] font-bold text-ink-faint sm:inline">
+                <span class="font-mono text-[10px] font-bold uppercase text-ink-faint">
                   {{ t().result.clearNote }}
                 </span>
               </ui-button>
@@ -290,9 +290,9 @@
       </div>
 
       <div class="space-y-3 lg:col-span-4 lg:col-start-1 lg:row-start-2">
-        <ui-button size="lg" [disabled]="!store.isComplete()" (click)="confirm()">
-          <ui-icon name="check" />
+        <ui-button stretch size="lg" [disabled]="!store.isComplete()" (click)="confirm()">
           {{ t().result.confirm }}
+          <ui-icon name="check" class="ml-auto" />
         </ui-button>
         @if (!store.isComplete()) {
           <p data-confirm-hint class="flex items-start justify-center gap-1.5 text-center text-xs text-ink-muted">
@@ -300,7 +300,7 @@
             {{ t().result.confirmLocked(pool().length) }}
           </p>
         }
-        <ui-button size="sm" variant="ghost" (click)="store.back()">
+        <ui-button stretch size="sm" variant="ghost" font="mono" (click)="store.back()">
           <ui-icon name="arrow-left" />
           {{ t().result.backToReview }}
         </ui-button>
