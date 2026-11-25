@@ -1,7 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { UiIcon } from '../icon/icon';
-import { ButtonSize, ButtonVariant, UiButton } from './button';
+import { ButtonFont, ButtonSize, ButtonVariant, UiButton } from './button';
 
 @Component({
   imports: [UiButton, UiIcon],
@@ -9,6 +9,8 @@ import { ButtonSize, ButtonVariant, UiButton } from './button';
     <ui-button
       [variant]="variant()"
       [size]="size()"
+      [font]="font()"
+      [stretch]="stretch()"
       [describedBy]="describedBy()"
       [type]="type()"
       [disabled]="disabled()"
@@ -22,6 +24,8 @@ import { ButtonSize, ButtonVariant, UiButton } from './button';
 class Host {
   readonly variant = signal<ButtonVariant>('primary');
   readonly size = signal<ButtonSize>('md');
+  readonly font = signal<ButtonFont>('display');
+  readonly stretch = signal(false);
   readonly describedBy = signal<string | undefined>(undefined);
   readonly type = signal<'button' | 'submit'>('button');
   readonly disabled = signal(false);
@@ -119,5 +123,21 @@ describe('UiButton', () => {
     expect(button().hasAttribute('aria-label')).toBe(false);
     update((h) => h.ariaLabel.set('Sortear equipos'));
     expect(button().getAttribute('aria-label')).toBe('Sortear equipos');
+  });
+
+  it('switches between display and mono fonts', () => {
+    const { button, update } = setup();
+    expect(button().className).toContain('font-display');
+    update((h) => h.font.set('mono'));
+    expect(button().className).toContain('font-mono');
+  });
+
+  it('stretches to full width when requested', () => {
+    const { fixture, update } = setup();
+    const hostEl = fixture.nativeElement.querySelector('ui-button') as HTMLElement;
+    expect(hostEl.className).toContain('inline-block');
+    update((h) => h.stretch.set(true));
+    expect(hostEl.className).toContain('block');
+    expect(hostEl.className).toContain('w-full');
   });
 });

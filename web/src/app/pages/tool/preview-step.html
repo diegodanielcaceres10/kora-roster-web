@@ -175,33 +175,32 @@
       </div>
     </ui-card>
 
-    <ui-card>
-      <div class="space-y-3">
-        <ui-button size="lg" [disabled]="!store.canDraw()" (click)="store.draw()">
-          <ui-icon name="bolt" />
-          {{ t().preview.drawTeams }}
-          <ui-icon name="arrow-right" class="ml-auto" />
-        </ui-button>
-        <ui-button
-          size="lg"
-          variant="outline"
-          [disabled]="!store.canDraw()"
-          (click)="continueByHand()"
-        >
-          {{ t().preview.continue }}
-          <ui-icon [name]="manualLocked() ? 'lock' : 'arrow-right'" />
-        </ui-button>
-        <div data-manual-notice>
-          <app-lock-notice
-            [reason]="manualNotice()?.reason ?? null"
-            [message]="manualNotice()?.message ?? null"
-          />
-        </div>
-        <ui-button size="sm" variant="ghost" (click)="store.back()">
-          <ui-icon name="arrow-left" />
-          {{ t().preview.backToList }}
-        </ui-button>
+    <div class="space-y-3">
+      <ui-button stretch size="lg" [disabled]="!store.canDraw()" (click)="store.draw()">
+        <ui-icon name="bolt" />
+        {{ t().preview.drawTeams }}
+        <ui-icon name="arrow-right" class="ml-auto" />
+      </ui-button>
+      <ui-button
+        stretch
+        size="lg"
+        variant="outline"
+        [disabled]="!store.canDraw()"
+        (click)="continueByHand()"
+      >
+        {{ t().preview.continue }}
+        <ui-icon [name]="manualLocked() ? 'lock' : 'arrow-right'" />
+      </ui-button>
+      <div data-manual-notice>
+        <app-lock-notice
+          [reason]="manualNotice()?.reason ?? null"
+          [message]="manualNotice()?.message ?? null"
+        />
       </div>
-    </ui-card>
+      <ui-button stretch size="sm" variant="ghost" font="mono" (click)="store.back()">
+        <ui-icon name="arrow-left" />
+        {{ t().preview.backToList }}
+      </ui-button>
+    </div>
   </aside>
 </section>
