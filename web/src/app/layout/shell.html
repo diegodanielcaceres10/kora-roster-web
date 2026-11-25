@@ -4,17 +4,9 @@
   >
     <a
       [routerLink]="['/', i18n.lang()]"
-      class="group inline-flex items-center gap-2.5 rounded-lg text-ink transition hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
+      class="group inline-flex rounded-lg text-ink transition hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
     >
-      <img
-        src="favicon.png"
-        alt=""
-        width="32"
-        height="32"
-        class="size-8 transition group-hover:scale-105"
-      />
-      <span class="font-display text-xl font-black uppercase tracking-tight">Kora</span>
-      <ui-badge tone="primary">Roster</ui-badge>
+      <ui-logo />
     </a>
     <div class="flex items-center gap-2">
       <app-theme-toggle />
@@ -51,11 +43,7 @@
     class="mx-auto max-w-6xl rounded-2xl border border-line bg-surface p-5 shadow-xs sm:p-6"
   >
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
-      <div class="inline-flex items-center gap-2.5 text-ink">
-        <img src="favicon.png" alt="" width="32" height="32" class="size-8" />
-        <span class="font-display text-xl font-black uppercase tracking-tight">Kora</span>
-        <ui-badge tone="primary">Roster</ui-badge>
-      </div>
+      <ui-logo />
       <p class="text-sm text-ink-muted">{{ i18n.t().footer.tagline }}</p>
     </div>
     <div

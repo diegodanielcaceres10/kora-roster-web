@@ -53,6 +53,26 @@ describe('Shell', () => {
     expect(logo.textContent).toContain('Roster');
   });
 
+  it('uses the shared logo in the header, inside the link to the landing', () => {
+    const el = setup('en');
+    expect(el.querySelector('header a > ui-logo')).not.toBeNull();
+    expect(el.querySelectorAll('header ui-logo')).toHaveLength(1);
+  });
+
+  it('uses the same shared logo in the footer, without a link around it', () => {
+    const el = setup('en');
+    expect(el.querySelectorAll('footer ui-logo')).toHaveLength(1);
+    expect(el.querySelector('footer a > ui-logo')).toBeNull();
+  });
+
+  it('has no copy of the logo markup in the shell, only the shared component', () => {
+    const el = setup('en');
+    expect(el.querySelectorAll('img[src="favicon.png"]')).toHaveLength(2);
+    for (const image of Array.from(el.querySelectorAll('img[src="favicon.png"]'))) {
+      expect(image.closest('ui-logo')).not.toBeNull();
+    }
+  });
+
   it('puts the routed page inside the main area', () => {
     const el = setup('en');
     expect(el.querySelector('main router-outlet')).not.toBeNull();

@@ -49,6 +49,7 @@ export type TextRole =
   | 'header'
   | 'footer'
   | 'brand'
+  | 'wordmark'
   | 'title'
   | 'player'
   | 'matchday'
@@ -80,7 +81,17 @@ export interface TextCommand {
   align: 'left' | 'center' | 'right';
 }
 
-export type StoryCommand = RectCommand | TextCommand;
+// The mark of Kora. The picture itself is not part of the layout: whoever draws it brings it.
+export interface ImageCommand {
+  kind: 'image';
+  role: 'logo';
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+export type StoryCommand = RectCommand | TextCommand | ImageCommand;
 
 export interface StoryLayout {
   width: number;
@@ -93,6 +104,7 @@ interface ThemeTokens {
   bg: string;
   plate: { fill: string; stroke: string };
   brandPill: { fill: string; stroke: string; text: string };
+  wordmark: string;
   statusPill: { fill: string; text: string };
   infoCard: { fill: string; stroke: string; text: string; icon: string };
   matchdayCard: { fill: string; stroke: string; label: string; text: string };
@@ -108,6 +120,7 @@ const DARK_THEME: ThemeTokens = {
   bg: '#0a0d12',
   plate: { fill: '#10141b', stroke: '#1f2633' },
   brandPill: { fill: '#1a1811', stroke: '#f59e0b40', text: '#f59e0b' },
+  wordmark: '#f8fafc',
   statusPill: { fill: '#f59e0b', text: '#0a0d12' },
   infoCard: { fill: '#161b24', stroke: '#242c3b', text: '#e2e8f0', icon: '#f59e0b' },
   matchdayCard: { fill: '#161b24', stroke: '#242c3b', label: '#94a3b8', text: '#ffffff' },
@@ -123,6 +136,7 @@ const LIGHT_THEME: ThemeTokens = {
   bg: '#eef2f7',
   plate: { fill: '#ffffff', stroke: '#e2e8f0' },
   brandPill: { fill: '#fff8e6', stroke: '#fde68a', text: '#b45309' },
+  wordmark: '#0f172a',
   statusPill: { fill: '#f59e0b', text: '#ffffff' },
   infoCard: { fill: '#f8fafc', stroke: '#e2e8f0', text: '#1e293b', icon: '#b45309' },
   matchdayCard: { fill: '#f8fafc', stroke: '#e2e8f0', label: '#64748b', text: '#0f172a' },
@@ -136,7 +150,16 @@ const LIGHT_THEME: ThemeTokens = {
 
 const PLATE_MARGIN = 36;
 const PLATE_PADDING = 36;
-const BRAND_LABEL = 'KORA ROSTER';
+
+// The logo of the first row: the mark, the name and the Roster tag, all centered on the line
+// of the row. The tag is a little shorter than the row so it reads as a tag of the name.
+const WORDMARK = 'KORA';
+const WORDMARK_SIZE = 34;
+const TAG_LABEL = 'ROSTER';
+const TAG_SIZE = 18;
+const TAG_PAD_X = 18;
+const TAG_HEIGHT = 34;
+const LOGO_GAP = 14;
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
@@ -233,29 +256,53 @@ export function layoutStory(input: StoryInput, measure: Measure): StoryLayout {
     stroke: { color: theme.plate.stroke, width: 2 },
   });
 
-  // 1. Top row: Brand pill and Status pill
+  // 1. Top row: the logo at the left and the status pill at the right
   const pillSize = 24;
   const pillPadX = 24;
+  const rowCenter = startY + pillHeight / 2;
 
-  const brandWidth = measure(BRAND_LABEL, pillSize, 'bold') + 2 * pillPadX;
+  commands.push({
+    kind: 'image',
+    role: 'logo',
+    x: left,
+    y: startY,
+    width: pillHeight,
+    height: pillHeight,
+  });
+
+  const wordmarkX = left + pillHeight + LOGO_GAP;
+  commands.push({
+    kind: 'text',
+    role: 'wordmark',
+    x: wordmarkX,
+    y: rowCenter,
+    text: WORDMARK,
+    size: WORDMARK_SIZE,
+    weight: 'bold',
+    color: theme.wordmark,
+    align: 'left',
+  });
+
+  const tagX = wordmarkX + measure(WORDMARK, WORDMARK_SIZE, 'bold') + LOGO_GAP;
+  const tagWidth = measure(TAG_LABEL, TAG_SIZE, 'bold') + 2 * TAG_PAD_X;
   commands.push({
     kind: 'rect',
     role: 'brand-pill',
-    x: left,
-    y: startY,
-    width: brandWidth,
-    height: pillHeight,
-    radius: pillHeight / 2,
+    x: tagX,
+    y: rowCenter - TAG_HEIGHT / 2,
+    width: tagWidth,
+    height: TAG_HEIGHT,
+    radius: TAG_HEIGHT / 2,
     fill: theme.brandPill.fill,
     stroke: { color: theme.brandPill.stroke, width: 2 },
   });
   commands.push({
     kind: 'text',
     role: 'brand-pill',
-    x: left + brandWidth / 2,
-    y: startY + pillHeight / 2,
-    text: BRAND_LABEL,
-    size: pillSize,
+    x: tagX + tagWidth / 2,
+    y: rowCenter,
+    text: TAG_LABEL,
+    size: TAG_SIZE,
     weight: 'bold',
     color: theme.brandPill.text,
     align: 'center',

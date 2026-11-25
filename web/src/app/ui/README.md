@@ -170,6 +170,22 @@ A small label.
 
 - `tone`: `neutral` (default), `primary`, `alternative`, `danger`
 
+### `UiLogo` · `<ui-logo>`
+
+The logo of Kora: the mark, the name and the Roster tag, centered on one horizontal line.
+
+- No inputs. The names are the brand and read the same in every language, so this is the one
+  component with text of its own.
+- It has no link: wrap it in a link where it must go somewhere, as the header does. In a link
+  with the `group` class the mark grows a little on hover.
+- Use it wherever the brand appears instead of repeating the markup: the header and the footer
+  of the shell use it. The story image draws its own version, because a canvas cannot use HTML;
+  keep the order (mark, name, tag) in both.
+
+```html
+<a [routerLink]="['/', lang]" class="group"><ui-logo /></a>
+```
+
 ### `UiListRow` · `<ui-list-row>`
 
 One row of a list, with room for a number, content and actions.

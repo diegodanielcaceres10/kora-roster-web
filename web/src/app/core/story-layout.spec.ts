@@ -9,6 +9,7 @@ import {
   StoryTeam,
   TextCommand,
 } from './story-layout';
+import type { ImageCommand } from './story-layout';
 
 // A made-up font where every character is as wide as 55% of its size.
 const measure: Measure = (text, size) => text.length * size * 0.55;
@@ -40,6 +41,8 @@ const input = (list: StoryTeam[], extra: Partial<StoryInput> = {}): StoryInput =
   ...extra,
 });
 
+const images = (layout: StoryLayout, role: ImageCommand['role']) =>
+  layout.commands.filter((c): c is ImageCommand => c.kind === 'image' && c.role === role);
 const rects = (layout: StoryLayout, role: RectCommand['role']) =>
   layout.commands.filter((c): c is RectCommand => c.kind === 'rect' && c.role === role);
 const texts = (layout: StoryLayout, role: TextCommand['role']) =>
@@ -82,18 +85,8 @@ describe('layoutStory', () => {
 
   describe('the pills on top', () => {
     const pills = (layout: StoryLayout) => ({
-      brandRect: rects(layout, 'brand-pill')[0],
-      brandText: texts(layout, 'brand-pill')[0],
       statusRect: rects(layout, 'status-pill')[0],
       statusText: texts(layout, 'status-pill')[0],
-    });
-
-    it('has the brand at the left, in capitals', () => {
-      const { brandRect, brandText } = pills(layoutStory(input(teams(2, 7)), measure));
-      expect(brandText.text).toBe('KORA ROSTER');
-      expect(brandRect.x).toBe(INNER_LEFT);
-      expect(brandText.x).toBeCloseTo(brandRect.x + brandRect.width / 2, 5);
-      expect(brandText.align).toBe('center');
     });
 
     it('says what the teams are at the right: their size and that they are confirmed', () => {
@@ -110,6 +103,113 @@ describe('layoutStory', () => {
     it('leaves the pill out when there is nothing to say', () => {
       const layout = layoutStory(input([team(0, 0)], { confirmed: '  ' }), measure);
       expect(rects(layout, 'status-pill')).toHaveLength(0);
+    });
+  });
+
+  describe('the logo on top', () => {
+    const logo = (extra: Partial<StoryInput> = {}, list = teams(2, 7)) => {
+      const layout = layoutStory(input(list, extra), measure);
+      return {
+        layout,
+        mark: images(layout, 'logo')[0],
+        name: texts(layout, 'wordmark')[0],
+        tagRect: rects(layout, 'brand-pill')[0],
+        tagText: texts(layout, 'brand-pill')[0],
+        statusRect: rects(layout, 'status-pill')[0],
+      };
+    };
+
+    it('starts with the mark of Kora at the left of the first row, as tall as the row', () => {
+      const { mark, statusRect } = logo();
+      expect(mark.x).toBe(INNER_LEFT);
+      expect(mark.y).toBe(statusRect.y);
+      expect(mark.width).toBe(mark.height);
+      expect(mark.height).toBe(statusRect.height);
+    });
+
+    it('writes KORA right after the mark, in capitals and aligned to the left', () => {
+      const { mark, name } = logo();
+      expect(name.text).toBe('KORA');
+      expect(name.align).toBe('left');
+      expect(name.x).toBeGreaterThan(mark.x + mark.width);
+    });
+
+    it('puts the Roster tag after the name, as a pill with its text at the center', () => {
+      const { name, tagRect, tagText } = logo();
+      expect(tagText.text).toBe('ROSTER');
+      expect(tagRect.x).toBeGreaterThan(name.x + measure('KORA', name.size, name.weight));
+      expect(tagText.align).toBe('center');
+      expect(tagText.x).toBeCloseTo(tagRect.x + tagRect.width / 2, 5);
+      expect(tagRect.radius).toBe(tagRect.height / 2);
+    });
+
+    it('keeps the three on one horizontal center line', () => {
+      const { mark, name, tagRect, tagText } = logo();
+      const center = mark.y + mark.height / 2;
+      expect(name.y).toBeCloseTo(center, 5);
+      expect(tagRect.y + tagRect.height / 2).toBeCloseTo(center, 5);
+      expect(tagText.y).toBeCloseTo(center, 5);
+    });
+
+    it('makes the tag a little smaller than the row, so it reads as a tag of the name', () => {
+      const { mark, tagRect } = logo();
+      expect(tagRect.height).toBeLessThan(mark.height);
+    });
+
+    it('replaces the old pill that said KORA ROSTER', () => {
+      const { layout } = logo();
+      expect(texts(layout, 'brand-pill').map((t) => t.text)).toEqual(['ROSTER']);
+      expect(rects(layout, 'brand-pill')).toHaveLength(1);
+    });
+
+    it('does not run into the status pill at the right, even with a long text', () => {
+      const { tagRect, statusRect } = logo({ confirmed: 'EQUIPOS CONFIRMADOS PARA EL JUEVES' });
+      expect(tagRect.x + tagRect.width).toBeLessThan(statusRect.x);
+    });
+
+    it('stays at the same place whatever the header text, the numbering or the teams are', () => {
+      const base = logo();
+      const others = [
+        logo({ header: 'Thursday at 9' }),
+        logo({ numbering: 'none', footer: 'Bring water' }),
+        logo({}, teams(3, 7)),
+        logo({}, teams(4, 6)),
+      ];
+      for (const other of others) {
+        expect([other.mark.x, other.name.x, other.tagRect.x]).toEqual([
+          base.mark.x,
+          base.name.x,
+          base.tagRect.x,
+        ]);
+      }
+    });
+
+    it('is drawn for one team too', () => {
+      const { mark, name, tagText } = logo({}, [team(0, 6)]);
+      expect(mark).toBeDefined();
+      expect(name.text).toBe('KORA');
+      expect(tagText.text).toBe('ROSTER');
+    });
+
+    it('is drawn before the panels, on top of the plate', () => {
+      const { layout, mark } = logo();
+      const at = (command: unknown) => layout.commands.indexOf(command as never);
+      expect(at(mark)).toBeGreaterThan(at(rects(layout, 'plate')[0]));
+      expect(at(mark)).toBeLessThan(at(panels(layout)[0]));
+    });
+
+    it('takes the colors of the light and the dark theme', () => {
+      const light = logo();
+      const dark = logo({ theme: 'dark' });
+      expect(light.name.color).toBe('#0f172a');
+      expect(dark.name.color).toBe('#f8fafc');
+      expect(light.tagRect.fill).not.toBe(dark.tagRect.fill);
+      expect(light.tagText.color).not.toBe(dark.tagText.color);
+    });
+
+    it('leaves the empty story without a logo, as it has no content to frame', () => {
+      const layout = layoutStory(input([]), measure);
+      expect(images(layout, 'logo')).toHaveLength(0);
     });
   });
 

@@ -5,7 +5,7 @@ import { UserAvatar } from '../auth/user-avatar';
 import { I18n } from '../i18n/i18n';
 import { LanguageMenu } from '../i18n/language-menu';
 import { ThemeToggle } from '../theme/theme-toggle';
-import { UiBadge, UiIcon, UiIconLink } from '../ui';
+import { UiIcon, UiIconLink, UiLogo } from '../ui';
 
 @Component({
   selector: 'app-shell',
@@ -16,7 +16,7 @@ import { UiBadge, UiIcon, UiIconLink } from '../ui';
     LanguageMenu,
     ThemeToggle,
     UserAvatar,
-    UiBadge,
+    UiLogo,
     UiIcon,
     UiIconLink,
   ],

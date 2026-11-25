@@ -9,6 +9,7 @@ export { UiKbd } from './kbd/kbd';
 export { UiIconLink, type IconLinkVariant } from './icon-link/icon-link';
 export { UiInput } from './input/input';
 export { UiListRow } from './list-row/list-row';
+export { UiLogo } from './logo/logo';
 export { UiSegmented, type SegmentedOption } from './segmented/segmented';
 export { UiSelect, type SelectOption } from './select/select';
 export { UiTextarea } from './textarea/textarea';

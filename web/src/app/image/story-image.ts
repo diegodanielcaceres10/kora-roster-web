@@ -17,6 +17,30 @@ export const STORY_FONT =
 
 const fontOf = (size: number, weight: FontWeight) => `${weight} ${size}px ${STORY_FONT}`;
 
+// The mark of Kora is the favicon of the site, the same picture as the one in the header.
+export const LOGO_URL = 'favicon.png';
+// The logo is decoration: the image is made without it rather than waiting for it for ever.
+const LOGO_TIMEOUT_MS = 3000;
+
+export function loadStoryLogo(
+  makeImage: () => HTMLImageElement = () => new Image(),
+  url: string = LOGO_URL,
+): Promise<CanvasImageSource | null> {
+  return new Promise((resolve) => {
+    const image = makeImage();
+    const timer = setTimeout(() => resolve(null), LOGO_TIMEOUT_MS);
+    image.onload = () => {
+      clearTimeout(timer);
+      resolve(image);
+    };
+    image.onerror = () => {
+      clearTimeout(timer);
+      resolve(null);
+    };
+    image.src = url;
+  });
+}
+
 export function canvasMeasure(ctx: CanvasRenderingContext2D): Measure {
   return (text, size, weight) => {
     ctx.font = fontOf(size, weight);
@@ -51,13 +75,19 @@ function fillRoundedRect(
   }
 }
 
-export function drawStory(ctx: CanvasRenderingContext2D, layout: StoryLayout): void {
+export function drawStory(
+  ctx: CanvasRenderingContext2D,
+  layout: StoryLayout,
+  logo?: CanvasImageSource | null,
+): void {
   ctx.fillStyle = layout.background;
   ctx.fillRect(0, 0, layout.width, layout.height);
   ctx.textBaseline = 'middle';
   for (const command of layout.commands) {
     if (command.kind === 'rect') {
       fillRoundedRect(ctx, command);
+    } else if (command.kind === 'image') {
+      if (logo) ctx.drawImage(logo, command.x, command.y, command.width, command.height);
     } else {
       ctx.font = fontOf(command.size, command.weight);
       ctx.fillStyle = command.color;
@@ -67,16 +97,19 @@ export function drawStory(ctx: CanvasRenderingContext2D, layout: StoryLayout): v
   }
 }
 
-export function createStoryBlob(
+export async function createStoryBlob(
   input: StoryInput,
   createCanvas: () => HTMLCanvasElement = () => document.createElement('canvas'),
+  loadLogo: () => Promise<CanvasImageSource | null> = () => loadStoryLogo(),
 ): Promise<Blob> {
   const canvas = createCanvas();
   canvas.width = STORY_WIDTH;
   canvas.height = STORY_HEIGHT;
   const ctx = canvas.getContext('2d');
-  if (!ctx) return Promise.reject(new Error('The 2D canvas is not available in this browser'));
-  drawStory(ctx, layoutStory(input, canvasMeasure(ctx)));
+  if (!ctx) throw new Error('The 2D canvas is not available in this browser');
+  // Without the logo the image is still worth making, so a failure to load it is not an error.
+  const logo = await loadLogo().catch(() => null);
+  drawStory(ctx, layoutStory(input, canvasMeasure(ctx)), logo);
   return new Promise((resolve, reject) =>
     canvas.toBlob(
       (blob) =>
