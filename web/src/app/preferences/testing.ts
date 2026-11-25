@@ -4,7 +4,7 @@ import { Preferences } from './preferences';
 
 export const TEST_ACCOUNT = {
   id: '1122334455',
-  name: 'Diego Cáceres',
+  name: 'Diego Daniel Caceres',
   email: 'diego@example.com',
   picture: '',
 };

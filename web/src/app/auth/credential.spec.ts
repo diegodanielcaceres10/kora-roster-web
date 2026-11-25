@@ -21,7 +21,7 @@ const validPayload = {
   aud: CLIENT_ID,
   exp: IN_ONE_HOUR,
   sub: '1122334455',
-  name: 'Diego Cáceres',
+  name: 'Diego Daniel Caceres',
   email: 'diego@example.com',
   picture: 'https://lh3.googleusercontent.com/a/photo=s96-c',
 };
@@ -55,7 +55,7 @@ describe('claimsToUser', () => {
   it('builds the user from a valid token', () => {
     expect(user(validPayload)).toEqual({
       id: '1122334455',
-      name: 'Diego Cáceres',
+      name: 'Diego Daniel Caceres',
       email: 'diego@example.com',
       picture: 'https://lh3.googleusercontent.com/a/photo=s96-c',
     });

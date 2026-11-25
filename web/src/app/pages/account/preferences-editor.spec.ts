@@ -12,7 +12,7 @@ const T = DICTIONARIES.es;
 const P = T.preferences;
 const USER = {
   id: '1122334455',
-  name: 'Diego Cáceres',
+  name: 'Diego Daniel Caceres',
   email: 'diego@example.com',
   picture: 'https://lh3.googleusercontent.com/a/photo=s96-c',
 };

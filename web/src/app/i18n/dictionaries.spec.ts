@@ -82,13 +82,13 @@ describe('dictionaries', () => {
     });
 
     it.each([
-      ['en', 'Edit Diego', 'Remove Diego'],
-      ['es', 'Editar a Diego', 'Quitar a Diego'],
-      ['pt', 'Editar Diego', 'Remover Diego'],
+      ['en', 'Edit Jugador A', 'Remove Jugador A'],
+      ['es', 'Editar a Jugador A', 'Quitar a Jugador A'],
+      ['pt', 'Editar Jugador A', 'Remover Jugador A'],
     ] as const)('names the row buttons after the player in %s', (lang, edit, remove) => {
       const { preview } = DICTIONARIES[lang].tool;
-      expect(preview.edit('Diego')).toBe(edit);
-      expect(preview.remove('Diego')).toBe(remove);
+      expect(preview.edit('Jugador A')).toBe(edit);
+      expect(preview.remove('Jugador A')).toBe(remove);
     });
   });
 
@@ -156,28 +156,28 @@ describe('dictionaries', () => {
       [
         'en',
         'Tap a player, then a player from another team, to swap them. You can also drag them.',
-        'Selected: Nico. Tap a player from another team.',
-        'Nico and Fede swapped.',
+        'Selected: Jugador G. Tap a player from another team.',
+        'Jugador G and Jugador B swapped.',
       ],
       [
         'es',
         'Toca un jugador y después uno de otro equipo para intercambiarlos. También puedes arrastrarlos.',
-        'Seleccionado: Nico. Toca un jugador de otro equipo.',
-        'Nico y Fede intercambiados.',
+        'Seleccionado: Jugador G. Toca un jugador de otro equipo.',
+        'Jugador G y Jugador B intercambiados.',
       ],
       [
         'pt',
         'Toque em um jogador e depois em um de outro time para trocá-los. Você também pode arrastá-los.',
-        'Selecionado: Nico. Toque em um jogador de outro time.',
-        'Nico e Fede trocados.',
+        'Selecionado: Jugador G. Toque em um jogador de outro time.',
+        'Jugador G e Jugador B trocados.',
       ],
     ] as const)(
       'say what to do, what was selected and what was swapped in %s',
       (lang, hint, selected, swapped) => {
         const { result } = DICTIONARIES[lang].tool;
         expect(result.swapHint).toBe(hint);
-        expect(result.selected('Nico')).toBe(selected);
-        expect(result.swapped('Nico', 'Fede')).toBe(swapped);
+        expect(result.selected('Jugador G')).toBe(selected);
+        expect(result.swapped('Jugador G', 'Jugador B')).toBe(swapped);
       },
     );
   });
@@ -224,17 +224,17 @@ describe('dictionaries', () => {
     );
 
     it.each([
-      ['en', 'Nico moved to Team 2.', 'Nico is now without a team.', 'Move Nico to Team 2'],
-      ['es', 'Nico pasó a Equipo 2.', 'Nico quedó sin equipo.', 'Mover a Nico a Equipo 2'],
-      ['pt', 'Nico foi para Time 2.', 'Nico ficou sem time.', 'Mover Nico para Time 2'],
+      ['en', 'Jugador G moved to Team 2.', 'Jugador G is now without a team.', 'Move Jugador G to Team 2'],
+      ['es', 'Jugador G pasó a Equipo 2.', 'Jugador G quedó sin equipo.', 'Mover a Jugador G a Equipo 2'],
+      ['pt', 'Jugador G foi para Time 2.', 'Jugador G ficou sem time.', 'Mover Jugador G para Time 2'],
     ] as const)(
       'say where a player went and what a free place does in %s',
       (lang, moved, left, moveHere) => {
         const { result, teamTitle } = DICTIONARIES[lang].tool;
         const team = teamTitle(2);
-        expect(result.moved('Nico', team)).toBe(moved);
-        expect(result.leftTeam('Nico')).toBe(left);
-        expect(result.moveHere('Nico', team)).toBe(moveHere);
+        expect(result.moved('Jugador G', team)).toBe(moved);
+        expect(result.leftTeam('Jugador G')).toBe(left);
+        expect(result.moveHere('Jugador G', team)).toBe(moveHere);
       },
     );
   });
@@ -400,8 +400,8 @@ describe('dictionaries', () => {
         expect(step3Words.length).toBeGreaterThan(0);
         for (const word of step3Words) {
           expect(word).toMatch(/^\(\p{L}+\)$/u);
-          expect(parsePastedNames(`Diego ${word}`), word).toEqual([
-            { name: 'Diego', isGoalkeeper: true },
+          expect(parsePastedNames(`Jugador A ${word}`), word).toEqual([
+            { name: 'Jugador A', isGoalkeeper: true },
           ]);
         }
       },
@@ -446,10 +446,10 @@ describe('dictionaries', () => {
         expect(result.waiting(3)).toContain('3');
         expect(result.placed(10, 11)).toContain('10/11');
         for (const text of [
-          result.placeAria('Diego'),
-          result.removeFromTeam('Diego'),
+          result.placeAria('Jugador A'),
+          result.removeFromTeam('Jugador A'),
         ]) {
-          expect(text).toContain('Diego');
+          expect(text).toContain('Jugador A');
         }
         expect(result.goalkeeperCount(1)).toContain('1');
         expect(result.goalkeeperCount(2)).toContain('2');
@@ -500,7 +500,7 @@ describe('dictionaries', () => {
       const { result } = DICTIONARIES.es.tool;
       const texts = [
         result.swapHint,
-        result.selected('Diego'),
+        result.selected('Jugador A'),
         result.manualHint,
         result.imageFailed,
         result.shareFailed,

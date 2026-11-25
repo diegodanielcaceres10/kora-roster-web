@@ -4,7 +4,7 @@ import { UserAvatar } from './user-avatar';
 
 const USER: AuthUser = {
   id: '1',
-  name: 'diego Cáceres',
+  name: 'diego Daniel Caceres',
   email: 'diego@example.com',
   picture: 'https://lh3.googleusercontent.com/a/photo=s96-c',
 };

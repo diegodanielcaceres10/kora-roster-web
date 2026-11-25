@@ -59,16 +59,16 @@ describe('PreviewStep', () => {
 
   describe('the list', () => {
     it('shows every player in order with its number', () => {
-      const { rows } = setup('Diego\nMati\nNico');
+      const { rows } = setup('Jugador A\nJugador E\nJugador G');
       expect(rows().map((r) => r.textContent?.replace(/\s+/g, ' ').trim())).toEqual([
-        expect.stringMatching(/^01\s*Diego/),
-        expect.stringMatching(/^02\s*Mati/),
-        expect.stringMatching(/^03\s*Nico/),
+        expect.stringMatching(/^01\s*Jugador A/),
+        expect.stringMatching(/^02\s*Jugador E/),
+        expect.stringMatching(/^03\s*Jugador G/),
       ]);
     });
 
     it('labels only the goalkeepers', () => {
-      const { rows } = setup('Diego 🧤\nMati');
+      const { rows } = setup('Jugador A 🧤\nJugador E');
       expect(rows()[0].querySelector('ui-badge')?.textContent).toContain(T.preview.goalkeeper);
       expect(rows()[1].querySelector('ui-badge')).toBeNull();
     });
@@ -158,7 +158,7 @@ describe('PreviewStep', () => {
     });
 
     it('counts the goalkeepers, and says there is one for each team when it is so', () => {
-      const { el } = setup(`Diego 🧤\nMati (gk)\n${list(10)}`);
+      const { el } = setup(`Jugador A 🧤\nJugador E (gk)\n${list(10)}`);
       expect(stats(el)[T.preview.goalkeepers]).toEqual({
         value: '2',
         note: T.preview.onePerTeam,
@@ -166,7 +166,7 @@ describe('PreviewStep', () => {
     });
 
     it('says nothing about goalkeepers per team when the numbers do not match', () => {
-      const { el } = setup(`Diego 🧤\n${list(11)}`);
+      const { el } = setup(`Jugador A 🧤\n${list(11)}`);
       expect(stats(el)[T.preview.goalkeepers]).toEqual({ value: '1', note: '' });
     });
   });
@@ -281,18 +281,18 @@ describe('PreviewStep', () => {
 
   describe('removing and the goalkeeper glove', () => {
     it('removes only the player whose cross is pressed', () => {
-      const { names, byLabel, click } = setup('Diego\nMati\nNico');
-      click(byLabel(T.preview.remove('Mati')));
-      expect(names()).toEqual(['Diego', 'Nico']);
+      const { names, byLabel, click } = setup('Jugador A\nJugador E\nJugador G');
+      click(byLabel(T.preview.remove('Jugador E')));
+      expect(names()).toEqual(['Jugador A', 'Jugador G']);
     });
 
     it('toggles the goalkeeper mark and tells which action the button will do', () => {
-      const { store, byLabel, click } = setup('Diego\nMati');
-      const mark = byLabel(T.preview.markGoalkeeper('Mati'));
+      const { store, byLabel, click } = setup('Jugador A\nJugador E');
+      const mark = byLabel(T.preview.markGoalkeeper('Jugador E'));
       expect(mark.getAttribute('aria-pressed')).toBe('false');
       click(mark);
       expect(store.players()[1].isGoalkeeper).toBe(true);
-      const unmark = byLabel(T.preview.unmarkGoalkeeper('Mati'));
+      const unmark = byLabel(T.preview.unmarkGoalkeeper('Jugador E'));
       expect(unmark.getAttribute('aria-pressed')).toBe('true');
       click(unmark);
       expect(store.players()[1].isGoalkeeper).toBe(false);
@@ -301,10 +301,10 @@ describe('PreviewStep', () => {
 
   describe('editing a name', () => {
     it('opens a field with the current name and focuses it', async () => {
-      const { fixture, el, editor, byLabel, click } = setup('Diego\nMati');
-      click(byLabel(T.preview.edit('Mati')));
+      const { fixture, el, editor, byLabel, click } = setup('Jugador A\nJugador E');
+      click(byLabel(T.preview.edit('Jugador E')));
       await fixture.whenStable();
-      expect(editor()?.value).toBe('Mati');
+      expect(editor()?.value).toBe('Jugador E');
       const label = el.querySelector('label.sr-only') as HTMLLabelElement;
       expect(label.textContent?.trim()).toBe(T.preview.nameLabel);
       expect(label.control).toBe(editor());
@@ -312,48 +312,48 @@ describe('PreviewStep', () => {
     });
 
     it('saves with Enter and closes the field', () => {
-      const { byLabel, click, press, names, editor, type } = setup('Diego\nMati');
-      click(byLabel(T.preview.edit('Mati')));
-      type('Matías');
+      const { byLabel, click, press, names, editor, type } = setup('Jugador A\nJugador E');
+      click(byLabel(T.preview.edit('Jugador E')));
+      type('Jugador F');
       press('Enter');
-      expect(names()).toEqual(['Diego', 'Matías']);
+      expect(names()).toEqual(['Jugador A', 'Jugador F']);
       expect(editor()).toBeNull();
     });
 
     it('cancels with Escape, even if a blur arrives while the field is closing', () => {
-      const { fixture, editor, byLabel, click, names, type } = setup('Diego\nMati');
-      click(byLabel(T.preview.edit('Mati')));
+      const { fixture, editor, byLabel, click, names, type } = setup('Jugador A\nJugador E');
+      click(byLabel(T.preview.edit('Jugador E')));
       const field = editor() as HTMLInputElement;
       type('Changed');
       field.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
       // Browsers can fire the blur before Angular removes the field from the page.
       field.dispatchEvent(new FocusEvent('focusout', { bubbles: true }));
       fixture.detectChanges();
-      expect(names()).toEqual(['Diego', 'Mati']);
+      expect(names()).toEqual(['Jugador A', 'Jugador E']);
       expect(editor()).toBeNull();
     });
 
     it('keeps the old name when it is left empty, and closes the field', () => {
-      const { byLabel, click, press, names, editor, type } = setup('Diego\nMati');
-      click(byLabel(T.preview.edit('Mati')));
+      const { byLabel, click, press, names, editor, type } = setup('Jugador A\nJugador E');
+      click(byLabel(T.preview.edit('Jugador E')));
       type('   ');
       press('Enter');
-      expect(names()).toEqual(['Diego', 'Mati']);
+      expect(names()).toEqual(['Jugador A', 'Jugador E']);
       expect(editor()).toBeNull();
     });
 
     it('saves when the field loses focus', () => {
-      const { byLabel, click, blur, names, type } = setup('Diego\nMati');
-      click(byLabel(T.preview.edit('Mati')));
-      type('Matías');
+      const { byLabel, click, blur, names, type } = setup('Jugador A\nJugador E');
+      click(byLabel(T.preview.edit('Jugador E')));
+      type('Jugador F');
       blur();
-      expect(names()).toEqual(['Diego', 'Matías']);
+      expect(names()).toEqual(['Jugador A', 'Jugador F']);
     });
 
     it('edits one row at a time', () => {
-      const { el, byLabel, click } = setup('Diego\nMati');
-      click(byLabel(T.preview.edit('Diego')));
-      click(byLabel(T.preview.edit('Mati')));
+      const { el, byLabel, click } = setup('Jugador A\nJugador E');
+      click(byLabel(T.preview.edit('Jugador A')));
+      click(byLabel(T.preview.edit('Jugador E')));
       expect(el.querySelectorAll('input')).toHaveLength(1);
     });
   });

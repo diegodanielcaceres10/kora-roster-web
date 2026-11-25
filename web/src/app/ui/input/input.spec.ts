@@ -126,13 +126,14 @@ describe('UiInput', () => {
 
   it('can be focused and selected from outside, as the name editor needs', () => {
     const { fixture, field, update } = setup();
-    update((h) => h.text.set('Diego'));
+    const name = 'Jugador A';
+    update((h) => h.text.set(name));
     const input = fixture.debugElement.query(By.directive(UiInput)).componentInstance as UiInput;
     input.focus();
     expect(document.activeElement).toBe(field());
     input.select();
     expect(field().selectionStart).toBe(0);
-    expect(field().selectionEnd).toBe(5);
+    expect(field().selectionEnd).toBe(name.length);
   });
 
   describe('the count of characters', () => {

@@ -16,7 +16,7 @@ const T = DICTIONARIES.es.account;
 const SESSION_KEY = 'kora:session';
 const SAVED = {
   id: '1122334455',
-  name: 'Diego Cáceres',
+  name: 'Diego Daniel Caceres',
   email: 'diego@example.com',
   picture: 'https://lh3.googleusercontent.com/a/photo=s96-c',
 };
@@ -106,7 +106,7 @@ describe('Account page', () => {
       await settle();
       const text = el.textContent as string;
       expect(text).toContain(T.nameLabel);
-      expect(text).toContain('Diego Cáceres');
+      expect(text).toContain('Diego Daniel Caceres');
       expect(text).toContain(T.emailLabel);
       expect(text).toContain('diego@example.com');
       expect(text).not.toContain(T.signInPrompt);
@@ -255,7 +255,7 @@ describe('Account page', () => {
       fake.pick(makeCredential());
       await settle();
       const card = el.querySelector('[data-profile]') as HTMLElement;
-      expect(card.querySelector('h2')?.textContent?.trim()).toBe('Diego Cáceres');
+      expect(card.querySelector('h2')?.textContent?.trim()).toBe('Diego Daniel Caceres');
       for (const label of Array.from(card.querySelectorAll('dt'))) {
         expect(label.classList.contains('sr-only')).toBe(true);
       }

@@ -59,7 +59,7 @@ describe('PasteStep', () => {
 
     it('leaves the list empty and the cursor in the field when Clear is pressed', () => {
       const { clear, store, textarea, type, fixture } = setup();
-      type('Diego\nMati');
+      type('Jugador A\nJugador E');
       clear().click();
       fixture.detectChanges();
       expect(store.rawText()).toBe('');
@@ -70,20 +70,20 @@ describe('PasteStep', () => {
     it('has nothing to clear while the list is empty', () => {
       const { clear, type } = setup();
       expect(clear().disabled).toBe(true);
-      type('Diego');
+      type('Jugador A');
       expect(clear().disabled).toBe(false);
     });
   });
 
   it('writes what is typed into the store', () => {
     const { store, type } = setup();
-    type('1. Diego\n2. Mati');
-    expect(store.rawText()).toBe('1. Diego\n2. Mati');
+    type('1. Jugador A\n2. Jugador E');
+    expect(store.rawText()).toBe('1. Jugador A\n2. Jugador E');
   });
 
   it('shows the text the store already has, as when coming back from the preview', () => {
-    const { textarea } = setup('Diego\nMati');
-    expect(textarea().value).toBe('Diego\nMati');
+    const { textarea } = setup('Jugador A\nJugador E');
+    expect(textarea().value).toBe('Jugador A\nJugador E');
   });
 
   it.each([[''], ['   \n '], ['1.'], ['- \n * ']])('keeps Continue disabled for %j', (text) => {
@@ -95,18 +95,18 @@ describe('PasteStep', () => {
   it('enables Continue as soon as there is a name', () => {
     const { next, type } = setup();
     expect(next().textContent?.trim()).toBe(T.paste.advanced);
-    type('Diego');
+    type('Jugador A');
     expect(next().disabled).toBe(false);
   });
 
   it('moves to the preview with the players when Continue is pressed', () => {
     saveSession();
     const { store, next, type, fixture } = setup();
-    type('1. Diego 🧤\n2. Mati');
+    type('1. Jugador A 🧤\n2. Jugador E');
     next().click();
     fixture.detectChanges();
     expect(store.step()).toBe('preview');
-    expect(store.players().map((p) => p.name)).toEqual(['Diego', 'Mati']);
+    expect(store.players().map((p) => p.name)).toEqual(['Jugador A', 'Jugador E']);
   });
 
   describe('the texts that depend on the language', () => {
@@ -116,7 +116,7 @@ describe('PasteStep', () => {
         const { fixture, el, type } = setup();
         TestBed.inject(I18n).setLang(lang);
         const { paste } = DICTIONARIES[lang].tool;
-        type('Diego\nMati');
+        type('Jugador A\nJugador E');
         fixture.detectChanges();
         const text = el.textContent?.replace(/\s+/g, ' ') as string;
         expect(text).toContain(paste.detected(2));
@@ -137,7 +137,7 @@ describe('PasteStep', () => {
           c.textContent?.trim(),
         );
         expect(chips).toEqual([...paste.guide.step3Words]);
-        type('Diego');
+        type('Jugador A');
         expect(el.textContent).toContain(paste.detected(1));
       },
     );
@@ -299,7 +299,7 @@ describe('PasteStep', () => {
     describe('without an account', () => {
       it('shows a lock instead of an arrow, and says nothing until it is touched', () => {
         const { el, next, type } = setup();
-        type('Diego\nMati');
+        type('Jugador A\nJugador E');
         expect(next().disabled).toBe(false);
         expect(next().querySelector('ui-icon[data-icon="lock"]')).not.toBeNull();
         expect(next().querySelector('ui-icon[data-icon="arrow-right"]')).toBeNull();
@@ -308,7 +308,7 @@ describe('PasteStep', () => {
 
       it('does not move on when it is touched, and offers to sign in', () => {
         const { el, store, next, type, fixture } = setup();
-        type('Diego\nMati');
+        type('Jugador A\nJugador E');
         next().click();
         fixture.detectChanges();
         expect(store.step()).toBe('paste');
@@ -331,7 +331,7 @@ describe('PasteStep', () => {
 
       it('shows an arrow, not a lock, and moves to the preview', () => {
         const { el, store, next, type, fixture } = setup();
-        type('Diego\nMati');
+        type('Jugador A\nJugador E');
         expect(next().querySelector('ui-icon[data-icon="arrow-right"]')).not.toBeNull();
         expect(next().querySelector('ui-icon[data-icon="lock"]')).toBeNull();
         next().click();

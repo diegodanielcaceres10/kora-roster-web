@@ -7,7 +7,7 @@ import { CardAccent, UiCard } from './card';
   template: `
     <ui-card [accent]="accent()" [accentColor]="accentColor()">
       <h3 card-header>Equipo A</h3>
-      <p>Diego, Mati</p>
+      <p>Jugador A, Jugador E</p>
     </ui-card>
   `,
 })
@@ -38,8 +38,8 @@ describe('UiCard', () => {
     const header = el.querySelector('header') as HTMLElement;
     const body = el.querySelector('section > div') as HTMLElement;
     expect(header.textContent).toContain('Equipo A');
-    expect(header.textContent).not.toContain('Diego');
-    expect(body.textContent).toContain('Diego, Mati');
+    expect(header.textContent).not.toContain('Jugador A');
+    expect(body.textContent).toContain('Jugador A, Jugador E');
     expect(body.textContent).not.toContain('Equipo A');
   });
 

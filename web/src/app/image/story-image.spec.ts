@@ -116,7 +116,7 @@ const layout: StoryLayout = {
       role: 'player',
       x: 80,
       y: 340,
-      text: '1. Diego 🧤',
+      text: '1. Jugador A 🧤',
       size: 40,
       weight: 'normal',
       color: '#111111',
@@ -170,7 +170,7 @@ describe('drawStory', () => {
     expect(texts.map((t) => [t.text, t.x, t.y, t.fill, t.align, t.baseline])).toEqual([
       ['Header', 540, 80, '#ffffff', 'center', 'middle'],
       ['🔴 Team 1', 80, 260, '#111111', 'left', 'middle'],
-      ['1. Diego 🧤', 80, 340, '#111111', 'left', 'middle'],
+      ['1. Jugador A 🧤', 80, 340, '#111111', 'left', 'middle'],
     ]);
   });
 
@@ -260,12 +260,12 @@ describe('createStoryBlob', () => {
       {
         title: 'Team 1',
         color: '#e53935',
-        players: [{ name: 'Diego', isGoalkeeper: true }],
+        players: [{ name: 'Jugador A', isGoalkeeper: true }],
       },
       {
         title: 'Team 2',
         color: '#1e88e5',
-        players: [{ name: 'Mati', isGoalkeeper: false }],
+        players: [{ name: 'Jugador E', isGoalkeeper: false }],
       },
     ],
     header: 'Header',

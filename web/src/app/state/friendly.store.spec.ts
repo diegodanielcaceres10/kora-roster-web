@@ -52,11 +52,11 @@ describe('FriendlyStore', () => {
 
   describe('continueToPreview', () => {
     it('turns the pasted text into players and moves to the preview', () => {
-      const { store } = inPreview('1. Diego 🧤\n2. Mati');
+      const { store } = inPreview('1. Jugador A 🧤\n2. Jugador E');
       expect(store.step()).toBe('preview');
       expect(store.players().map(({ name, isGoalkeeper }) => ({ name, isGoalkeeper }))).toEqual([
-        { name: 'Diego', isGoalkeeper: true },
-        { name: 'Mati', isGoalkeeper: false },
+        { name: 'Jugador A', isGoalkeeper: true },
+        { name: 'Jugador E', isGoalkeeper: false },
       ]);
     });
 
@@ -77,30 +77,30 @@ describe('FriendlyStore', () => {
     );
 
     it('keeps the edits made in the preview when the text did not change', () => {
-      const { store } = inPreview('Diego\nMati');
-      const diego = store.players()[0];
-      store.renamePlayer(diego.id, 'Diego R.');
+      const { store } = inPreview('Jugador A\nJugador E');
+      const first = store.players()[0];
+      store.renamePlayer(first.id, 'Jugador A R.');
       store.removePlayer(store.players()[1].id);
       store.back();
       store.continueToPreview();
       expect(store.step()).toBe('preview');
-      expect(store.players().map((p) => p.name)).toEqual(['Diego R.']);
+      expect(store.players().map((p) => p.name)).toEqual(['Jugador A R.']);
     });
 
     it('reads the text again when it changed after going back', () => {
-      const { store } = inPreview('Diego\nMati');
+      const { store } = inPreview('Jugador A\nJugador E');
       store.renamePlayer(store.players()[0].id, 'Edited');
       store.back();
-      store.setRawText('Nico\nFede\nLucho');
+      store.setRawText('Jugador G\nJugador B\nJugador D');
       store.continueToPreview();
-      expect(store.players().map((p) => p.name)).toEqual(['Nico', 'Fede', 'Lucho']);
+      expect(store.players().map((p) => p.name)).toEqual(['Jugador G', 'Jugador B', 'Jugador D']);
     });
 
     it('never reuses an id when the list is read again', () => {
-      const { store } = inPreview('Diego\nMati');
+      const { store } = inPreview('Jugador A\nJugador E');
       const first = store.players().map((p) => p.id);
       store.back();
-      store.setRawText('Nico\nFede');
+      store.setRawText('Jugador G\nJugador B');
       store.continueToPreview();
       const second = store.players().map((p) => p.id);
       expect(second.some((id) => first.includes(id))).toBe(false);
@@ -109,21 +109,21 @@ describe('FriendlyStore', () => {
 
   describe('back', () => {
     it('returns to the paste step and keeps the text', () => {
-      const { store } = inPreview('Diego\nMati');
+      const { store } = inPreview('Jugador A\nJugador E');
       store.back();
       expect(store.step()).toBe('paste');
-      expect(store.rawText()).toBe('Diego\nMati');
+      expect(store.rawText()).toBe('Jugador A\nJugador E');
     });
 
     describe('from the teams', () => {
       it('returns to the preview, with the list as it was edited', () => {
         const { store } = inPreview(list(12));
-        store.renamePlayer(store.players()[0].id, 'Nico');
+        store.renamePlayer(store.players()[0].id, 'Jugador G');
         store.draw(seeded(3));
         store.back();
         expect(store.step()).toBe('preview');
         expect(store.players()).toHaveLength(12);
-        expect(store.players()[0].name).toBe('Nico');
+        expect(store.players()[0].name).toBe('Jugador G');
         expect(store.rawText()).toBe(list(12));
       });
 
@@ -161,37 +161,37 @@ describe('FriendlyStore', () => {
 
   describe('editing the list', () => {
     it('renames a player by id and trims the name', () => {
-      const { store } = inPreview('Diego\nMati');
-      store.renamePlayer(store.players()[1].id, '  Matías  ');
-      expect(store.players().map((p) => p.name)).toEqual(['Diego', 'Matías']);
+      const { store } = inPreview('Jugador A\nJugador E');
+      store.renamePlayer(store.players()[1].id, '  Jugador F  ');
+      expect(store.players().map((p) => p.name)).toEqual(['Jugador A', 'Jugador F']);
     });
 
     it.each([[''], ['   ']])('does not accept the name %j', (name) => {
-      const { store } = inPreview('Diego\nMati');
+      const { store } = inPreview('Jugador A\nJugador E');
       store.renamePlayer(store.players()[0].id, name);
-      expect(store.players().map((p) => p.name)).toEqual(['Diego', 'Mati']);
+      expect(store.players().map((p) => p.name)).toEqual(['Jugador A', 'Jugador E']);
     });
 
     it('ignores an id that does not exist', () => {
-      const { store } = inPreview('Diego\nMati');
+      const { store } = inPreview('Jugador A\nJugador E');
       store.renamePlayer('nope', 'Other');
       store.removePlayer('nope');
       store.toggleGoalkeeper('nope');
-      expect(store.players().map((p) => p.name)).toEqual(['Diego', 'Mati']);
+      expect(store.players().map((p) => p.name)).toEqual(['Jugador A', 'Jugador E']);
     });
 
     it('removes only the chosen player', () => {
-      const { store } = inPreview('Diego\nMati\nNico');
+      const { store } = inPreview('Jugador A\nJugador E\nJugador G');
       store.removePlayer(store.players()[1].id);
-      expect(store.players().map((p) => p.name)).toEqual(['Diego', 'Nico']);
+      expect(store.players().map((p) => p.name)).toEqual(['Jugador A', 'Jugador G']);
     });
 
     it('flips the goalkeeper mark of only the chosen player, both ways', () => {
-      const { store } = inPreview('Diego\nMati');
-      const mati = store.players()[1].id;
-      store.toggleGoalkeeper(mati);
+      const { store } = inPreview('Jugador A\nJugador E');
+      const second = store.players()[1].id;
+      store.toggleGoalkeeper(second);
       expect(store.players().map((p) => p.isGoalkeeper)).toEqual([false, true]);
-      store.toggleGoalkeeper(mati);
+      store.toggleGoalkeeper(second);
       expect(store.players().map((p) => p.isGoalkeeper)).toEqual([false, false]);
     });
   });
@@ -242,7 +242,7 @@ describe('FriendlyStore', () => {
     });
 
     it('splits goalkeepers between the teams', () => {
-      const { store } = inPreview('Diego 🧤\nMati 🧤\n' + list(10));
+      const { store } = inPreview('Jugador A 🧤\nJugador E 🧤\n' + list(10));
       store.draw(seeded(2));
       const [a, b] = store.teams() ?? [[], []];
       expect([a, b].map((t) => t.filter((p) => p.isGoalkeeper).length)).toEqual([1, 1]);
@@ -268,7 +268,7 @@ describe('FriendlyStore', () => {
 
   describe('whatsappText', () => {
     it('writes the teams with their icons and titles in the current language', () => {
-      const { store, i18n } = inPreview('Diego 🧤\nMati 🧤\n' + list(10));
+      const { store, i18n } = inPreview('Jugador A 🧤\nJugador E 🧤\n' + list(10));
       store.draw(seeded(3));
       expect(store.whatsappText()).toContain('🔴 Team 1\n');
       expect(store.whatsappText()).toContain('🔵 Team 2\n');
@@ -279,7 +279,7 @@ describe('FriendlyStore', () => {
     });
 
     it('marks the goalkeepers with the glove', () => {
-      const { store } = inPreview('Diego 🧤\nMati 🧤\n' + list(10));
+      const { store } = inPreview('Jugador A 🧤\nJugador E 🧤\n' + list(10));
       store.draw(seeded(3));
       expect(store.whatsappText().match(/🧤/g)).toHaveLength(2);
     });
@@ -383,9 +383,9 @@ describe('FriendlyStore', () => {
       const { store } = inPreview(list(12));
       TestBed.tick();
       await signOut();
-      store.setRawText('Ana\nBea');
+      store.setRawText('Jugador A\nJugador B');
       store.continueToPreview();
-      expect(store.players().map((p) => p.name)).toEqual(['Ana', 'Bea']);
+      expect(store.players().map((p) => p.name)).toEqual(['Jugador A', 'Jugador B']);
       expect(store.step()).toBe('preview');
     });
 
@@ -426,7 +426,7 @@ describe('FriendlyStore', () => {
     // preferences: undefined = signed in with nothing saved, null = nobody signed in.
     function drawn(preferences?: typeof TEST_PREFERENCES | null) {
       if (preferences !== null) saveSession(preferences);
-      const ctx = inPreview('Diego 🧤\nMati 🧤\n' + list(10));
+      const ctx = inPreview('Jugador A 🧤\nJugador E 🧤\n' + list(10));
       ctx.store.draw(seeded(3));
       return ctx;
     }
@@ -705,10 +705,10 @@ describe('FriendlyStore', () => {
       if (teams && teams > 2) saveSession();
       const players =
         teams === 3
-          ? 'Diego 🧤\nMati 🧤\nFede 🧤\n' + list(15)
+          ? 'Jugador A 🧤\nJugador E 🧤\nJugador B 🧤\n' + list(15)
           : teams === 4
-            ? 'Diego 🧤\nMati 🧤\nFede 🧤\n' + list(17)
-            : 'Diego 🧤\nMati 🧤\n' + list(10);
+            ? 'Jugador A 🧤\nJugador E 🧤\nJugador B 🧤\n' + list(17)
+            : 'Jugador A 🧤\nJugador E 🧤\n' + list(10);
       const ctx = inPreview(players);
       if (teams) ctx.store.setTeamCount(teams);
       ctx.store.draw(seeded(3));
@@ -850,7 +850,7 @@ describe('FriendlyStore', () => {
 
     const DEFAULTS = ['#e53935', '#1e88e5', '#43a047', '#fdd835', '#8e24aa', '#fb8c00'];
     const drawn = () => {
-      const ctx = inPreview('Diego 🧤\nMati 🧤\n' + list(10));
+      const ctx = inPreview('Jugador A 🧤\nJugador E 🧤\n' + list(10));
       ctx.store.draw(seeded(3));
       return ctx;
     };
@@ -904,7 +904,7 @@ describe('FriendlyStore', () => {
 
     it('has a block for each team in use, and the titles follow the language', () => {
       saveSession();
-      const { store, i18n } = inPreview('Diego 🧤\nMati 🧤\nFede 🧤\n' + list(15));
+      const { store, i18n } = inPreview('Jugador A 🧤\nJugador E 🧤\nJugador B 🧤\n' + list(15));
       store.setTeamCount(3);
       store.draw(seeded(3));
       i18n.setLang('es');
@@ -935,7 +935,7 @@ describe('FriendlyStore', () => {
     // and so does the manual assignment, so everybody here has signed in.
     function manual(teams?: number) {
       saveSession();
-      const ctx = inPreview('Diego 🧤\nMati 🧤\n' + list(teams === 3 ? 16 : 10));
+      const ctx = inPreview('Jugador A 🧤\nJugador E 🧤\n' + list(teams === 3 ? 16 : 10));
       if (teams) ctx.store.setTeamCount(teams);
       ctx.store.startManual();
       return ctx;
@@ -974,7 +974,7 @@ describe('FriendlyStore', () => {
       });
 
       it('does nothing without an account', () => {
-        const ctx = inPreview('Diego 🧤\nMati 🧤\n' + list(10));
+        const ctx = inPreview('Jugador A 🧤\nJugador E 🧤\n' + list(10));
         ctx.store.startManual();
         expect(ctx.store.step()).toBe('preview');
         expect(ctx.store.teams()).toBeNull();
@@ -1008,7 +1008,7 @@ describe('FriendlyStore', () => {
     describe('without a team', () => {
       it('is empty after a draw, and the draw is complete', () => {
         saveSession();
-        const { store } = inPreview('Diego 🧤\nMati 🧤\n' + list(10));
+        const { store } = inPreview('Jugador A 🧤\nJugador E 🧤\n' + list(10));
         store.draw(seeded(3));
         expect(store.pool()).toEqual([]);
         expect(store.isComplete()).toBe(true);
@@ -1038,29 +1038,29 @@ describe('FriendlyStore', () => {
     describe('movePlayer', () => {
       it('puts a player who has no team into a team', () => {
         const { store } = manual();
-        const [diego] = store.pool();
-        store.movePlayer(diego.id, 0);
-        expect(teamsOf(store)[0]).toEqual([diego]);
+        const [first] = store.pool();
+        store.movePlayer(first.id, 0);
+        expect(teamsOf(store)[0]).toEqual([first]);
         expect(store.pool()).toHaveLength(11);
-        expect(store.pool()).not.toContain(diego);
+        expect(store.pool()).not.toContain(first);
       });
 
       it('takes a player out of a team and leaves them without one', () => {
         const { store } = manual();
-        const [diego] = store.pool();
-        store.movePlayer(diego.id, 1);
-        store.movePlayer(diego.id, 'pool');
+        const [first] = store.pool();
+        store.movePlayer(first.id, 1);
+        store.movePlayer(first.id, 'pool');
         expect(teamsOf(store)[1]).toEqual([]);
-        expect(store.pool()).toContain(diego);
+        expect(store.pool()).toContain(first);
       });
 
       it('moves a player from one team to another that has room', () => {
         const { store } = manual();
-        const [diego] = store.pool();
-        store.movePlayer(diego.id, 0);
-        store.movePlayer(diego.id, 1);
+        const [first] = store.pool();
+        store.movePlayer(first.id, 0);
+        store.movePlayer(first.id, 1);
         expect(teamsOf(store)[0]).toEqual([]);
-        expect(teamsOf(store)[1]).toEqual([diego]);
+        expect(teamsOf(store)[1]).toEqual([first]);
       });
 
       it('does not put a seventh player into a team of six', () => {
@@ -1074,11 +1074,11 @@ describe('FriendlyStore', () => {
 
       it('does not move a player who is already where they are asked to go', () => {
         const { store } = manual();
-        const [diego, mati] = store.pool();
-        store.movePlayer(diego.id, 0);
-        store.movePlayer(diego.id, 0);
-        store.movePlayer(mati.id, 'pool');
-        expect(teamsOf(store)[0]).toEqual([diego]);
+        const [first, second] = store.pool();
+        store.movePlayer(first.id, 0);
+        store.movePlayer(first.id, 0);
+        store.movePlayer(second.id, 'pool');
+        expect(teamsOf(store)[0]).toEqual([first]);
         expect(store.pool()).toHaveLength(11);
       });
 
@@ -1152,14 +1152,14 @@ describe('FriendlyStore', () => {
     describe('drawRemaining', () => {
       it('puts everybody without a team into a team, and keeps those who were placed', () => {
         const { store } = manual();
-        const [diego, mati] = store.pool();
-        store.movePlayer(diego.id, 0);
-        store.movePlayer(mati.id, 1);
+        const [first, second] = store.pool();
+        store.movePlayer(first.id, 0);
+        store.movePlayer(second.id, 1);
         store.drawRemaining(seeded(3));
         expect(store.pool()).toEqual([]);
         expect(teamsOf(store).map((team) => team.length)).toEqual([6, 6]);
-        expect(teamsOf(store)[0]).toContain(diego);
-        expect(teamsOf(store)[1]).toContain(mati);
+        expect(teamsOf(store)[0]).toContain(first);
+        expect(teamsOf(store)[1]).toContain(second);
         expect(store.isComplete()).toBe(true);
       });
 
@@ -1191,7 +1191,7 @@ describe('FriendlyStore', () => {
 
       it('does nothing when nobody is without a team', () => {
         saveSession();
-        const { store } = inPreview('Diego 🧤\nMati 🧤\n' + list(10));
+        const { store } = inPreview('Jugador A 🧤\nJugador E 🧤\n' + list(10));
         store.draw(seeded(3));
         const before = structuredClone(store.teams());
         store.drawRemaining(seeded(5));
@@ -1209,7 +1209,7 @@ describe('FriendlyStore', () => {
     describe('clearTeams', () => {
       it('sends everybody back to being without a team, and keeps the empty teams', () => {
         saveSession();
-        const { store } = inPreview('Diego 🧤\nMati 🧤\n' + list(10));
+        const { store } = inPreview('Jugador A 🧤\nJugador E 🧤\n' + list(10));
         store.draw(seeded(3));
         store.clearTeams();
         expect(teamsOf(store)).toEqual([[], []]);
@@ -1258,12 +1258,12 @@ describe('FriendlyStore', () => {
 
       it('keeps the goalkeepers first in the team and among those without a team', () => {
         const { store } = manual();
-        const [diego] = store.pool();
+        const [first] = store.pool();
         const fieldPlayer = store.pool().find((p) => !p.isGoalkeeper) as Player;
         store.movePlayer(fieldPlayer.id, 0);
-        store.swapPlayers(fieldPlayer.id, diego.id);
-        expect(teamsOf(store)[0]).toEqual([diego]);
-        // Mati is the only goalkeeper left without a team, and the player who left the team
+        store.swapPlayers(fieldPlayer.id, first.id);
+        expect(teamsOf(store)[0]).toEqual([first]);
+        // Jugador E is the only goalkeeper left without a team, and the player who left the team
         // joins the others after him.
         expect(store.pool()[0].isGoalkeeper).toBe(true);
         expect(

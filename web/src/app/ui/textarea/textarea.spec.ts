@@ -69,15 +69,15 @@ describe('UiTextarea', () => {
 
   it('writes what the user types back to the bound value', () => {
     const { host, field } = setup();
-    field().value = '1. Diego 🧤';
+    field().value = '1. Jugador A 🧤';
     field().dispatchEvent(new Event('input'));
-    expect(host.text()).toBe('1. Diego 🧤');
+    expect(host.text()).toBe('1. Jugador A 🧤');
   });
 
   it('shows the value set from the outside', () => {
     const { field, update } = setup();
-    update((h) => h.text.set('2. Mati'));
-    expect(field().value).toBe('2. Mati');
+    update((h) => h.text.set('2. Jugador E'));
+    expect(field().value).toBe('2. Jugador E');
   });
 
   it('uses 6 rows by default and honors a custom number', () => {
@@ -103,7 +103,7 @@ describe('UiTextarea', () => {
   describe('as a regular textarea', () => {
     it('has no line numbers', () => {
       const { el, update } = setup();
-      update((h) => h.text.set('Diego\nMati'));
+      update((h) => h.text.set('Jugador A\nJugador E'));
       expect(el.querySelector('[data-gutter]')).toBeNull();
     });
 

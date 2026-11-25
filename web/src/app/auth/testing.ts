@@ -19,7 +19,7 @@ export function makeCredential(overrides: Record<string, unknown> = {}): string 
     aud: TEST_CLIENT_ID,
     exp: Math.floor(Date.now() / 1000) + 3600,
     sub: '1122334455',
-    name: 'Diego Cáceres',
+    name: 'Diego Daniel Caceres',
     email: 'diego@example.com',
     picture: 'https://lh3.googleusercontent.com/a/photo=s96-c',
     ...overrides,

@@ -11,15 +11,21 @@ describe('formatTeamsForWhatsApp', () => {
   it('writes each team with its icon and title, numbered players and a glove for goalkeepers', () => {
     const text = formatTeamsForWhatsApp(
       [
-        [p('Diego', true), p('Mati')],
-        [p('Nico', true), p('Fede')],
+        [p('Jugador A', true), p('Jugador E')],
+        [p('Jugador G', true), p('Jugador B')],
       ],
       STYLES,
     );
     expect(text).toBe(
-      ['🔴 Equipo 1', '1. Diego 🧤', '2. Mati', '', '🔵 Equipo 2', '1. Nico 🧤', '2. Fede'].join(
-        '\n',
-      ),
+      [
+        '🔴 Equipo 1',
+        '1. Jugador A 🧤',
+        '2. Jugador E',
+        '',
+        '🔵 Equipo 2',
+        '1. Jugador G 🧤',
+        '2. Jugador B',
+      ].join('\n'),
     );
   });
 
@@ -68,23 +74,23 @@ describe('formatTeamsForWhatsApp', () => {
   });
 
   it('does not touch the names it receives', () => {
-    const text = formatTeamsForWhatsApp([[p('José Luis')], [p('Ñandú 🔥')]], STYLES);
-    expect(text).toContain('1. José Luis');
+    const text = formatTeamsForWhatsApp([[p('Jugador É')], [p('Ñandú 🔥')]], STYLES);
+    expect(text).toContain('1. Jugador É');
     expect(text).toContain('1. Ñandú 🔥');
   });
 });
 
 describe('formatTeamsForWhatsApp options', () => {
   const teams = [
-    [p('Diego', true), p('Mati')],
-    [p('Nico', true), p('Fede')],
+    [p('Jugador A', true), p('Jugador E')],
+    [p('Jugador G', true), p('Jugador B')],
   ];
 
   it.each([
-    ['dot', '1. Diego 🧤', '2. Mati'],
-    ['paren', '1) Diego 🧤', '2) Mati'],
-    ['dash', '1- Diego 🧤', '2- Mati'],
-    ['none', 'Diego 🧤', 'Mati'],
+    ['dot', '1. Jugador A 🧤', '2. Jugador E'],
+    ['paren', '1) Jugador A 🧤', '2) Jugador E'],
+    ['dash', '1- Jugador A 🧤', '2- Jugador E'],
+    ['none', 'Jugador A 🧤', 'Jugador E'],
   ] as const)('numbers with the %s style', (numbering, first, second) => {
     const lines = formatTeamsForWhatsApp(teams, STYLES, { numbering }).split('\n');
     expect(lines.slice(0, 3)).toEqual(['🔴 Equipo 1', first, second]);
@@ -92,7 +98,7 @@ describe('formatTeamsForWhatsApp options', () => {
 
   it('uses the same numbering style in every team', () => {
     const lines = formatTeamsForWhatsApp(teams, STYLES, { numbering: 'paren' }).split('\n');
-    expect(lines.slice(4)).toEqual(['🔵 Equipo 2', '1) Nico 🧤', '2) Fede']);
+    expect(lines.slice(4)).toEqual(['🔵 Equipo 2', '1) Jugador G 🧤', '2) Jugador B']);
   });
 
   it('puts the header first, followed by a blank line', () => {
@@ -106,7 +112,7 @@ describe('formatTeamsForWhatsApp options', () => {
     const lines = formatTeamsForWhatsApp(teams, STYLES, { footer: 'Confirmen asistencia' }).split(
       '\n',
     );
-    expect(lines.slice(-3)).toEqual(['2. Fede', '', 'Confirmen asistencia']);
+    expect(lines.slice(-3)).toEqual(['2. Jugador B', '', 'Confirmen asistencia']);
   });
 
   it('writes the header, the teams and the footer in that order', () => {
@@ -120,12 +126,12 @@ describe('formatTeamsForWhatsApp options', () => {
         'ARRIBA',
         '',
         '🔴 Equipo 1',
-        'Diego 🧤',
-        'Mati',
+        'Jugador A 🧤',
+        'Jugador E',
         '',
         '🔵 Equipo 2',
-        'Nico 🧤',
-        'Fede',
+        'Jugador G 🧤',
+        'Jugador B',
         '',
         'ABAJO',
       ].join('\n'),

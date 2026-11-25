@@ -19,7 +19,7 @@ function setup(preferences?: Preferences, confirmed = false) {
   if (preferences) saveSession(preferences);
   TestBed.inject(I18n).setLang('es');
   const store = TestBed.inject(FriendlyStore);
-  store.setRawText('Diego 🧤\nMati 🧤\n' + list(10));
+  store.setRawText('Jugador A 🧤\nJugador E 🧤\n' + list(10));
   store.continueToPreview();
   store.draw(() => 0.3);
   if (confirmed) store.confirm();
@@ -150,7 +150,7 @@ describe('ResultStep', () => {
       saveSession();
       TestBed.inject(I18n).setLang('es');
       const store = TestBed.inject(FriendlyStore);
-      store.setRawText('Diego 🧤\nMati 🧤\n' + list(10));
+      store.setRawText('Jugador A 🧤\nJugador E 🧤\n' + list(10));
       store.continueToPreview();
       store.startManual();
       const fixture = TestBed.createComponent(ResultStep);
@@ -500,7 +500,7 @@ describe('ResultStep', () => {
       saveSession();
       TestBed.inject(I18n).setLang('es');
       const store = TestBed.inject(FriendlyStore);
-      store.setRawText('Diego 🧤\nMati 🧤\n' + list(10));
+      store.setRawText('Jugador A 🧤\nJugador E 🧤\n' + list(10));
       store.continueToPreview();
       if (mode === 'manual') store.startManual();
       else store.draw(() => 0.3);
@@ -1029,7 +1029,7 @@ describe('ResultStep', () => {
       saveSession();
       TestBed.inject(I18n).setLang('es');
       const store = TestBed.inject(FriendlyStore);
-      store.setRawText('Diego 🧤\nMati 🧤\n' + list(10));
+      store.setRawText('Jugador A 🧤\nJugador E 🧤\n' + list(10));
       store.continueToPreview();
       store.startManual();
       store
@@ -1054,7 +1054,7 @@ describe('ResultStep', () => {
       if (mode !== 'plain') saveSession();
       TestBed.inject(I18n).setLang('es');
       const store = TestBed.inject(FriendlyStore);
-      store.setRawText('Diego 🧤\nMati 🧤\n' + list(10));
+      store.setRawText('Jugador A 🧤\nJugador E 🧤\n' + list(10));
       store.continueToPreview();
       if (mode === 'manual') store.startManual();
       else store.draw(() => 0.3);
@@ -1177,9 +1177,9 @@ describe('ResultStep', () => {
       it('numbers each one as in the list they pasted, and says they are ready', () => {
         const { all, text } = edit('manual');
         const rows = all('[data-pool] li');
-        const diego = rows.find((row) => text(row).includes('Diego')) as HTMLElement;
-        expect(text(diego)).toMatch(/^01/);
-        expect(text(diego)).toContain(T.result.readyToPlace);
+        const firstRow = rows.find((row) => text(row).includes('Jugador A')) as HTMLElement;
+        expect(text(firstRow)).toMatch(/^01/);
+        expect(text(firstRow)).toContain(T.result.readyToPlace);
       });
 
       it('can be placed in the first team with room with one button', () => {

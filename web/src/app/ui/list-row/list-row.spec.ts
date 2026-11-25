@@ -7,7 +7,7 @@ import { UiListRow } from './list-row';
   template: `
     <ui-list-row [highlight]="highlight()" [tile]="tile()">
       <span row-start>7</span>
-      <span>Diego</span>
+      <span>Jugador A</span>
       <button row-end type="button">Quitar</button>
     </ui-list-row>
   `,
@@ -29,7 +29,7 @@ describe('UiListRow', () => {
     const { row } = setup();
     const [start, content, end] = Array.from(row.children) as HTMLElement[];
     expect(start.textContent?.trim()).toBe('7');
-    expect(content.textContent?.trim()).toBe('Diego');
+    expect(content.textContent?.trim()).toBe('Jugador A');
     expect(end.querySelector('button')?.textContent).toContain('Quitar');
   });
 

@@ -109,7 +109,7 @@ describe('Tool', () => {
     });
 
     it('counts the players and the goalkeepers beside the title', () => {
-      const el = confirmed('Diego 🧤\nMati 🧤\n' + list(10));
+      const el = confirmed('Jugador A 🧤\nJugador E 🧤\n' + list(10));
       const { result } = DICTIONARIES.es.tool;
       expect(tiles(el)).toEqual([
         { label: result.statPlayers, value: '12' },
