@@ -67,6 +67,8 @@ export const en = {
     template: {
       header: 'Message header',
       headerPlaceholder: 'For example: Friendly on Thursday at 9 pm',
+      location: 'Pitch location',
+      locationPlaceholder: 'For example: City pitch, 12 Main Street. https://maps.app.goo.gl/…',
       footer: 'Message footer',
       footerPlaceholder: 'For example: Please confirm your attendance',
       numbering: 'Numbering',

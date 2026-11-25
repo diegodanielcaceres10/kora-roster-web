@@ -147,7 +147,14 @@ export const FriendlyStore = signalStore(
         return formatTeamsForWhatsApp(
           current,
           styles,
-          prefs ? { header: prefs.header, footer: prefs.footer, numbering: prefs.numbering } : {},
+          prefs
+            ? {
+                header: prefs.header,
+                location: prefs.location,
+                footer: prefs.footer,
+                numbering: prefs.numbering,
+              }
+            : {},
         );
       }),
     };

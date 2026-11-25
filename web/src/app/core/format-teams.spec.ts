@@ -138,6 +138,64 @@ describe('formatTeamsForWhatsApp options', () => {
     );
   });
 
+  describe('the location of the pitch', () => {
+    const PLACE = 'Campo municipal, Calle Mayor 12 / 28001 Madrid. https://maps.app.goo.gl/abc123';
+
+    it('goes after the header and before the teams, with a blank line around it', () => {
+      const lines = formatTeamsForWhatsApp(teams, STYLES, {
+        header: '⚽ Amistoso jueves',
+        location: PLACE,
+      }).split('\n');
+      expect(lines.slice(0, 5)).toEqual(['⚽ Amistoso jueves', '', PLACE, '', '🔴 Equipo 1']);
+    });
+
+    it('is the first thing when there is no header', () => {
+      const lines = formatTeamsForWhatsApp(teams, STYLES, { location: PLACE }).split('\n');
+      expect(lines.slice(0, 3)).toEqual([PLACE, '', '🔴 Equipo 1']);
+    });
+
+    it('writes the header, the location, the teams and the footer in that order', () => {
+      const text = formatTeamsForWhatsApp(teams, STYLES, {
+        header: 'ARRIBA',
+        location: 'CANCHA',
+        footer: 'ABAJO',
+        numbering: 'none',
+      });
+      expect(text).toBe(
+        [
+          'ARRIBA',
+          '',
+          'CANCHA',
+          '',
+          '🔴 Equipo 1',
+          'Jugador A 🧤',
+          'Jugador E',
+          '',
+          '🔵 Equipo 2',
+          'Jugador G 🧤',
+          'Jugador B',
+          '',
+          'ABAJO',
+        ].join('\n'),
+      );
+    });
+
+    it('keeps the text as it was typed, with its quotes, slashes and link, on one line', () => {
+      const text = formatTeamsForWhatsApp(teams, STYLES, { location: PLACE });
+      expect(text.split('\n')[0]).toBe(PLACE);
+    });
+
+    it.each([[''], ['   '], ['\n\t'], [undefined]])('leaves out a blank location: %j', (blank) => {
+      const text = formatTeamsForWhatsApp(teams, STYLES, { location: blank });
+      expect(text).toBe(formatTeamsForWhatsApp(teams, STYLES));
+    });
+
+    it('trims the spaces around it', () => {
+      const text = formatTeamsForWhatsApp(teams, STYLES, { location: '  CANCHA \n' });
+      expect(text.startsWith('CANCHA\n\n🔴')).toBe(true);
+    });
+  });
+
   it.each([[''], ['   '], ['\n\t']])(
     'leaves out a header and a footer that are blank: %j',
     (blank) => {

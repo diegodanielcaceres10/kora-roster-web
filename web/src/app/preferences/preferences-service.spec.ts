@@ -178,6 +178,29 @@ describe('PreferencesService', () => {
       numbering: 'paren',
     };
 
+    it('is read without a location, as it had none, and the rest is kept', async () => {
+      localStorage.setItem(KEY(ME), stored(earlier, 1));
+      const { service, signIn } = await setup();
+      signIn();
+      expect(service.active()?.location).toBe('');
+      expect(service.active()?.header).toBe('⚽ Amistoso');
+    });
+
+    it('keeps the location of the pitch when it is saved and read again', async () => {
+      const { service, signIn } = await setup();
+      signIn();
+      service.save({
+        ...TEST_PREFERENCES,
+        location: 'Campo municipal, Calle Mayor 12 / 28001 Madrid. https://maps.app.goo.gl/abc123',
+      });
+      expect(service.active()?.location).toBe(
+        'Campo municipal, Calle Mayor 12 / 28001 Madrid. https://maps.app.goo.gl/abc123',
+      );
+      expect(JSON.parse(localStorage.getItem(KEY(ME)) as string).preferences.location).toBe(
+        'Campo municipal, Calle Mayor 12 / 28001 Madrid. https://maps.app.goo.gl/abc123',
+      );
+    });
+
     it('is read with its two teams and completed with the four that were missing', async () => {
       localStorage.setItem(KEY(ME), stored(earlier, 1));
       const { service, signIn } = await setup();

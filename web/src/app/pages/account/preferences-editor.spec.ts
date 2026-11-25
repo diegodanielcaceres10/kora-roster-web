@@ -110,11 +110,17 @@ describe('PreferencesEditor', () => {
 
   describe('the form', () => {
     it('shows the preferences the account saved', () => {
-      const { field, checkedIcon, colorLabel } = setup(mine);
+      const { field, checkedIcon, colorLabel } = setup({
+        ...mine,
+        location: 'Campo municipal, Calle Mayor 12 / 28001 Madrid. https://maps.app.goo.gl/abc123',
+      });
       expect(checkedIcon(P.playersPerTeam.label)).toBe('7v7');
       expect((field(colorLabel(1)) as HTMLInputElement).value).toBe('#00ff00');
       expect((field(colorLabel(2)) as HTMLInputElement).value).toBe('#ffff00');
       expect((field(P.template.header) as HTMLInputElement).value).toBe('⚽ Amistoso');
+      expect((field(P.template.location) as HTMLInputElement).value).toBe(
+        'Campo municipal, Calle Mayor 12 / 28001 Madrid. https://maps.app.goo.gl/abc123',
+      );
       expect((field(P.template.footer) as HTMLInputElement).value).toBe('Confirmen');
       expect(checkedIcon(P.template.numbering)).toBe(P.template.numberingParen);
     });
@@ -159,13 +165,28 @@ describe('PreferencesEditor', () => {
       expect(card.textContent).toContain(P.teamCount.default(2));
     });
 
-    it('shows how many characters of the 200 the header and the footer use', () => {
+    it('shows how many characters of the 200 the header, the location and the footer use', () => {
       const { el, typeInto } = setup();
       const counts = () =>
         Array.from(el.querySelectorAll('[data-count]')).map((c) => c.textContent?.trim());
-      expect(counts()).toEqual(['0/200', '0/200']);
+      expect(counts()).toEqual(['0/200', '0/200', '0/200']);
       typeInto(P.template.header, 'Amistoso');
-      expect(counts()).toEqual(['8/200', '0/200']);
+      typeInto(P.template.location, 'Cancha 3');
+      expect(counts()).toEqual(['8/200', '8/200', '0/200']);
+    });
+
+    it('has the field of the location between the header and the footer, as in the message', () => {
+      const { field } = setup();
+      const fields = [P.template.header, P.template.location, P.template.footer].map(field);
+      expect(fields[0].compareDocumentPosition(fields[1])).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+      expect(fields[1].compareDocumentPosition(fields[2])).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+    });
+
+    it('gives an example of a location in the field', () => {
+      const { field } = setup();
+      expect((field(P.template.location) as HTMLInputElement).placeholder).toBe(
+        P.template.locationPlaceholder,
+      );
     });
 
     it('shows the preview as a message bubble', () => {
@@ -173,9 +194,10 @@ describe('PreferencesEditor', () => {
       expect(el.querySelector('[data-bubble] pre')).not.toBeNull();
     });
 
-    it('limits the header and the footer to 200 characters', () => {
+    it('limits the header, the location and the footer to 200 characters', () => {
       const { field } = setup();
       expect((field(P.template.header) as HTMLInputElement).maxLength).toBe(200);
+      expect((field(P.template.location) as HTMLInputElement).maxLength).toBe(200);
       expect((field(P.template.footer) as HTMLInputElement).maxLength).toBe(200);
     });
   });
@@ -190,6 +212,25 @@ describe('PreferencesEditor', () => {
     it('marks the goalkeepers of the example with the glove', () => {
       const { preview } = setup();
       expect(preview().match(/🧤/g)).toHaveLength(2);
+    });
+
+    it('puts the location after the header and before the teams while it is typed', () => {
+      const { preview, typeInto } = setup();
+      typeInto(P.template.header, '⚽ Jueves 21hs');
+      typeInto(
+        P.template.location,
+        'Campo municipal, Calle Mayor 12 / 28001 Madrid. https://maps.app.goo.gl/abc123',
+      );
+      expect(
+        preview().startsWith(
+          '⚽ Jueves 21hs\n\nCampo municipal, Calle Mayor 12 / 28001 Madrid. https://maps.app.goo.gl/abc123\n\n🔴 ',
+        ),
+      ).toBe(true);
+    });
+
+    it('shows no location in the message while the field is empty', () => {
+      const { preview } = setup();
+      expect(preview().startsWith('🔴 ')).toBe(true);
     });
 
     it('follows the header and the footer while they are typed', () => {
@@ -269,6 +310,10 @@ describe('PreferencesEditor', () => {
       typeInto(colorLabel(1), '#00ff00');
       typeInto(colorLabel(2), '#ffff00');
       typeInto(P.template.header, '⚽ Amistoso');
+      typeInto(
+        P.template.location,
+        'Campo municipal, Calle Mayor 12 / 28001 Madrid. https://maps.app.goo.gl/abc123',
+      );
       typeInto(P.template.footer, 'Confirmen');
       choose(P.template.numbering, 'paren');
       button(P.save).click();
@@ -277,6 +322,7 @@ describe('PreferencesEditor', () => {
         ...DEFAULT_PREFERENCES,
         playersPerTeam: 7,
         header: '⚽ Amistoso',
+        location: 'Campo municipal, Calle Mayor 12 / 28001 Madrid. https://maps.app.goo.gl/abc123',
         footer: 'Confirmen',
         numbering: 'paren' as const,
         teams: [
@@ -318,6 +364,7 @@ describe('PreferencesEditor', () => {
       fixture.detectChanges();
       expect(checkedIcon(P.playersPerTeam.label)).toBe(P.playersPerTeam.any);
       expect((field(P.template.header) as HTMLInputElement).value).toBe('');
+      expect((field(P.template.location) as HTMLInputElement).value).toBe('');
       expect(service.active()).toEqual(mine);
     });
 

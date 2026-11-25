@@ -7,6 +7,8 @@ export type Numbering = 'dot' | 'paren' | 'dash' | 'none';
 
 export interface FormatOptions {
   header?: string;
+  // Where the pitch is: an address, a link to a map... It goes right after the header.
+  location?: string;
   footer?: string;
   numbering?: Numbering;
 }
@@ -49,5 +51,7 @@ export function formatTeamsForWhatsApp(
     })
     .join('\n\n');
 
-  return [options.header?.trim(), body, options.footer?.trim()].filter((part) => part).join('\n\n');
+  return [options.header?.trim(), options.location?.trim(), body, options.footer?.trim()]
+    .filter((part) => part)
+    .join('\n\n');
 }

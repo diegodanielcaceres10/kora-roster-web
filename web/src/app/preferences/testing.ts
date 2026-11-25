@@ -21,6 +21,7 @@ export const TEST_PREFERENCES: Preferences = {
     { icon: '🟠', color: '#fb8c00' },
   ],
   header: '⚽ Amistoso',
+  location: '',
   footer: 'Confirmen',
   numbering: 'paren',
 };

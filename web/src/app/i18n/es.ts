@@ -72,6 +72,9 @@ export const es: Dictionary = {
     template: {
       header: 'Encabezado del mensaje',
       headerPlaceholder: 'Por ejemplo: Amistoso del jueves a las 21',
+      location: 'Ubicación del campo',
+      locationPlaceholder:
+        'Por ejemplo: Campo municipal, Calle Mayor 12. https://maps.app.goo.gl/…',
       footer: 'Pie del mensaje',
       footerPlaceholder: 'Por ejemplo: Confirmen asistencia',
       numbering: 'Numeración',

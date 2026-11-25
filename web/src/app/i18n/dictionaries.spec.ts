@@ -72,6 +72,16 @@ describe('dictionaries', () => {
       expect(DICTIONARIES[lang].tool.teamTitle(2)).toBe(title);
     });
 
+    it.each([
+      ['en', 'Pitch location', 'For example: City pitch, 12 Main Street. https://maps.app.goo.gl/…'],
+      ['es', 'Ubicación del campo', 'Por ejemplo: Campo municipal, Calle Mayor 12. https://maps.app.goo.gl/…'],
+      ['pt', 'Localização do campo', 'Por exemplo: Campo municipal, Rua Principal 12. https://maps.app.goo.gl/…'],
+    ] as const)('names the field of the location and gives an example in %s', (lang, label, example) => {
+      const { template } = DICTIONARIES[lang].preferences;
+      expect(template.location).toBe(label);
+      expect(template.locationPlaceholder).toBe(example);
+    });
+
     // The examples of the app have no real names: a numbered player in the language of the page.
     it.each([
       ['en', 'Player 7'],

@@ -15,6 +15,8 @@ export interface Preferences {
   // never loses an icon or a color. The six icons are always all different.
   teams: TeamPreference[];
   header: string;
+  // Where the pitch is, for the message: an address, a link to a map...
+  location: string;
   footer: string;
   numbering: Numbering;
 }
@@ -66,6 +68,7 @@ export const DEFAULT_PREFERENCES: Preferences = {
   teamCount: MIN_TEAMS,
   teams: TEAM_ICONS.map((icon, i) => ({ icon, color: DEFAULT_COLORS[i] })),
   header: '',
+  location: '',
   footer: '',
   numbering: 'dot',
 };
@@ -128,6 +131,7 @@ export function sanitizePreferences(value: unknown): Preferences {
         : MIN_TEAMS,
     teams,
     header: text(raw['header']),
+    location: text(raw['location']),
     footer: text(raw['footer']),
     numbering: NUMBERINGS.find((numbering) => numbering === raw['numbering']) ?? 'dot',
   };

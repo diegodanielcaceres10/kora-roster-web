@@ -447,6 +447,33 @@ describe('FriendlyStore', () => {
       expect(text.match(/🧤/g)).toHaveLength(2);
     });
 
+    it('puts the location of the pitch after the header and before the teams', () => {
+      const { store } = drawn({
+        ...TEST_PREFERENCES,
+        location: 'Campo municipal, Calle Mayor 12 / 28001 Madrid. https://maps.app.goo.gl/abc123',
+      });
+      const text = store.whatsappText();
+      expect(
+        text.startsWith(
+          '⚽ Amistoso\n\nCampo municipal, Calle Mayor 12 / 28001 Madrid. https://maps.app.goo.gl/abc123\n\n🟢 Team 1\n1) ',
+        ),
+      ).toBe(true);
+      expect(text.endsWith('\n\nConfirmen')).toBe(true);
+    });
+
+    it('leaves the location out of the message when there is none', () => {
+      const { store } = drawn(TEST_PREFERENCES);
+      expect(store.whatsappText().startsWith('⚽ Amistoso\n\n🟢 Team 1')).toBe(true);
+    });
+
+    it('does not put the location in the story image, which has its own header', () => {
+      const { store } = drawn({
+        ...TEST_PREFERENCES,
+        location: 'Campo municipal, Calle Mayor 12 / 28001 Madrid. https://maps.app.goo.gl/abc123',
+      });
+      expect(JSON.stringify(store.storyInput())).not.toContain('maps.app.goo.gl');
+    });
+
     it('keeps the titles of the teams in the language of the page', () => {
       const { store, i18n } = drawn(TEST_PREFERENCES);
       i18n.setLang('es');

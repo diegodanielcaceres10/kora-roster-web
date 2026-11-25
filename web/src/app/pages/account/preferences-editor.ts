@@ -110,13 +110,14 @@ export class PreferencesEditor {
   });
 
   protected readonly previewText = computed(() => {
-    const { teams, teamCount, header, footer, numbering } = this.draft();
+    const { teams, teamCount, header, location, footer, numbering } = this.draft();
     const styles = teams
       .slice(0, teamCount)
       .map((team, i) => ({ icon: team.icon, title: this.teamTitle(i) }));
     const sample = sampleTeamsOf(this.i18n.t().tool.playerName);
     return formatTeamsForWhatsApp(sample.slice(0, teamCount), styles, {
       header,
+      location,
       footer,
       numbering,
     });
@@ -177,6 +178,10 @@ export class PreferencesEditor {
 
   protected setHeader(header: string): void {
     this.draft.update((d) => ({ ...d, header }));
+  }
+
+  protected setLocation(location: string): void {
+    this.draft.update((d) => ({ ...d, location }));
   }
 
   protected setFooter(footer: string): void {

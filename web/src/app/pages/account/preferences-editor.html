@@ -114,6 +114,14 @@
           />
           <ui-input
             showCount
+            [label]="t().template.location"
+            [placeholder]="t().template.locationPlaceholder"
+            [maxLength]="textMax"
+            [value]="draft().location"
+            (valueChange)="setLocation($event)"
+          />
+          <ui-input
+            showCount
             [label]="t().template.footer"
             [placeholder]="t().template.footerPlaceholder"
             [maxLength]="textMax"

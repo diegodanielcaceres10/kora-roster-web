@@ -15,7 +15,7 @@ const DEFAULT_COLORS = ['#e53935', '#1e88e5', '#43a047', '#fdd835', '#8e24aa', '
 const withTeams = (teams: unknown) => ({ teams });
 
 describe('DEFAULT_PREFERENCES', () => {
-  it('lets any team size, 2 teams, no header or footer and dotted numbers', () => {
+  it('lets any team size, 2 teams, no header, location or footer and dotted numbers', () => {
     expect(DEFAULT_PREFERENCES.playersPerTeam).toBeNull();
     expect(DEFAULT_PREFERENCES.teamCount).toBe(2);
     expect([DEFAULT_PREFERENCES.header, DEFAULT_PREFERENCES.footer]).toEqual(['', '']);
@@ -65,6 +65,7 @@ describe('sanitizePreferences', () => {
         { icon: '🟠', color: '#444444' },
       ],
       header: '⚽ Amistoso',
+      location: 'Campo municipal, Calle Mayor 12 / 28001 Madrid. https://maps.app.goo.gl/abc123',
       footer: 'Confirmen',
       numbering: 'paren',
     };
@@ -74,7 +75,7 @@ describe('sanitizePreferences', () => {
   it('drops anything it does not know', () => {
     const result = sanitizePreferences({ ...DEFAULT_PREFERENCES, evil: '<script>' });
     expect(Object.keys(result).sort()).toEqual(
-      ['footer', 'header', 'numbering', 'playersPerTeam', 'teamCount', 'teams'].sort(),
+      ['footer', 'header', 'location', 'numbering', 'playersPerTeam', 'teamCount', 'teams'].sort(),
     );
   });
 
@@ -223,6 +224,40 @@ describe('sanitizePreferences', () => {
       const result = sanitizePreferences({ header: 'a'.repeat(250), footer: 'b'.repeat(201) });
       expect(result.header).toBe('a'.repeat(200));
       expect(result.footer).toBe('b'.repeat(200));
+    });
+  });
+
+  describe('location of the pitch', () => {
+    it('is empty by default', () => {
+      expect(DEFAULT_PREFERENCES.location).toBe('');
+    });
+
+    it('keeps text as it is, with its link', () => {
+      const result = sanitizePreferences({
+        location:
+          '  Campo municipal, Calle Mayor 12 / 28001 Madrid. https://maps.app.goo.gl/abc123  ',
+      });
+      expect(result.location).toBe(
+        '  Campo municipal, Calle Mayor 12 / 28001 Madrid. https://maps.app.goo.gl/abc123  ',
+      );
+    });
+
+    it.each([[7], [null], [undefined], [{}]])('turns %j into an empty text', (value) => {
+      expect(sanitizePreferences({ location: value }).location).toBe('');
+    });
+
+    it('cuts text that is longer than 200 characters', () => {
+      expect(sanitizePreferences({ location: 'c'.repeat(250) }).location).toBe('c'.repeat(200));
+    });
+
+    it('is empty in what an earlier version saved, which had none, and the rest stays', () => {
+      const result = sanitizePreferences({ header: 'Hola', footer: 'Chau', numbering: 'dash' });
+      expect([result.location, result.header, result.footer, result.numbering]).toEqual([
+        '',
+        'Hola',
+        'Chau',
+        'dash',
+      ]);
     });
   });
 
