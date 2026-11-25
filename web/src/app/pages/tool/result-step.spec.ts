@@ -49,11 +49,11 @@ describe('ResultStep', () => {
     document.documentElement.lang = 'en';
   });
 
-  it('shows a card per team with its icon and title in the current language', () => {
+  it('shows a card per team with its title in the current language', () => {
     const { el } = setup();
     const titles = Array.from(el.querySelectorAll('ui-card h3')).map((h) => h.textContent?.trim());
     expect(titles).toEqual([T.teamTitle(1), T.teamTitle(2)]);
-    expect(icons(el)).toEqual(['🔴', '🔵']);
+    expect(icons(el)).toEqual([]);
   });
 
   it('lists the players of each team, numbered from 1', () => {
@@ -173,13 +173,13 @@ describe('ResultStep', () => {
   });
 
   describe('with the preferences of the person', () => {
-    it('titles the cards with their icons', () => {
+    it('titles the cards with their titles', () => {
       const { el } = setup(TEST_PREFERENCES);
       const titles = Array.from(el.querySelectorAll('ui-card h3')).map((h) =>
         h.textContent?.trim(),
       );
       expect(titles).toEqual([T.teamTitle(1), T.teamTitle(2)]);
-      expect(icons(el)).toEqual(['🟢', '🟡']);
+      expect(icons(el)).toEqual([]);
     });
 
     it('keeps the cards numbered whatever numbering the message uses', () => {
@@ -220,13 +220,13 @@ describe('ResultStep', () => {
     it.each([
       [3, 18],
       [4, 20],
-    ])('shows a card per team, with its own icon and title, for %i teams', (teams, players) => {
+    ])('shows a card per team, with its own title, for %i teams', (teams, players) => {
       const { el } = setupMany(teams, players);
       const titles = Array.from(el.querySelectorAll('ui-card h3')).map((h) =>
         h.textContent?.trim(),
       );
       expect(titles).toEqual(Array.from({ length: teams }, (_, i) => T.teamTitle(i + 1)));
-      expect(icons(el)).toEqual(['🔴', '🔵', '🟢', '🟡'].slice(0, teams));
+      expect(icons(el)).toEqual([]);
     });
 
     it('stacks the teams in their column, and makes two columns on extra-wide screens from 3 teams', () => {
@@ -929,7 +929,7 @@ describe('ResultStep', () => {
           h.textContent?.trim(),
         );
         expect(titles).toEqual([T.teamTitle(1), T.teamTitle(2)]);
-        expect(icons(el)).toEqual(['🔴', '🔵']);
+        expect(icons(el)).toEqual([]);
         const [teamA] = store.teams() ?? [[]];
         expect(items(el)).toHaveLength(12);
         expect(items(el)[0]).toMatch(new RegExp(`^01\\s*${teamA[0].name}`));
@@ -1113,25 +1113,18 @@ describe('ResultStep', () => {
         }
       });
 
-      it('shows each player as a numbered tile with the role', () => {
+      it('shows each player as a numbered tile with their name and badge', () => {
         const { teamCards, all, text } = edit('drawn');
         const tiles = all('li', teamCards()[0]);
         expect(text(tiles[0])).toMatch(/^01/);
-        const roles = tiles.map((tile) =>
-          text(tile).includes(T.result.roleGoalkeeper)
-            ? 'goalkeeper'
-            : text(tile).includes(T.result.roleField)
-              ? 'field'
-              : 'none',
-        );
-        expect(roles).not.toContain('none');
-        expect(roles.filter((role) => role === 'goalkeeper')).toHaveLength(1);
+        expect(text(tiles[0])).not.toContain(T.result.roleGoalkeeper);
+        expect(text(tiles[0])).not.toContain(T.result.roleField);
       });
 
       it('marks a goalkeeper with the short tag as well as with the glove', () => {
         const { teamCards, all, text } = edit('drawn');
         const keeper = all('li', teamCards()[0]).find((tile) =>
-          text(tile).includes(T.result.roleGoalkeeper),
+          text(tile).includes(T.result.goalkeeperShort),
         ) as HTMLElement;
         expect(text(keeper)).toContain(T.result.goalkeeperShort);
         expect(keeper.querySelector('ui-icon[data-icon="glove"]')).not.toBeNull();
