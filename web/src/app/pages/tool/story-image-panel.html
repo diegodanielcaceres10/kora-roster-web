@@ -4,6 +4,7 @@
   >
     <ng-content select="[panel-start]" />
     <ui-button
+      size="lg"
       variant="outline"
       [disabled]="busy()"
       [describedBy]="hintId"
@@ -13,7 +14,7 @@
       {{ t().downloadImage }}
     </ui-button>
     @if (canShare) {
-      <ui-button variant="outline" [disabled]="busy()" [describedBy]="hintId" (click)="share()">
+      <ui-button size="lg" variant="outline" [disabled]="busy()" [describedBy]="hintId" (click)="share()">
         <ui-icon [name]="locked() ? 'lock' : 'share'" />
         {{ t().shareImage }}
       </ui-button>
