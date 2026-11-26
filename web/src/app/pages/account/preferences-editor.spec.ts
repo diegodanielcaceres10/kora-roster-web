@@ -511,7 +511,8 @@ describe('PreferencesEditor', () => {
     });
 
     it('does not keep the example as a location: saving with the field empty saves nothing', () => {
-      const { button, service } = setup();
+      const { typeInto, button, service } = setup();
+      typeInto(P.template.header, 'Amistoso');
       button(P.save).click();
       expect(service.active()?.location).toBe('');
     });
@@ -659,6 +660,26 @@ describe('PreferencesEditor', () => {
       button(P.restore).click();
       button(P.save).click();
       expect(service.active()).toEqual(DEFAULT_PREFERENCES);
+    });
+  });
+
+  describe('enabling Save only when edited', () => {
+    it('disables Save until a preference changes, and disables it again after saving or reverting', () => {
+      const { fixture, typeInto, button } = setup();
+      const saveBtn = () => button(P.save);
+      expect(saveBtn().disabled).toBe(true);
+
+      typeInto(P.template.header, 'Jueves');
+      expect(saveBtn().disabled).toBe(false);
+
+      typeInto(P.template.header, '');
+      expect(saveBtn().disabled).toBe(true);
+
+      typeInto(P.template.header, 'Jueves');
+      expect(saveBtn().disabled).toBe(false);
+      saveBtn().click();
+      fixture.detectChanges();
+      expect(saveBtn().disabled).toBe(true);
     });
   });
 

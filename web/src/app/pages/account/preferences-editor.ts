@@ -64,6 +64,16 @@ const copyOf = (preferences: Preferences): Preferences => ({
   })),
 });
 
+const samePreferences = (a: Preferences, b: Preferences): boolean =>
+  a.playersPerTeam === b.playersPerTeam &&
+  a.teamCount === b.teamCount &&
+  a.header === b.header &&
+  a.location === b.location &&
+  a.footer === b.footer &&
+  a.numbering === b.numbering &&
+  a.teams.length === b.teams.length &&
+  a.teams.every((team, i) => team.color === b.teams[i].color && team.icon === b.teams[i].icon);
+
 @Component({
   selector: 'app-preferences-editor',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -87,6 +97,9 @@ export class PreferencesEditor {
 
   protected readonly draft = signal<Preferences>(
     copyOf(this.preferences.active() ?? DEFAULT_PREFERENCES),
+  );
+  protected readonly hasChanges = computed(
+    () => !samePreferences(this.draft(), this.preferences.active() ?? DEFAULT_PREFERENCES),
   );
   protected readonly lock = signal<{ reason: LockReason; message: string } | null>(null);
 

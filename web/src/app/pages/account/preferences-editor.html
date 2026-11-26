@@ -205,7 +205,7 @@
       </ui-card>
 
       <div class="space-y-3">
-        <ui-button stretch size="lg" (click)="save()">
+        <ui-button stretch size="lg" [disabled]="!hasChanges()" (click)="save()">
           <ui-icon name="check" />
           {{ t().save }}
         </ui-button>
