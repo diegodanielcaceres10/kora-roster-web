@@ -466,12 +466,13 @@ describe('FriendlyStore', () => {
       expect(store.whatsappText().startsWith('⚽ Amistoso\n\n🟢 Team 1')).toBe(true);
     });
 
-    it('gives the location to the story image too, next to the header', () => {
+    it('gives the location to the story image, and not the header, which is for the message', () => {
       const { store } = drawn({
         ...TEST_PREFERENCES,
         location: 'Cancha de ejemplo, Calle Principal 123. https://maps.app.goo.gl/ejemplo',
       });
-      expect(store.storyInput()?.header).toBe('⚽ Amistoso');
+      expect(store.storyInput()).not.toHaveProperty('header');
+      expect(store.whatsappText().startsWith('⚽ Amistoso')).toBe(true);
       expect(store.storyInput()?.location).toBe(
         'Cancha de ejemplo, Calle Principal 123. https://maps.app.goo.gl/ejemplo',
       );
@@ -907,19 +908,16 @@ describe('FriendlyStore', () => {
       expect(Object.keys(input?.teams[0] ?? {}).sort()).toEqual(['color', 'players', 'title']);
     });
 
-    it('is plain for somebody who is not signed in: no header, no footer, dotted numbers', () => {
+    it('is plain for somebody who is not signed in: no location, no footer, dotted numbers', () => {
       const input = drawn().store.storyInput();
-      expect([input?.header, input?.footer, input?.numbering]).toEqual(['', '', 'dot']);
+      expect([input?.location, input?.footer, input?.numbering]).toEqual(['', '', 'dot']);
     });
 
-    it('uses the header, footer, numbering and colors of the person who is signed in', () => {
+    it('uses the footer, numbering and colors of the person who is signed in, and no header', () => {
       saveSession({ ...TEST_PREFERENCES, numbering: 'dash' });
       const input = drawn().store.storyInput();
-      expect([input?.header, input?.footer, input?.numbering]).toEqual([
-        '⚽ Amistoso',
-        'Confirmen',
-        'dash',
-      ]);
+      expect(input).not.toHaveProperty('header');
+      expect([input?.footer, input?.numbering]).toEqual(['Confirmen', 'dash']);
       expect(input?.teams.map((team) => team.color)).toEqual(['#00ff00', '#ffff00']);
     });
 

@@ -94,7 +94,7 @@ const layout: StoryLayout = {
   commands: [
     {
       kind: 'text',
-      role: 'header',
+      role: 'brand',
       x: 540,
       y: 80,
       text: 'Header',
@@ -372,7 +372,6 @@ describe('createStoryBlob', () => {
         players: [{ name: 'Jugador E', isGoalkeeper: false }],
       },
     ],
-    header: 'Header',
     location: 'Cancha de ejemplo',
     footer: '',
     numbering: 'dot',

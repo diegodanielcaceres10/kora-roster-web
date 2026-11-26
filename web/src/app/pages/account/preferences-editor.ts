@@ -177,24 +177,28 @@ export class PreferencesEditor {
 
   // The image is made with the same code as the one that is downloaded, from the same kind of
   // input, so what is seen here is what comes out.
-  private readonly previewStory = computed((): StoryInput => {
-    const { teams, teamCount, header, footer, numbering } = this.draft();
-    const { result } = this.i18n.t().tool;
-    return {
-      teams: teams.slice(0, teamCount).map((team, i) => ({
-        title: this.teamTitle(i),
-        color: team.color,
-        players: this.sampleTeams()[i],
-      })),
-      header,
-      location: this.previewLocation(),
-      footer,
-      numbering,
-      confirmed: result.storyConfirmed,
-      brand: result.storyBrand,
-      theme: this.theme.mode(),
-    };
-  });
+  private readonly previewStory = computed(
+    (): StoryInput => {
+      const { teams, teamCount, footer, numbering } = this.draft();
+      const { result } = this.i18n.t().tool;
+      return {
+        teams: teams.slice(0, teamCount).map((team, i) => ({
+          title: this.teamTitle(i),
+          color: team.color,
+          players: this.sampleTeams()[i],
+        })),
+        location: this.previewLocation(),
+        footer,
+        numbering,
+        confirmed: result.storyConfirmed,
+        brand: result.storyBrand,
+        theme: this.theme.mode(),
+      };
+    },
+    // The draft changes with every letter of the header or the footer, but the image only changes
+    // when what it draws changes, so an equal input is not a new input.
+    { equal: (a, b) => JSON.stringify(a) === JSON.stringify(b) },
+  );
   protected readonly imageUrl = signal<string | null>(null);
   protected readonly imageFailed = signal(false);
   protected readonly imageFailedText = computed(() => this.i18n.t().tool.result.imageFailed);

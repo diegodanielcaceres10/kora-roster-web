@@ -33,7 +33,6 @@ const teams = (count: number, size: number, keepers = 1) =>
 
 const input = (list: StoryTeam[], extra: Partial<StoryInput> = {}): StoryInput => ({
   teams: list,
-  header: '',
   location: '',
   footer: '',
   numbering: 'dot',
@@ -168,10 +167,10 @@ describe('layoutStory', () => {
       expect(tagRect.x + tagRect.width).toBeLessThan(statusRect.x);
     });
 
-    it('stays at the same place whatever the header text, the numbering or the teams are', () => {
+    it('stays at the same place whatever the location, the numbering or the teams are', () => {
       const base = logo();
       const others = [
-        logo({ header: 'Thursday at 9' }),
+        logo({ location: 'Cancha Norte, Calle del Sol 5' }),
         logo({ numbering: 'none', footer: 'Bring water' }),
         logo({}, teams(3, 7)),
         logo({}, teams(4, 6)),
@@ -287,7 +286,6 @@ describe('layoutStory', () => {
         layout,
         card: rects(layout, 'location-card')[0],
         lines: texts(layout, 'location'),
-        headerCard: rects(layout, 'header-card')[0],
         plate: rects(layout, 'plate')[0],
       };
     };
@@ -298,7 +296,7 @@ describe('layoutStory', () => {
       expect(lines.map((l) => l.text)).toEqual([PLACE]);
     });
 
-    it('keeps the capitals and the link as they are, which the header does not', () => {
+    it('keeps the capitals and the link as they are, so a link still works', () => {
       const { lines } = where({ location: 'Cancha Norte https://Maps.App.goo.gl/AbC' });
       expect(lines[0].text).toBe('Cancha Norte https://Maps.App.goo.gl/AbC');
     });
@@ -314,25 +312,17 @@ describe('layoutStory', () => {
       expect(lines[0].text).toBe('Cancha Norte, Calle 1');
     });
 
-    it('goes right after the header card, with the same width and the same gap as before it', () => {
-      const { card, headerCard, layout } = where({ header: 'Jueves a las 21' });
-      const topRowBottom = images(layout, 'logo')[0].y + images(layout, 'logo')[0].height;
-      expect(card.x).toBe(headerCard.x);
-      expect(card.width).toBe(headerCard.width);
-      expect(headerCard.y - topRowBottom).toBe(GAP);
-      expect(card.y - (headerCard.y + headerCard.height)).toBe(GAP);
-    });
-
-    it('takes the place of the header card when there is no header: under the top row', () => {
-      const { card, headerCard, layout } = where({ header: '' });
+    it('goes right under the top row, as wide as the plate allows, with the gap in between', () => {
+      const { card, layout } = where();
       const logo = images(layout, 'logo')[0];
-      expect(headerCard).toBeUndefined();
+      expect(card.x).toBe(INNER_LEFT);
+      expect(card.width).toBe(INNER_WIDTH);
       expect(card.y - (logo.y + logo.height)).toBe(GAP);
     });
 
-    it('is as tall as the header card for one line, with the text centered and at the left', () => {
-      const { card, lines, headerCard } = where({ header: 'Jueves a las 21' });
-      expect(card.height).toBe(headerCard.height);
+    it('is 56 px tall for one line, with the text centered and at the left', () => {
+      const { card, lines } = where();
+      expect(card.height).toBe(56);
       expect(lines[0].align).toBe('left');
       expect(lines[0].x).toBe(card.x + 20);
       expect(lines[0].y).toBe(card.y + card.height / 2);
@@ -349,11 +339,11 @@ describe('layoutStory', () => {
     });
 
     it('goes on a second line when it does not fit in one, and the card grows with it', () => {
-      const { card, lines, headerCard } = where({
+      const { card, lines } = where({
         location: Array.from({ length: 14 }, (_, i) => `calle${i}`).join(' '),
       });
       expect(lines).toHaveLength(2);
-      expect(card.height).toBeGreaterThan(headerCard?.height ?? 56);
+      expect(card.height).toBeGreaterThan(56);
       for (const line of lines) {
         expect(line.y).toBeGreaterThan(card.y);
         expect(line.y).toBeLessThan(card.y + card.height);
@@ -396,15 +386,14 @@ describe('layoutStory', () => {
     });
 
     it('comes before the matchday card and the panels, in this order', () => {
-      const { layout, card, headerCard } = where({ header: 'Jueves' });
+      const { layout, card } = where();
       const at = (command: unknown) => layout.commands.indexOf(command as never);
-      expect(at(headerCard)).toBeLessThan(at(card));
       expect(at(card)).toBeLessThan(at(rects(layout, 'matchday-card')[0]));
       expect(at(card)).toBeLessThan(at(panels(layout)[0]));
     });
 
-    it('keeps the whole plate inside the story, even with a header, two lines and 11 players', () => {
-      const { plate } = where({ header: 'Jueves a las 21', location: LONG }, teams(2, 11));
+    it('keeps the whole plate inside the story, even with two lines and 11 players', () => {
+      const { plate } = where({ location: LONG }, teams(2, 11));
       expect(plate.y).toBeGreaterThanOrEqual(0);
       expect(plate.y + plate.height).toBeLessThanOrEqual(STORY_HEIGHT);
     });
@@ -422,20 +411,146 @@ describe('layoutStory', () => {
     });
   });
 
-  describe('header and footer', () => {
-    it('renders a header card when header text is provided', () => {
-      const layout = layoutStory(input(teams(2, 7), { header: 'Martes 20:30 // Cancha 1' }), measure);
-      expect(rects(layout, 'header-card')).toHaveLength(1);
-      expect(texts(layout, 'header')).toHaveLength(1);
+  describe('the header of the preferences', () => {
+    it('is not drawn in the image, even if the input still carries it', () => {
+      const withHeader = Object.assign(input(teams(2, 7)), { header: 'Martes 20:30 // Cancha 1' });
+      const layout = layoutStory(withHeader, measure);
+      const roles = layout.commands.map((c) => String(c.role));
+      expect(roles).not.toContain('header-card');
+      expect(roles).not.toContain('header');
+      expect(layout.commands.some((c) => c.kind === 'text' && c.text.includes('MARTES'))).toBe(
+        false,
+      );
     });
 
-    it('omits header card when header is empty', () => {
-      const layout = layoutStory(input(teams(2, 7), { header: '' }), measure);
-      expect(rects(layout, 'header-card')).toHaveLength(0);
+    it('leaves the same layout as an image without it', () => {
+      const withHeader = Object.assign(input(teams(2, 7)), { header: 'Martes 20:30' });
+      expect(layoutStory(withHeader, measure)).toEqual(layoutStory(input(teams(2, 7)), measure));
+    });
+  });
+
+  describe('three and four teams', () => {
+    const GAP = 20;
+    const grid = (count: number, size: number, extra: Partial<StoryInput> = {}) => {
+      const layout = layoutStory(input(teams(count, size), extra), measure);
+      return {
+        layout,
+        ps: panels(layout),
+        plate: rects(layout, 'plate')[0],
+        brand: texts(layout, 'brand')[0],
+      };
+    };
+    const overlap = (a: RectCommand, b: RectCommand) =>
+      a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
+
+    it.each([[2], [3], [4]])('has one panel for each of the %i teams, in order', (count) => {
+      const { ps } = grid(count, 6);
+      expect(ps.map((p) => p.team)).toEqual(Array.from({ length: count }, (_, i) => i));
     });
 
+    it.each([[3], [4]])('does not put a panel on top of another with %i teams', (count) => {
+      const { ps } = grid(count, 8);
+      for (let i = 0; i < ps.length; i++) {
+        for (let j = i + 1; j < ps.length; j++) {
+          expect(overlap(ps[i], ps[j]), `${i} over ${j}`).toBe(false);
+        }
+      }
+    });
+
+    it('puts four teams in a grid of two by two, with the gap between rows and between columns', () => {
+      const { ps } = grid(4, 6);
+      expect(ps[0].y).toBe(ps[1].y);
+      expect(ps[2].y).toBe(ps[3].y);
+      expect(ps[2].y - (ps[0].y + ps[0].height)).toBe(GAP);
+      expect(ps[2].x).toBe(ps[0].x);
+      expect(ps[3].x).toBe(ps[1].x);
+      expect(ps[1].x - (ps[0].x + ps[0].width)).toBe(GAP);
+      expect(new Set(ps.map((p) => p.width)).size).toBe(1);
+      expect(new Set(ps.map((p) => p.height)).size).toBe(1);
+    });
+
+    it('puts three teams in two rows, with the third one centered under the other two', () => {
+      const { ps } = grid(3, 6);
+      expect(ps[0].y).toBe(ps[1].y);
+      expect(ps[2].y - (ps[0].y + ps[0].height)).toBe(GAP);
+      expect(ps[2].width).toBe(ps[0].width);
+      expect(ps[2].x + ps[2].width / 2).toBeCloseTo(STORY_WIDTH / 2, 5);
+    });
+
+    it('keeps two teams in one row, side by side, as before', () => {
+      const { ps } = grid(2, 7);
+      expect(ps[0].y).toBe(ps[1].y);
+      expect(ps[1].x).toBeGreaterThan(ps[0].x);
+    });
+
+    it.each([[3], [4]])(
+      'keeps the title, the count and every player of each team in its panel (%i teams)',
+      (count) => {
+        const { layout, ps } = grid(count, 6);
+        ps.forEach((panel, i) => {
+          const mine = layout.commands.filter(
+            (c): c is TextCommand => c.kind === 'text' && c.team === i,
+          );
+          const written = mine.map((t) => t.text);
+          for (const player of teams(count, 6)[i].players) expect(written).toContain(player.name);
+          for (const text of mine) {
+            expect(text.x).toBeGreaterThanOrEqual(panel.x);
+            expect(text.x).toBeLessThanOrEqual(panel.x + panel.width);
+            expect(text.y).toBeGreaterThan(panel.y);
+            expect(text.y).toBeLessThan(panel.y + panel.height);
+          }
+        });
+      },
+    );
+
+    it('keeps the plate and the brand inside the story, with 11 players in each of 4 teams', () => {
+      const { plate, ps, brand } = grid(4, 11, {
+        location: Array.from({ length: 30 }, () => 'calle').join(' '),
+      });
+      expect(plate.y).toBeGreaterThanOrEqual(0);
+      expect(plate.y + plate.height).toBeLessThanOrEqual(STORY_HEIGHT);
+      const bottom = Math.max(...ps.map((p) => p.y + p.height));
+      expect(bottom).toBeLessThan(plate.y + plate.height);
+      expect(brand.y).toBeGreaterThan(bottom);
+      expect(brand.y).toBeLessThan(plate.y + plate.height);
+    });
+
+    it('keeps the plate inside the story with 3 teams of 11 and a location in two lines', () => {
+      const { plate, ps } = grid(3, 11, {
+        location: Array.from({ length: 30 }, () => 'calle').join(' '),
+      });
+      expect(plate.y).toBeGreaterThanOrEqual(0);
+      expect(plate.y + plate.height).toBeLessThanOrEqual(STORY_HEIGHT);
+      expect(ps.every((p) => p.y + p.height <= plate.y + plate.height)).toBe(true);
+    });
+
+    it('makes the rows of players shorter as there are more players, never under 48 px', () => {
+      const heightOf = (count: number, size: number) =>
+        rects(layoutStory(input(teams(count, size)), measure), 'player-row')[0]?.height;
+      expect(heightOf(4, 5)).toBe(72);
+      expect(heightOf(4, 11)).toBeLessThan(72);
+      expect(heightOf(4, 11)).toBeGreaterThanOrEqual(48);
+    });
+
+    it.each([
+      [2, 7, '7V7'],
+      [3, 5, '5V5V5'],
+      [4, 6, '6V6V6V6'],
+    ])(
+      'says the size of every team in the status pill (%i teams of %i)',
+      (count, size, expected) => {
+        const { layout } = grid(count, size);
+        expect(texts(layout, 'status-pill')[0].text).toBe(`${expected} CONFIRMED`);
+      },
+    );
+  });
+
+  describe('footer and brand', () => {
     it('renders brand footer at the bottom', () => {
-      const layout = layoutStory(input(teams(2, 7), { brand: 'Generado con Kora Roster' }), measure);
+      const layout = layoutStory(
+        input(teams(2, 7), { brand: 'Generado con Kora Roster' }),
+        measure,
+      );
       const brand = texts(layout, 'brand')[0];
       expect(brand.text).toBe('GENERADO CON KORA ROSTER');
       expect(brand.y).toBeGreaterThan(1700);

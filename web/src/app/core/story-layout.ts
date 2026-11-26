@@ -5,6 +5,7 @@ export const STORY_HEIGHT = 1920;
 
 const GAP = 20;
 const RADIUS = 28;
+const PLATE_MARGIN = 36;
 const ELLIPSIS = '…';
 
 export type FontWeight = 'normal' | 'bold';
@@ -23,8 +24,7 @@ export interface StoryTeam {
 
 export interface StoryInput {
   teams: readonly StoryTeam[];
-  header: string;
-  // Where the pitch is. It gets a card of its own under the header, in up to two lines.
+  // Where the pitch is. It gets a card of its own under the top row, in up to two lines.
   location: string;
   footer: string;
   numbering: Numbering;
@@ -41,7 +41,6 @@ export type RectRole =
   | 'title-bar'
   | 'highlight'
   | 'matchday-card'
-  | 'header-card'
   | 'location-card'
   | 'player-row'
   | 'badge';
@@ -49,7 +48,6 @@ export type RectRole =
 export type TextRole =
   | 'brand-pill'
   | 'status-pill'
-  | 'header'
   | 'location'
   | 'footer'
   | 'brand'
@@ -152,7 +150,6 @@ const LIGHT_THEME: ThemeTokens = {
   footer: '#64748b',
 };
 
-const PLATE_MARGIN = 36;
 const PLATE_PADDING = 36;
 
 // The logo of the first row: the mark, the name and the Roster tag, all centered on the line
@@ -173,6 +170,22 @@ const LOCATION_PAD_Y = 13;
 const LOCATION_MAX_LINES = 2;
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
+
+// The rows of players: no shorter than MIN_SLOT and no taller than MAX_SLOT.
+const MIN_SLOT = 48;
+const MAX_SLOT = 72;
+// The most the content of the plate can take: the story, the margins and the padding of the plate.
+const MAX_CONTENT_H = STORY_HEIGHT - 2 * PLATE_MARGIN - 48;
+
+const gapOf = (slot: number) => clamp(Math.floor(slot * 0.16), 8, 12);
+
+// The tallest slot so that `count` of them, with their gaps, fit in `area` (never under MIN_SLOT).
+function fitSlot(area: number, count: number): number {
+  for (let slot = MAX_SLOT; slot > MIN_SLOT; slot--) {
+    if (count * slot + (count - 1) * gapOf(slot) <= area) return slot;
+  }
+  return MIN_SLOT;
+}
 
 function truncate(
   text: string,
@@ -248,23 +261,14 @@ export function layoutStory(input: StoryInput, measure: Measure): StoryLayout {
   }
 
   const columns = teamCount === 1 ? 1 : 2;
+  const rows = Math.ceil(teamCount / columns);
   const colWidth = (innerWidth - GAP * (columns - 1)) / columns;
 
   const maxPlayers = Math.max(1, ...input.teams.map((t) => t.players.length));
 
-  // Dynamic slot height according to player count so rows are comfortable
-  // 5-8 players: 68-72px; 9-11 players: 58-64px; 12+ players: 48-54px
-  const slotH = clamp(Math.floor(620 / maxPlayers), 48, 72);
-  const rowGap = clamp(Math.floor(slotH * 0.16), 8, 12);
   const headerH = 56;
   const panelPadY = 16;
-  const playersAreaH = maxPlayers * slotH + (maxPlayers - 1) * rowGap;
-  const panelHeight = headerH + panelPadY + playersAreaH + panelPadY;
-
-  // Calculate vertical height of elements
   const pillHeight = 56;
-  const headerText = tidy(input.header);
-  const infoHeight = headerText ? 56 : 0;
   const locationText = tidy(input.location);
   const locationLines = locationText
     ? wrap(locationText, innerWidth - 40, LOCATION_SIZE, 'normal', measure, LOCATION_MAX_LINES)
@@ -277,15 +281,29 @@ export function layoutStory(input: StoryInput, measure: Measure): StoryLayout {
   const matchdayHeight = isTwoTeams ? 116 : 0;
   const brandHeight = 36;
 
-  const totalContentH =
+  const aboveHeight =
     pillHeight +
     GAP +
-    (infoHeight > 0 ? infoHeight + GAP : 0) +
     (locationHeight > 0 ? locationHeight + GAP : 0) +
-    (matchdayHeight > 0 ? matchdayHeight + GAP : 0) +
-    panelHeight +
-    GAP +
-    brandHeight;
+    (matchdayHeight > 0 ? matchdayHeight + GAP : 0);
+
+  // Dynamic slot height according to player count so rows are comfortable
+  // 5-8 players: 68-72px; 9-11 players: 58-64px; 12+ players: 48-54px.
+  // With one row of panels the budget is fixed. With two rows (3 or 4 teams) they have to share
+  // what is left of the plate, so the slots are the tallest ones that still fit.
+  let slotH = clamp(Math.floor(620 / maxPlayers), MIN_SLOT, MAX_SLOT);
+  if (rows > 1) {
+    const panelsBudget = MAX_CONTENT_H - aboveHeight - GAP - brandHeight;
+    const panelBudget = (panelsBudget - GAP * (rows - 1)) / rows;
+    const playersBudget = panelBudget - headerH - 2 * panelPadY;
+    slotH = fitSlot(playersBudget, maxPlayers);
+  }
+  const rowGap = gapOf(slotH);
+  const playersAreaH = maxPlayers * slotH + (maxPlayers - 1) * rowGap;
+  const panelHeight = headerH + panelPadY + playersAreaH + panelPadY;
+  const panelsHeight = rows * panelHeight + (rows - 1) * GAP;
+
+  const totalContentH = aboveHeight + panelsHeight + GAP + brandHeight;
 
   // Center vertical layout inside the 1920 story canvas
   const startY = Math.max(PLATE_MARGIN + 24, Math.floor((STORY_HEIGHT - totalContentH) / 2));
@@ -357,8 +375,12 @@ export function layoutStory(input: StoryInput, measure: Measure): StoryLayout {
     align: 'center',
   });
 
+  // The size of the longest team once for every team: 7V7 for two, 5V5V5 for three, 5V5V5V5 for four.
   const longest = Math.max(0, ...input.teams.map((t) => t.players.length));
-  const statusText = [longest > 0 ? `${longest}V${longest}` : '', tidy(input.confirmed).toUpperCase()]
+  const statusText = [
+    longest > 0 ? Array.from({ length: input.teams.length }, () => longest).join('V') : '',
+    tidy(input.confirmed).toUpperCase(),
+  ]
     .filter(Boolean)
     .join(' ');
 
@@ -390,38 +412,7 @@ export function layoutStory(input: StoryInput, measure: Measure): StoryLayout {
 
   let currentY = startY + pillHeight + GAP;
 
-  // 2. Info / Header Card (if header is provided)
-  if (headerText) {
-    commands.push({
-      kind: 'rect',
-      role: 'header-card',
-      x: left,
-      y: currentY,
-      width: innerWidth,
-      height: infoHeight,
-      radius: 18,
-      fill: theme.infoCard.fill,
-      stroke: { color: theme.infoCard.stroke, width: 1.5 },
-    });
-
-    const infoFormatted = headerText.toUpperCase();
-    const displayInfo = truncate(infoFormatted, innerWidth - 40, 22, 'bold', measure);
-    commands.push({
-      kind: 'text',
-      role: 'header',
-      x: left + 20,
-      y: currentY + infoHeight / 2,
-      text: displayInfo,
-      size: 22,
-      weight: 'bold',
-      color: theme.infoCard.text,
-      align: 'left',
-    });
-
-    currentY += infoHeight + GAP;
-  }
-
-  // 2b. Location card (if a location is provided), under the header card
+  // 2. Location card (if a location is provided), under the top row
   if (locationHeight > 0) {
     commands.push({
       kind: 'rect',
@@ -580,10 +571,15 @@ export function layoutStory(input: StoryInput, measure: Measure): StoryLayout {
   }
 
   // 4. Team Columns & Player Lists
+  const panelsTop = currentY;
   input.teams.forEach((team, teamIdx) => {
+    const rowIdx = Math.floor(teamIdx / columns);
     const colIdx = teamIdx % columns;
-    const panelX = left + colIdx * (colWidth + GAP);
-    const panelY = currentY;
+    // A last row with fewer panels than columns is centered under the others.
+    const inRow = Math.min(columns, teamCount - rowIdx * columns);
+    const rowOffset = ((columns - inRow) * (colWidth + GAP)) / 2;
+    const panelX = left + rowOffset + colIdx * (colWidth + GAP);
+    const panelY = panelsTop + rowIdx * (panelHeight + GAP);
 
     // Panel container with tight height fitted to players
     commands.push({
@@ -726,7 +722,7 @@ export function layoutStory(input: StoryInput, measure: Measure): StoryLayout {
     });
   });
 
-  currentY += panelHeight + GAP;
+  currentY += panelsHeight + GAP;
 
   // 5. Footer & Brand at the bottom of the plate
   const brandText = tidy(input.brand || 'GENERADO CON KORA ROSTER').toUpperCase();

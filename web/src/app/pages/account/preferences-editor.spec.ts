@@ -292,7 +292,8 @@ describe('PreferencesEditor', () => {
         { name: T.tool.playerName(3), isGoalkeeper: false },
       ]);
       expect(input.location).toBe(P.template.locationSample);
-      expect([input.header, input.footer, input.numbering]).toEqual(['', '', 'dot']);
+      expect(input).not.toHaveProperty('header');
+      expect([input.footer, input.numbering]).toEqual(['', 'dot']);
       expect([input.confirmed, input.brand]).toEqual([
         T.tool.result.storyConfirmed,
         T.tool.result.storyBrand,
@@ -303,15 +304,13 @@ describe('PreferencesEditor', () => {
     it('follows what is typed and chosen in the template', async () => {
       const t = setup();
       await open(t);
-      t.typeInto(P.template.header, 'Jueves 21hs');
       t.typeInto(P.template.location, 'Cancha Norte');
       t.typeInto(P.template.footer, 'Confirmen');
       t.choose(P.template.numbering, 'none');
       await settle(t);
       expect(t.create).toHaveBeenCalledTimes(2);
       const input = lastInput(t);
-      expect([input.header, input.location, input.footer, input.numbering]).toEqual([
-        'Jueves 21hs',
+      expect([input.location, input.footer, input.numbering]).toEqual([
         'Cancha Norte',
         'Confirmen',
         'none',
@@ -333,18 +332,18 @@ describe('PreferencesEditor', () => {
     it('waits for a pause in the typing, so a burst makes one image and not one per letter', async () => {
       const t = setup();
       await open(t);
-      for (const text of ['J', 'Ju', 'Jue', 'Juev']) {
-        t.typeInto(P.template.header, text);
+      for (const text of ['C', 'Ca', 'Can', 'Canc']) {
+        t.typeInto(P.template.location, text);
         await vi.advanceTimersByTimeAsync(50);
       }
       await settle(t);
       expect(t.create).toHaveBeenCalledTimes(2);
-      expect(lastInput(t).header).toBe('Juev');
+      expect(lastInput(t).location).toBe('Canc');
     });
 
     it('makes nothing while the message tab is on, however much is typed', async () => {
       const t = setup();
-      t.typeInto(P.template.header, 'Jueves 21hs');
+      t.typeInto(P.template.location, 'Cancha Norte');
       await settle(t);
       expect(t.create).not.toHaveBeenCalled();
     });
@@ -364,10 +363,19 @@ describe('PreferencesEditor', () => {
       await open(t);
       tab(t, P.preview.messageTab).click();
       t.fixture.detectChanges();
-      t.typeInto(P.template.header, 'Jueves');
+      t.typeInto(P.template.location, 'Cancha Norte');
       await open(t);
       expect(t.create).toHaveBeenCalledTimes(2);
-      expect(lastInput(t).header).toBe('Jueves');
+      expect(lastInput(t).location).toBe('Cancha Norte');
+    });
+
+    it('does not make a new image when only the header is typed, as the image has no header', async () => {
+      const t = setup();
+      await open(t);
+      t.typeInto(P.template.header, 'Jueves 21hs');
+      await settle(t);
+      expect(t.create).toHaveBeenCalledTimes(1);
+      expect(image(t)?.getAttribute('src')).toBe('blob:preview-1');
     });
 
     it('makes a new one when the theme changes, as the image takes its colors', async () => {
@@ -409,7 +417,7 @@ describe('PreferencesEditor', () => {
       const t = setup();
       await open(t);
       t.create.mockImplementationOnce(() => new Promise<Blob>(() => undefined));
-      t.typeInto(P.template.header, 'Jueves');
+      t.typeInto(P.template.location, 'Cancha Norte');
       await settle(t);
       expect(image(t)?.getAttribute('src')).toBe('blob:preview-1');
     });
@@ -417,7 +425,7 @@ describe('PreferencesEditor', () => {
     it('frees the image that it replaces', async () => {
       const t = setup();
       await open(t);
-      t.typeInto(P.template.header, 'Jueves');
+      t.typeInto(P.template.location, 'Cancha Norte');
       await settle(t);
       expect(image(t)?.getAttribute('src')).toBe('blob:preview-2');
       expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:preview-1');
@@ -436,7 +444,7 @@ describe('PreferencesEditor', () => {
       let releaseOld!: (blob: Blob) => void;
       t.create.mockImplementationOnce(() => new Promise<Blob>((resolve) => (releaseOld = resolve)));
       await open(t);
-      t.typeInto(P.template.header, 'Jueves');
+      t.typeInto(P.template.location, 'Cancha Norte');
       await settle(t);
       expect(image(t)?.getAttribute('src')).toBe('blob:preview-1');
       releaseOld(new Blob(['old']));
@@ -454,7 +462,7 @@ describe('PreferencesEditor', () => {
       expect(t.el.querySelector('[data-image] [role="alert"]')?.textContent?.trim()).toBe(
         T.tool.result.imageFailed,
       );
-      t.typeInto(P.template.header, 'Jueves');
+      t.typeInto(P.template.location, 'Cancha Norte');
       await settle(t);
       expect(image(t)).not.toBeNull();
       expect(t.el.querySelector('[data-image] [role="alert"]')).toBeNull();
