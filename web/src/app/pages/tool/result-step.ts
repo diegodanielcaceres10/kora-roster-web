@@ -51,14 +51,10 @@ export class ResultStep {
   // swaps players, as it always did.
   protected readonly manual = computed(() => this.entitlements.manualLock() === null);
   // The confirmed teams side by side; the editor stacks them in its own column.
-  protected readonly gridClass = computed(() =>
-    this.teams().length === 3
-      ? 'grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3'
-      : 'grid grid-cols-1 gap-4 sm:grid-cols-2',
-  );
+  protected readonly gridClass = computed(() => 'grid grid-cols-1 gap-4');
   protected readonly teamsClass = computed(() => {
     const base = 'grid grid-cols-1 gap-5 lg:col-span-8 lg:col-start-5 lg:row-span-2 lg:row-start-1';
-    return this.teams().length > 2 ? `${base} 2xl:grid-cols-2` : base;
+    return base;
   });
   // Places in each team, which is the same for all of them.
   protected readonly teamSize = computed(() => this.store.teamSize() ?? 0);
