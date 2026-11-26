@@ -9,7 +9,7 @@ export interface StepHeaderStep {
 }
 
 const BASE =
-  'flex items-center justify-center gap-1.5 rounded-lg px-2.5 py-1.5 font-mono text-xs font-bold uppercase tracking-wide transition-colors duration-150';
+  'flex items-center justify-center gap-1.5 whitespace-nowrap rounded-lg px-2 py-1.5 font-mono text-[11px] font-bold uppercase tracking-wide transition-colors duration-150 sm:px-2.5 sm:text-xs';
 const LOOKS: Record<StepState, string> = {
   current: 'bg-primary text-secondary shadow-xs',
   done: 'border border-alternative/30 bg-alternative/10 text-alternative dark:text-emerald-300',
