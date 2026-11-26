@@ -52,7 +52,8 @@ export const en = {
   preferences: {
     teamsSection: 'Team customization',
     templateSection: 'WhatsApp template',
-    title: 'Preferences',
+    eyebrow: 'Matchday preferences',
+    title: 'Settings',
     description: 'They are saved on this device and used when you build teams while signed in.',
     playersPerTeam: {
       label: 'Players per team',

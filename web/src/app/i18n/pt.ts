@@ -55,7 +55,8 @@ export const pt: Dictionary = {
   preferences: {
     teamsSection: 'Personalização dos times',
     templateSection: 'Modelo para WhatsApp',
-    title: 'Preferências',
+    eyebrow: 'Preferências de convocação',
+    title: 'Parâmetros',
     description:
       'Ficam salvas neste dispositivo e são usadas quando você monta times com a sessão iniciada.',
     playersPerTeam: {

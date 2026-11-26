@@ -1,11 +1,14 @@
 <section class="space-y-6">
-  <header class="space-y-1">
+  <header class="space-y-1.5">
     <p
-      class="flex items-center gap-2 font-mono text-[11px] font-bold uppercase tracking-widest text-amber-700 dark:text-primary"
+      class="flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-widest text-amber-700 dark:text-primary"
     >
-      <ui-icon name="adjustments-horizontal" />
-      {{ t().title }}
+      <ui-icon name="adjustments-horizontal" class="text-base" />
+      {{ t().eyebrow }}
     </p>
+    <h2 class="font-display text-2xl font-bold tracking-tight text-ink sm:text-3xl">
+      {{ t().title }}
+    </h2>
     <p class="text-sm text-ink-muted">{{ t().description }}</p>
   </header>
 

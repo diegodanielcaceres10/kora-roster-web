@@ -8,13 +8,13 @@ import { StoryImagePanel } from './story-image-panel';
 const PANEL = 'rounded-2xl border border-line bg-surface shadow-xs';
 const FOCUS =
   'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink';
-const TILE = 'flex items-center gap-1 rounded-xl border pr-2 transition-all duration-150';
+const TILE = 'flex min-h-14 items-center gap-1 rounded-xl border pr-2 transition-all duration-150';
 const IDLE = 'border-line bg-surface-muted/60 hover:border-ink/20';
 const SELECTED = 'border-primary bg-primary/15 ring-2 ring-primary';
 const OVER = 'border-primary bg-primary/10 ring-2 ring-primary';
 const DRAGGING = 'border-line bg-surface-muted/60 opacity-50';
 const SLOT =
-  'flex w-full select-none items-center gap-3 rounded-xl border border-dashed px-3 py-2.5 text-left text-sm transition-colors ' +
+  'flex min-h-14 w-full select-none items-center gap-3 rounded-xl border border-dashed px-3 py-2 text-left text-sm transition-colors ' +
   FOCUS;
 const ICON_TILE =
   'inline-flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-xl text-amber-700 dark:text-primary';

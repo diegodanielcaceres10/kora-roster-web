@@ -56,7 +56,8 @@ export const es: Dictionary = {
   preferences: {
     teamsSection: 'Personalización de equipos',
     templateSection: 'Plantilla para WhatsApp',
-    title: 'Preferencias',
+    eyebrow: 'Preferencias de convocatoria',
+    title: 'Parámetros',
     description:
       'Se guardan en este dispositivo y se usan cuando armas equipos con la sesión iniciada.',
     playersPerTeam: {
