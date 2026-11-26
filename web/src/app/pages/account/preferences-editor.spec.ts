@@ -2,9 +2,12 @@ import { TestBed } from '@angular/core/testing';
 import { provideFakeGoogle } from '../../auth/testing';
 import { DICTIONARIES } from '../../i18n/dictionaries';
 import { I18n } from '../../i18n/i18n';
+import { STORY_BLOB } from '../../image/story-image';
+import type { StoryInput } from '../../core/story-layout';
 import { DEFAULT_PREFERENCES, Preferences } from '../../preferences/preferences';
 import { PreferencesService } from '../../preferences/preferences-service';
 import { TEST_PREFERENCES } from '../../preferences/testing';
+import { Theme } from '../../theme/theme';
 import { ToastService } from '../../ui';
 import { PreferencesEditor } from './preferences-editor';
 
@@ -21,7 +24,13 @@ const KEY = `kora:prefs:${USER.id}`;
 const mine = TEST_PREFERENCES;
 
 function setup(saved?: Preferences) {
-  TestBed.configureTestingModule({ providers: provideFakeGoogle().providers });
+  // The image of the preview is made with this stand-in, not with a canvas.
+  const create = vi.fn<(input: StoryInput) => Promise<Blob>>(() =>
+    Promise.resolve(new Blob(['png'], { type: 'image/png' })),
+  );
+  TestBed.configureTestingModule({
+    providers: [...provideFakeGoogle().providers, { provide: STORY_BLOB, useValue: create }],
+  });
   localStorage.setItem('kora:session', JSON.stringify(USER));
   if (saved) localStorage.setItem(KEY, JSON.stringify({ version: 2, preferences: saved }));
   TestBed.inject(I18n).setLang('es');
@@ -95,6 +104,7 @@ function setup(saved?: Preferences) {
     button,
     preview,
     colorLabel,
+    create,
     service: TestBed.inject(PreferencesService),
     toast: TestBed.inject(ToastService),
   };
@@ -199,6 +209,255 @@ describe('PreferencesEditor', () => {
       expect((field(P.template.header) as HTMLInputElement).maxLength).toBe(200);
       expect((field(P.template.location) as HTMLInputElement).maxLength).toBe(200);
       expect((field(P.template.footer) as HTMLInputElement).maxLength).toBe(200);
+    });
+  });
+
+  describe('the tabs of the preview', () => {
+    const PAUSE = 1000;
+    let made = 0;
+
+    beforeEach(() => {
+      vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+      made = 0;
+      URL.createObjectURL = vi.fn(() => `blob:preview-${++made}`);
+      URL.revokeObjectURL = vi.fn();
+    });
+    afterEach(() => {
+      vi.useRealTimers();
+      Reflect.deleteProperty(URL, 'createObjectURL');
+      Reflect.deleteProperty(URL, 'revokeObjectURL');
+    });
+
+    const tab = (t: ReturnType<typeof setup>, label: string) =>
+      t.radios(P.preview.title).find((r) => r.textContent?.trim() === label) as HTMLButtonElement;
+    const settle = async (t: ReturnType<typeof setup>) => {
+      await vi.advanceTimersByTimeAsync(PAUSE);
+      t.fixture.detectChanges();
+    };
+    const open = async (t: ReturnType<typeof setup>) => {
+      tab(t, P.preview.imageTab).click();
+      t.fixture.detectChanges();
+      await settle(t);
+    };
+    const image = (t: ReturnType<typeof setup>) => t.el.querySelector('[data-image] img');
+    const lastInput = (t: ReturnType<typeof setup>) => t.create.mock.lastCall?.[0] as StoryInput;
+
+    it('has one tab for the WhatsApp message and one for the image, with the message first', () => {
+      const t = setup();
+      const tabs = t.radios(P.preview.title);
+      expect(tabs.map((r) => r.textContent?.trim())).toEqual([
+        P.preview.messageTab,
+        P.preview.imageTab,
+      ]);
+      expect(tabs.map((r) => r.getAttribute('aria-checked'))).toEqual(['true', 'false']);
+    });
+
+    it('shows the message at first, with no image and nothing made', () => {
+      const t = setup();
+      expect(t.el.querySelector('[data-bubble]')).not.toBeNull();
+      expect(t.el.querySelector('[data-image]')).toBeNull();
+      expect(t.create).not.toHaveBeenCalled();
+    });
+
+    it('swaps the message for the image when the tab of the image is chosen', async () => {
+      const t = setup();
+      await open(t);
+      expect(t.el.querySelector('[data-bubble]')).toBeNull();
+      expect(t.el.querySelector('[data-image]')).not.toBeNull();
+      expect(tab(t, P.preview.imageTab).getAttribute('aria-checked')).toBe('true');
+    });
+
+    it('brings the message back, with what was typed, when the first tab is chosen again', async () => {
+      const t = setup();
+      t.typeInto(P.template.header, 'Jueves 21hs');
+      await open(t);
+      tab(t, P.preview.messageTab).click();
+      t.fixture.detectChanges();
+      expect(t.el.querySelector('[data-image]')).toBeNull();
+      expect(t.preview().startsWith('Jueves 21hs')).toBe(true);
+    });
+
+    it('makes the image from the sample teams and the template of the draft', async () => {
+      const t = setup();
+      await open(t);
+      expect(t.create).toHaveBeenCalledTimes(1);
+      const input = lastInput(t);
+      expect(input.teams.map((x) => x.title)).toEqual([T.tool.teamTitle(1), T.tool.teamTitle(2)]);
+      expect(input.teams.map((x) => x.color)).toEqual(
+        DEFAULT_PREFERENCES.teams.slice(0, 2).map((x) => x.color),
+      );
+      expect(input.teams[0].players).toEqual([
+        { name: T.tool.playerName(1), isGoalkeeper: true },
+        { name: T.tool.playerName(2), isGoalkeeper: false },
+        { name: T.tool.playerName(3), isGoalkeeper: false },
+      ]);
+      expect(input.location).toBe(P.template.locationSample);
+      expect([input.header, input.footer, input.numbering]).toEqual(['', '', 'dot']);
+      expect([input.confirmed, input.brand]).toEqual([
+        T.tool.result.storyConfirmed,
+        T.tool.result.storyBrand,
+      ]);
+      expect(input.theme).toBe('light');
+    });
+
+    it('follows what is typed and chosen in the template', async () => {
+      const t = setup();
+      await open(t);
+      t.typeInto(P.template.header, 'Jueves 21hs');
+      t.typeInto(P.template.location, 'Cancha Norte');
+      t.typeInto(P.template.footer, 'Confirmen');
+      t.choose(P.template.numbering, 'none');
+      await settle(t);
+      expect(t.create).toHaveBeenCalledTimes(2);
+      const input = lastInput(t);
+      expect([input.header, input.location, input.footer, input.numbering]).toEqual([
+        'Jueves 21hs',
+        'Cancha Norte',
+        'Confirmen',
+        'none',
+      ]);
+    });
+
+    it('uses the colors and the number of teams that the account has', async () => {
+      const t = setup({
+        ...mine,
+        teamCount: 3,
+        teams: mine.teams.map((x, i) => (i === 0 ? { ...x, color: '#112233' } : x)),
+      });
+      await open(t);
+      const input = lastInput(t);
+      expect(input.teams).toHaveLength(3);
+      expect(input.teams[0].color).toBe('#112233');
+    });
+
+    it('waits for a pause in the typing, so a burst makes one image and not one per letter', async () => {
+      const t = setup();
+      await open(t);
+      for (const text of ['J', 'Ju', 'Jue', 'Juev']) {
+        t.typeInto(P.template.header, text);
+        await vi.advanceTimersByTimeAsync(50);
+      }
+      await settle(t);
+      expect(t.create).toHaveBeenCalledTimes(2);
+      expect(lastInput(t).header).toBe('Juev');
+    });
+
+    it('makes nothing while the message tab is on, however much is typed', async () => {
+      const t = setup();
+      t.typeInto(P.template.header, 'Jueves 21hs');
+      await settle(t);
+      expect(t.create).not.toHaveBeenCalled();
+    });
+
+    it('does not make the same image again when the tab comes back with nothing changed', async () => {
+      const t = setup();
+      await open(t);
+      tab(t, P.preview.messageTab).click();
+      t.fixture.detectChanges();
+      await open(t);
+      expect(t.create).toHaveBeenCalledTimes(1);
+      expect(image(t)?.getAttribute('src')).toBe('blob:preview-1');
+    });
+
+    it('makes a new one when something changed while the other tab was on', async () => {
+      const t = setup();
+      await open(t);
+      tab(t, P.preview.messageTab).click();
+      t.fixture.detectChanges();
+      t.typeInto(P.template.header, 'Jueves');
+      await open(t);
+      expect(t.create).toHaveBeenCalledTimes(2);
+      expect(lastInput(t).header).toBe('Jueves');
+    });
+
+    it('makes a new one when the theme changes, as the image takes its colors', async () => {
+      const t = setup();
+      await open(t);
+      TestBed.inject(Theme).set('dark');
+      t.fixture.detectChanges();
+      await settle(t);
+      expect(t.create).toHaveBeenCalledTimes(2);
+      expect(lastInput(t).theme).toBe('dark');
+      TestBed.inject(Theme).set('light');
+    });
+
+    it('shows the image once it is made, described for assistive technology', async () => {
+      const t = setup();
+      await open(t);
+      const img = image(t) as HTMLImageElement;
+      expect(img.getAttribute('src')).toBe('blob:preview-1');
+      expect(img.getAttribute('alt')).toBe(P.preview.imageAlt);
+      expect(t.el.querySelector('[data-image]')?.textContent).not.toContain(P.preview.imageLoading);
+    });
+
+    it('says the image is being prepared until the first one is there', async () => {
+      const t = setup();
+      let release!: (blob: Blob) => void;
+      t.create.mockImplementationOnce(() => new Promise<Blob>((resolve) => (release = resolve)));
+      await open(t);
+      expect(image(t)).toBeNull();
+      const status = t.el.querySelector('[data-image] [role="status"]') as HTMLElement;
+      expect(status.textContent?.trim()).toBe(P.preview.imageLoading);
+      release(new Blob(['png']));
+      await vi.advanceTimersByTimeAsync(0);
+      t.fixture.detectChanges();
+      expect(image(t)).not.toBeNull();
+      expect(t.el.querySelector('[data-image] [role="status"]')).toBeNull();
+    });
+
+    it('keeps showing the last image while the next one is being made', async () => {
+      const t = setup();
+      await open(t);
+      t.create.mockImplementationOnce(() => new Promise<Blob>(() => undefined));
+      t.typeInto(P.template.header, 'Jueves');
+      await settle(t);
+      expect(image(t)?.getAttribute('src')).toBe('blob:preview-1');
+    });
+
+    it('frees the image that it replaces', async () => {
+      const t = setup();
+      await open(t);
+      t.typeInto(P.template.header, 'Jueves');
+      await settle(t);
+      expect(image(t)?.getAttribute('src')).toBe('blob:preview-2');
+      expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:preview-1');
+      expect(URL.revokeObjectURL).not.toHaveBeenCalledWith('blob:preview-2');
+    });
+
+    it('frees the image when the editor goes away', async () => {
+      const t = setup();
+      await open(t);
+      t.fixture.destroy();
+      expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:preview-1');
+    });
+
+    it('ignores an older image that arrives after a newer one', async () => {
+      const t = setup();
+      let releaseOld!: (blob: Blob) => void;
+      t.create.mockImplementationOnce(() => new Promise<Blob>((resolve) => (releaseOld = resolve)));
+      await open(t);
+      t.typeInto(P.template.header, 'Jueves');
+      await settle(t);
+      expect(image(t)?.getAttribute('src')).toBe('blob:preview-1');
+      releaseOld(new Blob(['old']));
+      await vi.advanceTimersByTimeAsync(0);
+      t.fixture.detectChanges();
+      expect(image(t)?.getAttribute('src')).toBe('blob:preview-1');
+      expect(URL.createObjectURL).toHaveBeenCalledTimes(1);
+    });
+
+    it('says when the image could not be made, and tries again with the next change', async () => {
+      const t = setup();
+      t.create.mockRejectedValueOnce(new Error('no canvas'));
+      await open(t);
+      expect(image(t)).toBeNull();
+      expect(t.el.querySelector('[data-image] [role="alert"]')?.textContent?.trim()).toBe(
+        T.tool.result.imageFailed,
+      );
+      t.typeInto(P.template.header, 'Jueves');
+      await settle(t);
+      expect(image(t)).not.toBeNull();
+      expect(t.el.querySelector('[data-image] [role="alert"]')).toBeNull();
     });
   });
 

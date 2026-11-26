@@ -1,7 +1,17 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  DestroyRef,
+  effect,
+  inject,
+  signal,
+} from '@angular/core';
 import { MAX_TEAM_SIZE, MAX_TEAMS, MIN_TEAM_SIZE, MIN_TEAMS } from '../../core/draw-teams';
 import { formatTeamsForWhatsApp, Numbering } from '../../core/format-teams';
+import { StoryInput } from '../../core/story-layout';
 import { I18n } from '../../i18n/i18n';
+import { STORY_BLOB } from '../../image/story-image';
 import { Entitlements, LockReason } from '../../plans/entitlements';
 import { LockNotice } from '../../plans/lock-notice';
 import {
@@ -11,6 +21,7 @@ import {
   Preferences,
 } from '../../preferences/preferences';
 import { PreferencesService } from '../../preferences/preferences-service';
+import { Theme } from '../../theme/theme';
 import {
   SegmentedOption,
   ToastService,
@@ -32,6 +43,12 @@ const sampleTeamsOf = (name: (n: number) => string) =>
   );
 
 const NUMBERINGS: readonly Numbering[] = ['dot', 'paren', 'dash', 'none'];
+
+type PreviewView = 'message' | 'image';
+
+// How long the template has to stay still before the image of the preview is made again: making
+// it takes a moment, so it is not made for every letter that is typed.
+const IMAGE_PAUSE_MS = 300;
 const HEX_COLOR = /^#[0-9a-f]{6}$/i;
 
 const TILE =
@@ -58,6 +75,8 @@ export class PreferencesEditor {
   private readonly preferences = inject(PreferencesService);
   private readonly toast = inject(ToastService);
   private readonly entitlements = inject(Entitlements);
+  private readonly createBlob = inject(STORY_BLOB);
+  private readonly theme = inject(Theme);
 
   protected readonly t = computed(() => this.i18n.t().preferences);
   protected readonly textMax = HEADER_MAX;
@@ -109,20 +128,99 @@ export class PreferencesEditor {
     ];
   });
 
+  // Sample players and a sample place, so the preview shows where everything goes.
+  private readonly sampleTeams = computed(() => sampleTeamsOf(this.i18n.t().tool.playerName));
+  private readonly previewLocation = computed(() => {
+    const { location } = this.draft();
+    return location.trim() ? location : this.t().template.locationSample;
+  });
+
   protected readonly previewText = computed(() => {
-    const { teams, teamCount, header, location, footer, numbering } = this.draft();
+    const { teams, teamCount, header, footer, numbering } = this.draft();
     const styles = teams
       .slice(0, teamCount)
       .map((team, i) => ({ icon: team.icon, title: this.teamTitle(i) }));
-    const sample = sampleTeamsOf(this.i18n.t().tool.playerName);
-    return formatTeamsForWhatsApp(sample.slice(0, teamCount), styles, {
+    return formatTeamsForWhatsApp(this.sampleTeams().slice(0, teamCount), styles, {
       header,
-      // Like the sample players, a generic place shows where it goes while the field is empty.
-      location: location.trim() ? location : this.t().template.locationSample,
+      location: this.previewLocation(),
       footer,
       numbering,
     });
   });
+
+  // The preview has two tabs: the message and the image that can be downloaded.
+  protected readonly previewView = signal<PreviewView>('message');
+  protected readonly viewOptions = computed<SegmentedOption[]>(() => {
+    const { preview } = this.t();
+    return [
+      { value: 'message', label: preview.messageTab },
+      { value: 'image', label: preview.imageTab },
+    ];
+  });
+
+  // The image is made with the same code as the one that is downloaded, from the same kind of
+  // input, so what is seen here is what comes out.
+  private readonly previewStory = computed((): StoryInput => {
+    const { teams, teamCount, header, footer, numbering } = this.draft();
+    const { result } = this.i18n.t().tool;
+    return {
+      teams: teams.slice(0, teamCount).map((team, i) => ({
+        title: this.teamTitle(i),
+        color: team.color,
+        players: this.sampleTeams()[i],
+      })),
+      header,
+      location: this.previewLocation(),
+      footer,
+      numbering,
+      confirmed: result.storyConfirmed,
+      brand: result.storyBrand,
+      theme: this.theme.mode(),
+    };
+  });
+  protected readonly imageUrl = signal<string | null>(null);
+  protected readonly imageFailed = signal(false);
+  protected readonly imageFailedText = computed(() => this.i18n.t().tool.result.imageFailed);
+  private lastMade: StoryInput | null = null;
+  private turn = 0;
+
+  constructor() {
+    // Only while the tab of the image is on, and only when the input is not the one already made.
+    effect((onCleanup) => {
+      if (this.previewView() !== 'image') return;
+      const input = this.previewStory();
+      if (input === this.lastMade) return;
+      const timer = setTimeout(() => void this.makeImage(input), IMAGE_PAUSE_MS);
+      onCleanup(() => clearTimeout(timer));
+    });
+    inject(DestroyRef).onDestroy(() => {
+      this.turn++;
+      const url = this.imageUrl();
+      if (url) URL.revokeObjectURL(url);
+    });
+  }
+
+  private async makeImage(input: StoryInput): Promise<void> {
+    const turn = ++this.turn;
+    this.lastMade = input;
+    this.imageFailed.set(false);
+    try {
+      const blob = await this.createBlob(input);
+      // An older image that arrives after a newer one is not wanted.
+      if (turn !== this.turn) return;
+      const previous = this.imageUrl();
+      this.imageUrl.set(URL.createObjectURL(blob));
+      if (previous) URL.revokeObjectURL(previous);
+    } catch {
+      if (turn !== this.turn) return;
+      this.lastMade = null;
+      this.imageFailed.set(true);
+    }
+  }
+
+  protected setView(value: string): void {
+    if (value === 'message' || value === 'image') this.previewView.set(value);
+  }
 
   protected teamTitle(index: number): string {
     return this.i18n.t().tool.teamTitle(index + 1);

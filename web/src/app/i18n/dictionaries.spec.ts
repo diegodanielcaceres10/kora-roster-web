@@ -101,6 +101,19 @@ describe('dictionaries', () => {
       },
     );
 
+    it.each([
+      ['en', 'Preview', 'WhatsApp', 'Image', 'Preview of the image to download', 'Preparing the image…'],
+      ['es', 'Vista previa', 'WhatsApp', 'Imagen', 'Vista previa de la imagen para descargar', 'Preparando la imagen…'],
+      ['pt', 'Prévia', 'WhatsApp', 'Imagem', 'Prévia da imagem para baixar', 'Preparando a imagem…'],
+    ] as const)('names the tabs of the preview in %s', (lang, title, message, image, alt, loading) => {
+      const { preview } = DICTIONARIES[lang].preferences;
+      expect(preview.title).toBe(title);
+      expect(preview.messageTab).toBe(message);
+      expect(preview.imageTab).toBe(image);
+      expect(preview.imageAlt).toBe(alt);
+      expect(preview.imageLoading).toBe(loading);
+    });
+
     // The examples of the app have no real names: a numbered player in the language of the page.
     it.each([
       ['en', 'Player 7'],

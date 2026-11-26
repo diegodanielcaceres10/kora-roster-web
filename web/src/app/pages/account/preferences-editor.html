@@ -149,13 +149,46 @@
           <span [class]="tile"><ui-icon name="message" /></span>
           <h3 [class]="sectionTitle">{{ t().preview.title }}</h3>
         </div>
-        <div
-          data-bubble
-          class="rounded-2xl rounded-tl-md bg-[#d9fdd3] p-4 shadow-xs dark:bg-[#005c4b]"
-        >
-          <pre
-            class="overflow-x-auto whitespace-pre-wrap font-mono text-xs leading-relaxed text-slate-900 sm:text-sm dark:text-slate-100"
-          >{{ previewText() }}</pre>
+        <div class="space-y-4">
+          <ui-segmented
+            stretch
+            [label]="t().preview.title"
+            [options]="viewOptions()"
+            [value]="previewView()"
+            (valueChange)="setView($event)"
+          />
+          @if (previewView() === 'message') {
+            <div
+              data-bubble
+              class="rounded-2xl rounded-tl-md bg-[#d9fdd3] p-4 shadow-xs dark:bg-[#005c4b]"
+            >
+              <pre
+                class="overflow-x-auto whitespace-pre-wrap font-mono text-xs leading-relaxed text-slate-900 sm:text-sm dark:text-slate-100"
+              >{{ previewText() }}</pre>
+            </div>
+          } @else {
+            <div data-image class="space-y-3">
+              @if (imageUrl(); as url) {
+                <img
+                  [src]="url"
+                  [alt]="t().preview.imageAlt"
+                  class="mx-auto block max-h-[65vh] w-auto max-w-full rounded-xl border border-line shadow-xs"
+                />
+              } @else if (!imageFailed()) {
+                <p
+                  role="status"
+                  class="mx-auto flex aspect-[9/16] max-h-[65vh] w-full max-w-[18rem] items-center justify-center rounded-xl border border-dashed border-line text-sm text-ink-muted"
+                >
+                  {{ t().preview.imageLoading }}
+                </p>
+              }
+              @if (imageFailed()) {
+                <p role="alert" class="text-sm font-semibold text-red-700 dark:text-red-300">
+                  {{ imageFailedText() }}
+                </p>
+              }
+            </div>
+          }
         </div>
       </ui-card>
 
