@@ -68,6 +68,7 @@ const copyOf = (preferences: Preferences): Preferences => ({
   selector: 'app-preferences-editor',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [LockNotice, UiBadge, UiButton, UiCard, UiIcon, UiInput, UiSegmented],
+  host: { class: 'block' },
   templateUrl: './preferences-editor.html',
 })
 export class PreferencesEditor {
@@ -114,9 +115,12 @@ export class PreferencesEditor {
     }),
   );
   protected readonly teamCountValue = computed(() => String(this.draft().teamCount));
-  protected readonly visibleTeams = computed(() =>
-    this.draft().teams.slice(0, this.draft().teamCount),
-  );
+  protected readonly visibleTeams = computed(() => this.draft().teams);
+  protected readonly teamsPremiumMessage = computed(() => this.i18n.t().tool.preview.teamsPremium);
+
+  protected isTeamLocked(index: number): boolean {
+    return this.entitlements.teamsLock(index + 1) === 'premium';
+  }
 
   protected readonly numberingOptions = computed<SegmentedOption[]>(() => {
     const { template } = this.t();

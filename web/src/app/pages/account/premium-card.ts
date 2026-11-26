@@ -7,6 +7,7 @@ import { UiCard, UiIcon } from '../../ui';
   selector: 'app-premium-card',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [UiCard, LockNotice, UiIcon],
+  host: { class: 'block' },
   templateUrl: './premium-card.html',
 })
 export class PremiumCard {

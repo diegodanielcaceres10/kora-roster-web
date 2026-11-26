@@ -63,39 +63,48 @@
               <legend class="px-1 font-mono text-[11px] font-bold uppercase tracking-wider text-ink">
                 {{ teamTitle(i) }}
               </legend>
-              <div class="space-y-1.5">
-                <label
-                  [attr.for]="'team-color-' + i"
-                  class="block font-mono text-[11px] font-bold uppercase tracking-wider text-ink-muted"
+              @if (isTeamLocked(i)) {
+                <div
+                  class="flex min-h-11 items-center gap-2.5 rounded-lg border border-dashed border-ink/20 bg-surface/50 px-3 py-2 text-xs text-ink-muted"
                 >
-                  {{ t().teams.colorLabel(teamTitle(i)) }}
-                </label>
-                <div class="flex items-center gap-3">
-                  <input
-                    [id]="'team-color-' + i"
-                    type="color"
-                    [value]="team.color"
-                    (input)="setColor(i, $any($event.target).value)"
-                    class="h-11 w-14 shrink-0 cursor-pointer rounded-lg border border-ink/20 bg-surface p-1 shadow-xs transition-colors hover:border-ink/40 focus-visible:border-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
-                  />
-                  <div class="relative flex-1">
-                    <span
-                      class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 font-mono text-sm font-bold text-ink-muted"
-                    >
-                      #
-                    </span>
+                  <ui-icon name="lock" class="shrink-0 text-sm text-ink-faint" />
+                  <span>{{ teamsPremiumMessage() }}</span>
+                </div>
+              } @else {
+                <div class="space-y-1.5">
+                  <label
+                    [attr.for]="'team-color-' + i"
+                    class="block font-mono text-[11px] font-bold uppercase tracking-wider text-ink-muted"
+                  >
+                    {{ t().teams.colorLabel(teamTitle(i)) }}
+                  </label>
+                  <div class="flex items-center gap-3">
                     <input
-                      type="text"
-                      maxlength="7"
-                      placeholder="000000"
-                      [value]="hexDisplay(team.color)"
-                      (input)="onHexInput(i, $event)"
-                      (blur)="onHexBlur(i, $event)"
-                      class="block w-full rounded-lg border border-ink/20 bg-surface py-2.5 pl-7 pr-3 font-mono text-sm font-bold uppercase text-ink placeholder:text-ink-faint shadow-xs transition-colors focus-visible:border-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
+                      [id]="'team-color-' + i"
+                      type="color"
+                      [value]="team.color"
+                      (input)="setColor(i, $any($event.target).value)"
+                      class="h-11 w-14 shrink-0 cursor-pointer rounded-lg border border-ink/20 bg-surface p-1 shadow-xs transition-colors hover:border-ink/40 focus-visible:border-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
                     />
+                    <div class="relative flex-1">
+                      <span
+                        class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 font-mono text-sm font-bold text-ink-muted"
+                      >
+                        #
+                      </span>
+                      <input
+                        type="text"
+                        maxlength="7"
+                        placeholder="000000"
+                        [value]="hexDisplay(team.color)"
+                        (input)="onHexInput(i, $event)"
+                        (blur)="onHexBlur(i, $event)"
+                        class="block w-full rounded-lg border border-ink/20 bg-surface py-2.5 pl-7 pr-3 font-mono text-sm font-bold uppercase text-ink placeholder:text-ink-faint shadow-xs transition-colors focus-visible:border-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
+                      />
+                    </div>
                   </div>
                 </div>
-              </div>
+              }
             </fieldset>
           }
         </div>

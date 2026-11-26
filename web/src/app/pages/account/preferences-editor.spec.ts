@@ -713,19 +713,25 @@ describe('PreferencesEditor', () => {
       ]);
     });
 
-    it('shows the icon and the color only of the teams in use', () => {
+    it('always shows all 6 teams, with 5 and 6 locked for non-premium accounts', () => {
       const ctx = setup();
-      expect(fieldsets(ctx)).toBe(2);
-      choose(ctx, 4);
-      expect(fieldsets(ctx)).toBe(4);
-      choose(ctx, 3);
-      expect(fieldsets(ctx)).toBe(3);
+      expect(fieldsets(ctx)).toBe(6);
+      const sets = Array.from(ctx.el.querySelectorAll('fieldset'));
+      expect(sets.slice(0, 4).every((fs) => fs.querySelector('input[type="color"]') !== null)).toBe(true);
+      expect(
+        sets.slice(4, 6).every(
+          (fs) =>
+            fs.querySelector('input[type="color"]') === null &&
+            fs.querySelector('ui-icon[data-icon="lock"]') !== null &&
+            fs.textContent?.includes(T.tool.preview.teamsPremium),
+        ),
+      ).toBe(true);
     });
 
     it('shows the number of teams that was saved', () => {
       const ctx = setup({ ...mine, teamCount: 3 });
       expect(checkedCount(ctx)).toBe('3');
-      expect(fieldsets(ctx)).toBe(3);
+      expect(fieldsets(ctx)).toBe(6);
     });
 
     it('shows a preview with as many teams as were chosen', () => {
@@ -773,7 +779,7 @@ describe('PreferencesEditor', () => {
       ctx.button(P.restore).click();
       ctx.fixture.detectChanges();
       expect(checkedCount(ctx)).toBe('2');
-      expect(fieldsets(ctx)).toBe(2);
+      expect(fieldsets(ctx)).toBe(6);
     });
   });
 
