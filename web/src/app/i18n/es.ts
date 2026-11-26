@@ -73,8 +73,8 @@ export const es: Dictionary = {
       header: 'Encabezado del mensaje',
       headerPlaceholder: 'Por ejemplo: Amistoso del jueves a las 21',
       location: 'Ubicación del campo',
-      locationPlaceholder:
-        'Por ejemplo: Campo municipal, Calle Mayor 12. https://maps.app.goo.gl/…',
+      locationPlaceholder: 'Por ejemplo: Calle Principal 123 o un enlace de Google Maps',
+      locationSample: 'Cancha de ejemplo, Calle Principal 123',
       footer: 'Pie del mensaje',
       footerPlaceholder: 'Por ejemplo: Confirmen asistencia',
       numbering: 'Numeración',

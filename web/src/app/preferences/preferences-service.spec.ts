@@ -191,13 +191,13 @@ describe('PreferencesService', () => {
       signIn();
       service.save({
         ...TEST_PREFERENCES,
-        location: 'Campo municipal, Calle Mayor 12 / 28001 Madrid. https://maps.app.goo.gl/abc123',
+        location: 'Cancha de ejemplo, Calle Principal 123. https://maps.app.goo.gl/ejemplo',
       });
       expect(service.active()?.location).toBe(
-        'Campo municipal, Calle Mayor 12 / 28001 Madrid. https://maps.app.goo.gl/abc123',
+        'Cancha de ejemplo, Calle Principal 123. https://maps.app.goo.gl/ejemplo',
       );
       expect(JSON.parse(localStorage.getItem(KEY(ME)) as string).preferences.location).toBe(
-        'Campo municipal, Calle Mayor 12 / 28001 Madrid. https://maps.app.goo.gl/abc123',
+        'Cancha de ejemplo, Calle Principal 123. https://maps.app.goo.gl/ejemplo',
       );
     });
 

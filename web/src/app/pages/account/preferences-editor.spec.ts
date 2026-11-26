@@ -112,14 +112,14 @@ describe('PreferencesEditor', () => {
     it('shows the preferences the account saved', () => {
       const { field, checkedIcon, colorLabel } = setup({
         ...mine,
-        location: 'Campo municipal, Calle Mayor 12 / 28001 Madrid. https://maps.app.goo.gl/abc123',
+        location: 'Cancha de ejemplo, Calle Principal 123. https://maps.app.goo.gl/ejemplo',
       });
       expect(checkedIcon(P.playersPerTeam.label)).toBe('7v7');
       expect((field(colorLabel(1)) as HTMLInputElement).value).toBe('#00ff00');
       expect((field(colorLabel(2)) as HTMLInputElement).value).toBe('#ffff00');
       expect((field(P.template.header) as HTMLInputElement).value).toBe('⚽ Amistoso');
       expect((field(P.template.location) as HTMLInputElement).value).toBe(
-        'Campo municipal, Calle Mayor 12 / 28001 Madrid. https://maps.app.goo.gl/abc123',
+        'Cancha de ejemplo, Calle Principal 123. https://maps.app.goo.gl/ejemplo',
       );
       expect((field(P.template.footer) as HTMLInputElement).value).toBe('Confirmen');
       expect(checkedIcon(P.template.numbering)).toBe(P.template.numberingParen);
@@ -219,18 +219,42 @@ describe('PreferencesEditor', () => {
       typeInto(P.template.header, '⚽ Jueves 21hs');
       typeInto(
         P.template.location,
-        'Campo municipal, Calle Mayor 12 / 28001 Madrid. https://maps.app.goo.gl/abc123',
+        'Cancha de ejemplo, Calle Principal 123. https://maps.app.goo.gl/ejemplo',
       );
       expect(
         preview().startsWith(
-          '⚽ Jueves 21hs\n\nCampo municipal, Calle Mayor 12 / 28001 Madrid. https://maps.app.goo.gl/abc123\n\n🔴 ',
+          '⚽ Jueves 21hs\n\nCancha de ejemplo, Calle Principal 123. https://maps.app.goo.gl/ejemplo\n\n🔴 ',
         ),
       ).toBe(true);
     });
 
-    it('shows no location in the message while the field is empty', () => {
+    it('shows a generic example of a location while the field is empty, like the sample players', () => {
       const { preview } = setup();
-      expect(preview().startsWith('🔴 ')).toBe(true);
+      expect(P.template.locationSample).toBeTruthy();
+      expect(preview().startsWith(`${P.template.locationSample}\n\n🔴 `)).toBe(true);
+    });
+
+    it('puts the example after the header too, and before the teams', () => {
+      const { preview, typeInto } = setup();
+      typeInto(P.template.header, '⚽ Jueves 21hs');
+      expect(preview().startsWith(`⚽ Jueves 21hs\n\n${P.template.locationSample}\n\n🔴 `)).toBe(
+        true,
+      );
+    });
+
+    it('swaps the example for what is typed, and brings it back when the field is cleared', () => {
+      const { preview, typeInto } = setup();
+      typeInto(P.template.location, 'Cancha Norte');
+      expect(preview()).toContain('Cancha Norte');
+      expect(preview()).not.toContain(P.template.locationSample);
+      typeInto(P.template.location, '');
+      expect(preview()).toContain(P.template.locationSample);
+    });
+
+    it('does not keep the example as a location: saving with the field empty saves nothing', () => {
+      const { button, service } = setup();
+      button(P.save).click();
+      expect(service.active()?.location).toBe('');
     });
 
     it('follows the header and the footer while they are typed', () => {
@@ -258,7 +282,10 @@ describe('PreferencesEditor', () => {
         .split('\n')
         .filter(
           (line) =>
-            line && !line.includes(T.tool.teamTitle(1)) && !line.includes(T.tool.teamTitle(2)),
+            line &&
+            line !== P.template.locationSample &&
+            !line.includes(T.tool.teamTitle(1)) &&
+            !line.includes(T.tool.teamTitle(2)),
         );
       const player = T.tool.playerName;
       expect(playerLines).toEqual([
@@ -312,7 +339,7 @@ describe('PreferencesEditor', () => {
       typeInto(P.template.header, '⚽ Amistoso');
       typeInto(
         P.template.location,
-        'Campo municipal, Calle Mayor 12 / 28001 Madrid. https://maps.app.goo.gl/abc123',
+        'Cancha de ejemplo, Calle Principal 123. https://maps.app.goo.gl/ejemplo',
       );
       typeInto(P.template.footer, 'Confirmen');
       choose(P.template.numbering, 'paren');
@@ -322,7 +349,7 @@ describe('PreferencesEditor', () => {
         ...DEFAULT_PREFERENCES,
         playersPerTeam: 7,
         header: '⚽ Amistoso',
-        location: 'Campo municipal, Calle Mayor 12 / 28001 Madrid. https://maps.app.goo.gl/abc123',
+        location: 'Cancha de ejemplo, Calle Principal 123. https://maps.app.goo.gl/ejemplo',
         footer: 'Confirmen',
         numbering: 'paren' as const,
         teams: [

@@ -24,6 +24,8 @@ export interface StoryTeam {
 export interface StoryInput {
   teams: readonly StoryTeam[];
   header: string;
+  // Where the pitch is. It gets a card of its own under the header, in up to two lines.
+  location: string;
   footer: string;
   numbering: Numbering;
   confirmed: string;
@@ -40,6 +42,7 @@ export type RectRole =
   | 'highlight'
   | 'matchday-card'
   | 'header-card'
+  | 'location-card'
   | 'player-row'
   | 'badge';
 
@@ -47,6 +50,7 @@ export type TextRole =
   | 'brand-pill'
   | 'status-pill'
   | 'header'
+  | 'location'
   | 'footer'
   | 'brand'
   | 'wordmark'
@@ -161,6 +165,13 @@ const TAG_PAD_X = 18;
 const TAG_HEIGHT = 34;
 const LOGO_GAP = 14;
 
+// The location card: the text as typed (a link has capitals that matter), in the normal weight,
+// in one line or two, in a card that is as tall as the header card when it takes one line.
+const LOCATION_SIZE = 22;
+const LOCATION_LINE_HEIGHT = 30;
+const LOCATION_PAD_Y = 13;
+const LOCATION_MAX_LINES = 2;
+
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
 function truncate(
@@ -181,6 +192,35 @@ function truncate(
 }
 
 const tidy = (text: string) => text.replace(/\s+/g, ' ').trim();
+
+// Breaks the text into at most `maxLines` lines that fit in `maxWidth`. What does not fit in the
+// last line is cut with an ellipsis, and so is a word that is wider than a whole line.
+function wrap(
+  text: string,
+  maxWidth: number,
+  size: number,
+  weight: FontWeight,
+  measure: Measure,
+  maxLines: number,
+): string[] {
+  const lines: string[] = [];
+  let rest = text.split(' ');
+  while (rest.length > 0 && lines.length < maxLines) {
+    if (lines.length === maxLines - 1) {
+      lines.push(truncate(rest.join(' '), maxWidth, size, weight, measure));
+      break;
+    }
+    let line = rest[0];
+    let taken = 1;
+    while (taken < rest.length && measure(`${line} ${rest[taken]}`, size, weight) <= maxWidth) {
+      line = `${line} ${rest[taken]}`;
+      taken++;
+    }
+    lines.push(truncate(line, maxWidth, size, weight, measure));
+    rest = rest.slice(taken);
+  }
+  return lines;
+}
 
 export function layoutStory(input: StoryInput, measure: Measure): StoryLayout {
   const commands: StoryCommand[] = [];
@@ -225,6 +265,14 @@ export function layoutStory(input: StoryInput, measure: Measure): StoryLayout {
   const pillHeight = 56;
   const headerText = tidy(input.header);
   const infoHeight = headerText ? 56 : 0;
+  const locationText = tidy(input.location);
+  const locationLines = locationText
+    ? wrap(locationText, innerWidth - 40, LOCATION_SIZE, 'normal', measure, LOCATION_MAX_LINES)
+    : [];
+  const locationHeight =
+    locationLines.length > 0
+      ? 2 * LOCATION_PAD_Y + locationLines.length * LOCATION_LINE_HEIGHT
+      : 0;
   const isTwoTeams = teamCount === 2;
   const matchdayHeight = isTwoTeams ? 116 : 0;
   const brandHeight = 36;
@@ -233,6 +281,7 @@ export function layoutStory(input: StoryInput, measure: Measure): StoryLayout {
     pillHeight +
     GAP +
     (infoHeight > 0 ? infoHeight + GAP : 0) +
+    (locationHeight > 0 ? locationHeight + GAP : 0) +
     (matchdayHeight > 0 ? matchdayHeight + GAP : 0) +
     panelHeight +
     GAP +
@@ -370,6 +419,35 @@ export function layoutStory(input: StoryInput, measure: Measure): StoryLayout {
     });
 
     currentY += infoHeight + GAP;
+  }
+
+  // 2b. Location card (if a location is provided), under the header card
+  if (locationHeight > 0) {
+    commands.push({
+      kind: 'rect',
+      role: 'location-card',
+      x: left,
+      y: currentY,
+      width: innerWidth,
+      height: locationHeight,
+      radius: 18,
+      fill: theme.infoCard.fill,
+      stroke: { color: theme.infoCard.stroke, width: 1.5 },
+    });
+    locationLines.forEach((line, i) => {
+      commands.push({
+        kind: 'text',
+        role: 'location',
+        x: left + 20,
+        y: currentY + LOCATION_PAD_Y + LOCATION_LINE_HEIGHT / 2 + i * LOCATION_LINE_HEIGHT,
+        text: line,
+        size: LOCATION_SIZE,
+        weight: 'normal',
+        color: theme.infoCard.text,
+        align: 'left',
+      });
+    });
+    currentY += locationHeight + GAP;
   }
 
   // 3. Matchday / VS Card (when exactly 2 teams)

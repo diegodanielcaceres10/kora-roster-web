@@ -73,14 +73,33 @@ describe('dictionaries', () => {
     });
 
     it.each([
-      ['en', 'Pitch location', 'For example: City pitch, 12 Main Street. https://maps.app.goo.gl/…'],
-      ['es', 'Ubicación del campo', 'Por ejemplo: Campo municipal, Calle Mayor 12. https://maps.app.goo.gl/…'],
-      ['pt', 'Localização do campo', 'Por exemplo: Campo municipal, Rua Principal 12. https://maps.app.goo.gl/…'],
-    ] as const)('names the field of the location and gives an example in %s', (lang, label, example) => {
-      const { template } = DICTIONARIES[lang].preferences;
-      expect(template.location).toBe(label);
-      expect(template.locationPlaceholder).toBe(example);
-    });
+      [
+        'en',
+        'Pitch location',
+        'For example: 123 Main Street or a Google Maps link',
+        'Example pitch, 123 Main Street',
+      ],
+      [
+        'es',
+        'Ubicación del campo',
+        'Por ejemplo: Calle Principal 123 o un enlace de Google Maps',
+        'Cancha de ejemplo, Calle Principal 123',
+      ],
+      [
+        'pt',
+        'Localização do campo',
+        'Por exemplo: Rua Principal 123 ou um link do Google Maps',
+        'Campo de exemplo, Rua Principal 123',
+      ],
+    ] as const)(
+      'names the field of the location and gives an example and a sample in %s',
+      (lang, label, example, sample) => {
+        const { template } = DICTIONARIES[lang].preferences;
+        expect(template.location).toBe(label);
+        expect(template.locationPlaceholder).toBe(example);
+        expect(template.locationSample).toBe(sample);
+      },
+    );
 
     // The examples of the app have no real names: a numbered player in the language of the page.
     it.each([

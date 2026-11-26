@@ -139,7 +139,7 @@ describe('formatTeamsForWhatsApp options', () => {
   });
 
   describe('the location of the pitch', () => {
-    const PLACE = 'Campo municipal, Calle Mayor 12 / 28001 Madrid. https://maps.app.goo.gl/abc123';
+    const PLACE = 'Cancha de ejemplo, Calle Principal 123. https://maps.app.goo.gl/ejemplo';
 
     it('goes after the header and before the teams, with a blank line around it', () => {
       const lines = formatTeamsForWhatsApp(teams, STYLES, {

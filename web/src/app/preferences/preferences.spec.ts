@@ -65,7 +65,7 @@ describe('sanitizePreferences', () => {
         { icon: '🟠', color: '#444444' },
       ],
       header: '⚽ Amistoso',
-      location: 'Campo municipal, Calle Mayor 12 / 28001 Madrid. https://maps.app.goo.gl/abc123',
+      location: 'Cancha de ejemplo, Calle Principal 123. https://maps.app.goo.gl/ejemplo',
       footer: 'Confirmen',
       numbering: 'paren',
     };
@@ -234,11 +234,10 @@ describe('sanitizePreferences', () => {
 
     it('keeps text as it is, with its link', () => {
       const result = sanitizePreferences({
-        location:
-          '  Campo municipal, Calle Mayor 12 / 28001 Madrid. https://maps.app.goo.gl/abc123  ',
+        location: '  Cancha de ejemplo, Calle Principal 123. https://maps.app.goo.gl/ejemplo  ',
       });
       expect(result.location).toBe(
-        '  Campo municipal, Calle Mayor 12 / 28001 Madrid. https://maps.app.goo.gl/abc123  ',
+        '  Cancha de ejemplo, Calle Principal 123. https://maps.app.goo.gl/ejemplo  ',
       );
     });
 

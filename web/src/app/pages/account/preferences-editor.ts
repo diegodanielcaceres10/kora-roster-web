@@ -117,7 +117,8 @@ export class PreferencesEditor {
     const sample = sampleTeamsOf(this.i18n.t().tool.playerName);
     return formatTeamsForWhatsApp(sample.slice(0, teamCount), styles, {
       header,
-      location,
+      // Like the sample players, a generic place shows where it goes while the field is empty.
+      location: location.trim() ? location : this.t().template.locationSample,
       footer,
       numbering,
     });

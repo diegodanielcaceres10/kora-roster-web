@@ -373,6 +373,7 @@ describe('createStoryBlob', () => {
       },
     ],
     header: 'Header',
+    location: 'Cancha de ejemplo',
     footer: '',
     numbering: 'dot',
     confirmed: 'confirmed',

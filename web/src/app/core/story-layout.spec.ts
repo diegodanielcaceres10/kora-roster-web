@@ -34,6 +34,7 @@ const teams = (count: number, size: number, keepers = 1) =>
 const input = (list: StoryTeam[], extra: Partial<StoryInput> = {}): StoryInput => ({
   teams: list,
   header: '',
+  location: '',
   footer: '',
   numbering: 'dot',
   confirmed: 'confirmed',
@@ -272,6 +273,152 @@ describe('layoutStory', () => {
       );
       expect(team2Names[0].text).toBe('N. Romero');
       expect(team2Names[1].text).toBe('F. Torres');
+    });
+  });
+
+  describe('the location card', () => {
+    const GAP = 20;
+    const PLACE = 'Cancha de ejemplo, Calle Principal 123. https://maps.app.goo.gl/ejemplo';
+    const LONG = Array.from({ length: 30 }, (_, i) => `palabra${i}`).join(' ');
+
+    const where = (extra: Partial<StoryInput> = {}, list = teams(2, 7)) => {
+      const layout = layoutStory(input(list, { location: PLACE, ...extra }), measure);
+      return {
+        layout,
+        card: rects(layout, 'location-card')[0],
+        lines: texts(layout, 'location'),
+        headerCard: rects(layout, 'header-card')[0],
+        plate: rects(layout, 'plate')[0],
+      };
+    };
+
+    it('shows a card with the location, as typed', () => {
+      const { card, lines } = where();
+      expect(card).toBeDefined();
+      expect(lines.map((l) => l.text)).toEqual([PLACE]);
+    });
+
+    it('keeps the capitals and the link as they are, which the header does not', () => {
+      const { lines } = where({ location: 'Cancha Norte https://Maps.App.goo.gl/AbC' });
+      expect(lines[0].text).toBe('Cancha Norte https://Maps.App.goo.gl/AbC');
+    });
+
+    it.each([[''], ['   '], ['\n\t ']])('shows no card for a blank location: %j', (blank) => {
+      const { card, lines } = where({ location: blank });
+      expect(card).toBeUndefined();
+      expect(lines).toHaveLength(0);
+    });
+
+    it('collapses the spaces and line breaks into single spaces', () => {
+      const { lines } = where({ location: '  Cancha   Norte,\n Calle  1 ' });
+      expect(lines[0].text).toBe('Cancha Norte, Calle 1');
+    });
+
+    it('goes right after the header card, with the same width and the same gap as before it', () => {
+      const { card, headerCard, layout } = where({ header: 'Jueves a las 21' });
+      const topRowBottom = images(layout, 'logo')[0].y + images(layout, 'logo')[0].height;
+      expect(card.x).toBe(headerCard.x);
+      expect(card.width).toBe(headerCard.width);
+      expect(headerCard.y - topRowBottom).toBe(GAP);
+      expect(card.y - (headerCard.y + headerCard.height)).toBe(GAP);
+    });
+
+    it('takes the place of the header card when there is no header: under the top row', () => {
+      const { card, headerCard, layout } = where({ header: '' });
+      const logo = images(layout, 'logo')[0];
+      expect(headerCard).toBeUndefined();
+      expect(card.y - (logo.y + logo.height)).toBe(GAP);
+    });
+
+    it('is as tall as the header card for one line, with the text centered and at the left', () => {
+      const { card, lines, headerCard } = where({ header: 'Jueves a las 21' });
+      expect(card.height).toBe(headerCard.height);
+      expect(lines[0].align).toBe('left');
+      expect(lines[0].x).toBe(card.x + 20);
+      expect(lines[0].y).toBe(card.y + card.height / 2);
+    });
+
+    it('is written in the normal weight and the colors of the info cards, light and dark', () => {
+      const light = where();
+      const dark = where({ theme: 'dark' });
+      expect(light.lines[0].weight).toBe('normal');
+      expect(light.lines[0].color).toBe('#1e293b');
+      expect(dark.lines[0].color).toBe('#e2e8f0');
+      expect(light.card.fill).toBe('#f8fafc');
+      expect(dark.card.fill).toBe('#161b24');
+    });
+
+    it('goes on a second line when it does not fit in one, and the card grows with it', () => {
+      const { card, lines, headerCard } = where({
+        location: Array.from({ length: 14 }, (_, i) => `calle${i}`).join(' '),
+      });
+      expect(lines).toHaveLength(2);
+      expect(card.height).toBeGreaterThan(headerCard?.height ?? 56);
+      for (const line of lines) {
+        expect(line.y).toBeGreaterThan(card.y);
+        expect(line.y).toBeLessThan(card.y + card.height);
+        expect(measure(line.text, line.size, line.weight)).toBeLessThanOrEqual(INNER_WIDTH - 40);
+      }
+      expect(lines[1].y).toBeGreaterThan(lines[0].y);
+    });
+
+    it('never needs more than two lines: the rest is cut with an ellipsis', () => {
+      const { lines, card } = where({ location: LONG });
+      expect(lines).toHaveLength(2);
+      expect(lines[1].text.endsWith('…')).toBe(true);
+      expect(measure(lines[1].text, lines[1].size, lines[1].weight)).toBeLessThanOrEqual(
+        INNER_WIDTH - 40,
+      );
+      expect(card.height).toBe(where({ location: LONG }).card.height);
+    });
+
+    it('cuts a word wider than the line, such as a long link, with an ellipsis', () => {
+      const { lines } = where({ location: `https://maps.app.goo.gl/${'a'.repeat(200)}` });
+      expect(lines.length).toBeLessThanOrEqual(2);
+      expect(lines.at(-1)?.text.endsWith('…')).toBe(true);
+      for (const line of lines) {
+        expect(measure(line.text, line.size, line.weight)).toBeLessThanOrEqual(INNER_WIDTH - 40);
+      }
+    });
+
+    it('leaves the gap after it, and the plate grows by its height and the gap', () => {
+      const base = where({ location: '' });
+      const withIt = where();
+      const matchday = rects(withIt.layout, 'matchday-card')[0];
+      expect(matchday.y - (withIt.card.y + withIt.card.height)).toBe(GAP);
+      expect(withIt.plate.height - base.plate.height).toBe(withIt.card.height + GAP);
+    });
+
+    it('leaves the gap before the first panel too, when there are three teams', () => {
+      const { card, layout } = where({}, teams(3, 6));
+      const first = panels(layout)[0];
+      expect(first.y - (card.y + card.height)).toBe(GAP);
+    });
+
+    it('comes before the matchday card and the panels, in this order', () => {
+      const { layout, card, headerCard } = where({ header: 'Jueves' });
+      const at = (command: unknown) => layout.commands.indexOf(command as never);
+      expect(at(headerCard)).toBeLessThan(at(card));
+      expect(at(card)).toBeLessThan(at(rects(layout, 'matchday-card')[0]));
+      expect(at(card)).toBeLessThan(at(panels(layout)[0]));
+    });
+
+    it('keeps the whole plate inside the story, even with a header, two lines and 11 players', () => {
+      const { plate } = where({ header: 'Jueves a las 21', location: LONG }, teams(2, 11));
+      expect(plate.y).toBeGreaterThanOrEqual(0);
+      expect(plate.y + plate.height).toBeLessThanOrEqual(STORY_HEIGHT);
+    });
+
+    it.each([[1], [3], [4]])('is drawn with %i teams as well', (count) => {
+      const { card, lines } = where({}, teams(count, 6));
+      expect(card).toBeDefined();
+      expect(lines).toHaveLength(1);
+    });
+
+    it('is left out of the empty story, as it has no content to frame', () => {
+      const layout = layoutStory(input([], { location: PLACE }), measure);
+      expect(rects(layout, 'location-card')).toHaveLength(0);
+      expect(texts(layout, 'location')).toHaveLength(0);
     });
   });
 
