@@ -4,7 +4,12 @@
   [style.border-top-color]="accentColor() ?? null"
   [style.border-top-width]="accentColor() ? '4px' : null"
 >
-  <header class="border-b border-line bg-surface-muted/60 px-4 py-3 sm:px-5 empty:hidden"><ng-content select="[card-header]" /></header>
+  <header
+    class="border-b px-4 py-3 sm:px-5 empty:hidden"
+    [style.background]="headerStyle() ?? null"
+    [style.border-bottom-color]="headerBorderStyle() ?? null"
+    [class]="headerStyle() ? '' : 'bg-surface-muted/60 border-line'"
+  ><ng-content select="[card-header]" /></header>
   <div class="p-4 sm:p-5"><ng-content /></div>
   <footer class="border-t border-line bg-surface-muted/60 px-4 py-3 sm:px-5 empty:hidden"><ng-content select="[card-footer]" /></footer>
 </section>

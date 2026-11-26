@@ -204,20 +204,17 @@
       <div data-teams [class]="teamsClass()">
         @for (team of teams(); track $index; let i = $index) {
           <ui-card [accentColor]="store.teamColors()[i]">
-            <div card-header class="flex flex-wrap items-center gap-3">
-              <div class="mr-auto min-w-0">
-                <div class="flex flex-wrap items-center gap-2">
-                  <h3 class="font-display text-base font-black uppercase tracking-tight text-ink">
-                    {{ t().teamTitle(i + 1) }}
-                  </h3>
-                  @if (goalkeepersIn(team) > 0) {
-                    <ui-badge data-team-goalkeepers tone="primary">
-                      <ui-icon name="glove" />
-                      {{ t().result.goalkeeperCount(goalkeepersIn(team)) }}
-                    </ui-badge>
-                  }
-                </div>
-                <p class="text-xs text-ink-muted">{{ t().result.quota(teamSize()) }}</p>
+            <div card-header class="flex items-center gap-3">
+              <div class="mr-auto min-w-0 flex flex-wrap items-center gap-2">
+                <h3 class="font-display text-base font-black uppercase tracking-tight text-ink">
+                  {{ t().teamTitle(i + 1) }}
+                </h3>
+                @if (goalkeepersIn(team) > 0) {
+                  <ui-badge data-team-goalkeepers tone="primary">
+                    <ui-icon name="glove" />
+                    {{ t().result.goalkeeperCount(goalkeepersIn(team)) }}
+                  </ui-badge>
+                }
               </div>
               @if (manual()) {
                 <span
@@ -226,6 +223,8 @@
                   {{ t().result.playersOf }}
                   <span data-count [class]="team.length === teamSize() ? 'text-alternative' : 'text-amber-700 dark:text-primary'">{{ team.length }}/{{ teamSize() }}</span>
                 </span>
+              } @else {
+                <ui-badge data-players-badge>{{ t().result.playersBadge(team.length) }}</ui-badge>
               }
             </div>
 

@@ -23,4 +23,15 @@ export class UiCard {
     const accent = this.accent();
     return accent ? ACCENTS[accent] : '';
   });
+
+  protected readonly headerStyle = computed(() => {
+    const color = this.accentColor();
+    if (!color) return null;
+    return `linear-gradient(135deg, ${color}22 0%, ${color}08 60%, transparent 100%)`;
+  });
+
+  protected readonly headerBorderStyle = computed(() => {
+    const color = this.accentColor();
+    return color ? `${color}55` : null;
+  });
 }
