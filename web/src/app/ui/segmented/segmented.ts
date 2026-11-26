@@ -21,7 +21,7 @@ export interface SegmentedOption {
 }
 
 const OPTION_BASE =
-  'min-h-9 min-w-11 select-none rounded-lg px-3 font-display text-sm font-bold uppercase tracking-wide transition-all duration-150 ease-out ' +
+  'inline-flex flex-col items-center justify-center min-h-9 min-w-11 select-none rounded-lg px-3 font-display text-sm font-bold uppercase tracking-wide transition-all duration-150 ease-out ' +
   'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink';
 const SELECTED = 'bg-primary text-secondary shadow-xs';
 const UNSELECTED = 'bg-transparent text-ink-muted hover:bg-ink/10 hover:text-ink';

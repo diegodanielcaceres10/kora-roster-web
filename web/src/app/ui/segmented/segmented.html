@@ -16,12 +16,16 @@
       (click)="activate(i)"
       (keydown)="onKeydown($event, i)"
     >
-      {{ option.label }}
       @if (option.locked) {
-        <ui-icon name="lock" class="ml-1 text-xs" />
+        <span class="flex items-center gap-1">
+          {{ option.label }}
+          <ui-icon name="lock" class="text-xs" />
+        </span>
         @if (option.lockedLabel) {
-          <span class="ml-1 text-xs font-bold uppercase">{{ option.lockedLabel }}</span>
+          <span class="text-[10px] font-bold uppercase leading-none">{{ option.lockedLabel }}</span>
         }
+      } @else {
+        {{ option.label }}
       }
     </button>
   }
