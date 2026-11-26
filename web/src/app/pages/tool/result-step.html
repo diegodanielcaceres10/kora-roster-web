@@ -96,7 +96,7 @@
 
             @if (pool().length > 0) {
               <ul class="space-y-2">
-                @for (player of pool(); track player.id) {
+                @for (player of pool(); track player.id; let n = $index) {
                   <li>
                     <div [class]="tileClass(player.id)">
                       <button
@@ -113,7 +113,7 @@
                         (drop)="drop($event, playerTarget(player.id))"
                         (dragend)="dragEnd()"
                       >
-                        <span class="font-mono text-xs text-ink-faint">{{ numberInList(player.id) }}</span>
+                        <span class="font-mono text-xs text-ink-faint">{{ pad(n + 1) }}</span>
                         <span class="min-w-0">
                           <span class="flex items-center gap-1.5 font-display font-bold text-ink">
                             {{ player.name }}

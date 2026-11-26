@@ -162,11 +162,6 @@ export class ResultStep {
     this.swap(current, id);
   }
 
-  // The number the player has in the list that was pasted.
-  protected numberInList(id: string): string {
-    return pad(this.store.players().findIndex((p) => p.id === id) + 1);
-  }
-
   protected goalkeepersIn(team: Player[]): number {
     return team.filter((p) => p.isGoalkeeper).length;
   }
