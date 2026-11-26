@@ -14,8 +14,8 @@ export const BUTTON_FONTS = {
 export const BUTTON_VARIANTS = {
   primary: 'bg-primary text-secondary shadow-sm shadow-primary/25 hover:brightness-95 hover:shadow-md',
   secondary: 'bg-ink text-canvas shadow-xs hover:bg-ink/90 hover:shadow-sm',
-  outline: 'border border-line bg-surface text-ink hover:border-ink/40 hover:bg-ink/5',
-  ghost: 'border border-line bg-transparent text-ink-muted hover:border-ink/40 hover:bg-ink/10 hover:text-ink',
+  outline: 'border border-line bg-surface text-ink hover:border-ink/40',
+  ghost: 'border border-line bg-surface text-ink-muted hover:border-ink/40 hover:text-ink',
 } as const;
 
 export const BUTTON_SIZES = {
