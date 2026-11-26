@@ -67,8 +67,7 @@
 
     <div class="grid grid-cols-1 gap-5 lg:grid-cols-12 lg:items-start">
       <div class="space-y-5 lg:col-span-4 lg:col-start-1 lg:row-start-1">
-        @if (manual()) {
-          <!-- Players without a team -->
+        @if (manual()) {          <!-- Players without a team -->
           <section
             data-pool
             [class]="poolClass()"
@@ -182,6 +181,23 @@
             }
           </div>
         </section>
+
+        <div class="space-y-3">
+          <ui-button stretch size="lg" [disabled]="!store.isComplete()" (click)="confirm()">
+            {{ t().result.confirm }}
+            <ui-icon name="check" class="ml-auto" />
+          </ui-button>
+          @if (!store.isComplete()) {
+            <p data-confirm-hint class="flex items-start justify-center gap-1.5 text-center text-xs text-ink-muted">
+              <ui-icon name="lock" class="mt-0.5 shrink-0" />
+              {{ t().result.confirmLocked(pool().length) }}
+            </p>
+          }
+          <ui-button stretch size="sm" variant="ghost" font="mono" (click)="store.back()">
+            <ui-icon name="arrow-left" />
+            {{ t().result.backToReview }}
+          </ui-button>
+        </div>
       </div>
 
       <!-- The teams -->
@@ -287,23 +303,6 @@
             </ol>
           </ui-card>
         }
-      </div>
-
-      <div class="space-y-3 lg:col-span-4 lg:col-start-1 lg:row-start-2">
-        <ui-button stretch size="lg" [disabled]="!store.isComplete()" (click)="confirm()">
-          {{ t().result.confirm }}
-          <ui-icon name="check" class="ml-auto" />
-        </ui-button>
-        @if (!store.isComplete()) {
-          <p data-confirm-hint class="flex items-start justify-center gap-1.5 text-center text-xs text-ink-muted">
-            <ui-icon name="lock" class="mt-0.5 shrink-0" />
-            {{ t().result.confirmLocked(pool().length) }}
-          </p>
-        }
-        <ui-button stretch size="sm" variant="ghost" font="mono" (click)="store.back()">
-          <ui-icon name="arrow-left" />
-          {{ t().result.backToReview }}
-        </ui-button>
       </div>
     </div>
   }
