@@ -59,11 +59,6 @@ export const pt: Dictionary = {
     title: 'Parâmetros',
     description:
       'Ficam salvas neste dispositivo e são usadas quando você monta times com a sessão iniciada.',
-    playersPerTeam: {
-      label: 'Jogadores por time',
-      any: 'Livre',
-      selected: (label) => `${label} selecionado`,
-    },
     teamCount: { label: 'Quantidade de times', default: (n) => `${n} por padrão` },
     teams: {
       iconLabel: (team) => `${team}: ícone`,
@@ -231,10 +226,6 @@ export const pt: Dictionary = {
       remove: (name) => `Remover ${name}`,
       markGoalkeeper: (name) => `Marcar ${name} como goleiro`,
       unmarkGoalkeeper: (name) => `Desmarcar ${name} como goleiro`,
-      sizeNotice: (perTeam, teams, count) =>
-        teams === 2
-          ? `Você costuma jogar ${perTeam} contra ${perTeam}, mas esta lista tem ${count === 1 ? '1 jogador' : `${count} jogadores`}.`
-          : `Você costuma jogar com ${perTeam} por time: ${teams} times precisam de ${perTeam * teams} jogadores, mas esta lista tem ${count}.`,
       teamsLabel: 'Quantidade de times a sortear',
       teamsSignIn: 'Entre para usar 3 e 4 times.',
       teamsPremium: '5 e 6 times chegam com o Premium, em breve.',

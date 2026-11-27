@@ -358,28 +358,10 @@ describe('PreviewStep', () => {
     });
   });
 
-  describe('the team size the person usually plays', () => {
-    const notice = (el: HTMLElement) => el.textContent as string;
-
-    it('tells them when the list is not that size', () => {
+  describe('the team size', () => {
+    it('has no notice about a usual size: only the list and the teams decide what is said', () => {
       const { el } = setup(list(12), TEST_PREFERENCES);
-      expect(notice(el)).toContain(T.preview.sizeNotice(7, 2, 12));
-    });
-
-    it('says nothing when the list is exactly that size', () => {
-      const { el } = setup(list(14), TEST_PREFERENCES);
-      expect(notice(el)).not.toContain(T.preview.sizeNotice(7, 2, 14));
-      expect(notice(el)).not.toContain('Sueles jugar');
-    });
-
-    it('says nothing when the person allows any size', () => {
-      const { el } = setup(list(12), { ...TEST_PREFERENCES, playersPerTeam: null });
-      expect(notice(el)).not.toContain('Sueles jugar');
-    });
-
-    it('says nothing to somebody who is not signed in', () => {
-      const { el } = setup(list(12));
-      expect(notice(el)).not.toContain('Sueles jugar');
+      expect(el.textContent).not.toContain('Sueles jugar');
     });
 
     it('does not stop them from drawing a list that is valid', () => {
@@ -387,10 +369,10 @@ describe('PreviewStep', () => {
       expect(byText(T.preview.drawTeams).disabled).toBe(false);
     });
 
-    it('appears next to the problem when the list is not valid either', () => {
+    it('says only what is wrong with the list when it is not valid', () => {
       const { el } = setup(list(11), TEST_PREFERENCES);
-      expect(notice(el)).toContain(T.preview.status.uneven(11, 2));
-      expect(notice(el)).toContain(T.preview.sizeNotice(7, 2, 11));
+      expect(el.textContent).toContain(T.preview.status.uneven(11, 2));
+      expect(el.textContent).not.toContain('Sueles jugar');
     });
   });
 

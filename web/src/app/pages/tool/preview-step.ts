@@ -113,13 +113,6 @@ export class PreviewStep {
     countStatus(this.t().preview.status, this.store.playerCount(), this.store.teamCount()),
   );
 
-  protected readonly notice = computed(() => {
-    const mismatch = this.store.sizeMismatch();
-    return mismatch
-      ? this.t().preview.sizeNotice(mismatch.perTeam, mismatch.teams, mismatch.count)
-      : null;
-  });
-
   protected readonly statusClass = computed(() =>
     this.store.canDraw() ? 'text-alternative' : 'text-red-700',
   );

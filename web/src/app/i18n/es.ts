@@ -60,11 +60,6 @@ export const es: Dictionary = {
     title: 'Parámetros',
     description:
       'Se guardan en este dispositivo y se usan cuando armas equipos con la sesión iniciada.',
-    playersPerTeam: {
-      label: 'Jugadores por equipo',
-      any: 'Libre',
-      selected: (label) => `${label} seleccionado`,
-    },
     teamCount: { label: 'Cantidad de equipos', default: (n) => `${n} por defecto` },
     teams: {
       iconLabel: (team) => `${team}: ícono`,
@@ -231,10 +226,6 @@ export const es: Dictionary = {
       remove: (name) => `Quitar a ${name}`,
       markGoalkeeper: (name) => `Marcar a ${name} como arquero`,
       unmarkGoalkeeper: (name) => `Quitar a ${name} como arquero`,
-      sizeNotice: (perTeam, teams, count) =>
-        teams === 2
-          ? `Sueles jugar ${perTeam} contra ${perTeam}, pero esta lista tiene ${count === 1 ? '1 jugador' : `${count} jugadores`}.`
-          : `Sueles jugar con ${perTeam} por equipo: ${teams} equipos necesitan ${perTeam * teams} jugadores, pero esta lista tiene ${count}.`,
       teamsLabel: 'Cantidad de equipos a sortear',
       teamsSignIn: 'Inicia sesión para usar 3 y 4 equipos.',
       teamsPremium: '5 y 6 equipos llegan con Premium, próximamente.',

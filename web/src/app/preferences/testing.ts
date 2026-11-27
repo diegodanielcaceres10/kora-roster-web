@@ -10,7 +10,6 @@ export const TEST_ACCOUNT = {
 };
 
 export const TEST_PREFERENCES: Preferences = {
-  playersPerTeam: 7,
   teamCount: 2,
   teams: [
     { icon: '🟢', color: '#00ff00' },

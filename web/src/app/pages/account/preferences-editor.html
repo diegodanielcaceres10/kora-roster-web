@@ -14,22 +14,6 @@
 
   <div class="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
     <div class="space-y-5 lg:col-span-7">
-      <ui-card data-section="size">
-        <div card-header class="flex flex-wrap items-center gap-3">
-          <span [class]="tile"><ui-icon name="users" /></span>
-          <h3 [class]="sectionTitle">{{ t().playersPerTeam.label }}</h3>
-          <ui-badge tone="primary">{{ t().playersPerTeam.selected(sizeLabel()) }}</ui-badge>
-        </div>
-        <ui-segmented
-          stretch
-          wrap
-          [label]="t().playersPerTeam.label"
-          [options]="sizeOptions()"
-          [value]="sizeValue()"
-          (valueChange)="setSize($event)"
-        />
-      </ui-card>
-
       <ui-card data-section="teams">
         <div card-header class="flex flex-wrap items-center gap-3">
           <span [class]="tile"><ui-icon name="shield" /></span>

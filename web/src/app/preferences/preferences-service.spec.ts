@@ -73,16 +73,12 @@ describe('PreferencesService', () => {
     });
 
     it('repairs damaged values one by one without losing the good ones', async () => {
-      localStorage.setItem(
-        KEY(ME),
-        stored({ numbering: 'roman', header: 'Hola', playersPerTeam: 9, teams: 'x' }),
-      );
+      localStorage.setItem(KEY(ME), stored({ numbering: 'roman', header: 'Hola', teams: 'x' }));
       const { service, signIn } = await setup();
       signIn();
       expect(service.active()).toEqual({
         ...DEFAULT_PREFERENCES,
         header: 'Hola',
-        playersPerTeam: 9,
         numbering: 'dot',
       });
     });
@@ -184,6 +180,17 @@ describe('PreferencesService', () => {
       signIn();
       expect(service.active()?.location).toBe('');
       expect(service.active()?.header).toBe('⚽ Amistoso');
+    });
+
+    it('reads what it saved with a team size, and does not keep the size any more', async () => {
+      localStorage.setItem(KEY(ME), stored(earlier, 1));
+      const { service, signIn } = await setup();
+      signIn();
+      expect(service.active()).not.toHaveProperty('playersPerTeam');
+      service.save({ ...service.active()!, header: 'Otro' });
+      expect(JSON.parse(localStorage.getItem(KEY(ME)) as string).preferences).not.toHaveProperty(
+        'playersPerTeam',
+      );
     });
 
     it('keeps the location of the pitch when it is saved and read again', async () => {

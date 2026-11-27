@@ -54,9 +54,6 @@ function setup(saved?: Preferences) {
   };
   // The size of the teams and the numbering are groups of options: press the one with this value.
   const optionLabel = (group: string, value: string): string => {
-    if (group === P.playersPerTeam.label) {
-      return value === '' ? P.playersPerTeam.any : `${value}v${value}`;
-    }
     const { template } = P;
     return {
       dot: template.numberingDot,
@@ -124,7 +121,6 @@ describe('PreferencesEditor', () => {
         ...mine,
         location: 'Cancha de ejemplo, Calle Principal 123. https://maps.app.goo.gl/ejemplo',
       });
-      expect(checkedIcon(P.playersPerTeam.label)).toBe('7v7');
       expect((field(colorLabel(1)) as HTMLInputElement).value).toBe('#00ff00');
       expect((field(colorLabel(2)) as HTMLInputElement).value).toBe('#ffff00');
       expect((field(P.template.header) as HTMLInputElement).value).toBe('⚽ Amistoso');
@@ -137,18 +133,15 @@ describe('PreferencesEditor', () => {
 
     it('starts from the defaults when nothing was saved', () => {
       const { field, checkedIcon, colorLabel } = setup();
-      expect(checkedIcon(P.playersPerTeam.label)).toBe(P.playersPerTeam.any);
       expect((field(colorLabel(1)) as HTMLInputElement).value).toBe('#e53935');
       expect((field(P.template.header) as HTMLInputElement).value).toBe('');
       expect(checkedIcon(P.template.numbering)).toBe(P.template.numberingDot);
     });
 
-    it('offers "any" and the team sizes from 5 to 11, in one group', () => {
-      const { radios } = setup();
-      expect(radios(P.playersPerTeam.label).map((r) => r.textContent?.trim())).toEqual([
-        P.playersPerTeam.any,
-        ...[5, 6, 7, 8, 9, 10, 11].map((n) => `${n}v${n}`),
-      ]);
+    it('has no card for the team size: it is not a preference any more', () => {
+      const { el } = setup(mine);
+      expect(el.querySelector('[data-section="size"]')).toBeNull();
+      expect(el.textContent).not.toContain('7v7');
     });
 
     it('offers the four numberings in one group', () => {
@@ -159,14 +152,6 @@ describe('PreferencesEditor', () => {
         P.template.numberingDash,
         P.template.numberingNone,
       ]);
-    });
-
-    it('says the size of the teams that is chosen, in the title of its card', () => {
-      const { el, choose } = setup(mine);
-      const card = () => el.querySelector('[data-section="size"]') as HTMLElement;
-      expect(card().textContent).toContain(P.playersPerTeam.selected('7v7'));
-      choose(P.playersPerTeam.label, '');
-      expect(card().textContent).toContain(P.playersPerTeam.selected(P.playersPerTeam.any));
     });
 
     it('says the number of teams per session that is chosen, in the title of its card', () => {
@@ -594,14 +579,13 @@ describe('PreferencesEditor', () => {
     it('keeps nothing until Save is pressed', () => {
       const { typeInto, choose, service } = setup();
       typeInto(P.template.header, 'Todavía no');
-      choose(P.playersPerTeam.label, '9');
+      choose(P.template.numbering, 'dash');
       expect(service.active()).toEqual(DEFAULT_PREFERENCES);
       expect(localStorage.getItem(KEY)).toBeNull();
     });
 
     it('saves every field for the account, says it was saved, and uses it right away', () => {
       const { typeInto, choose, colorLabel, button, service, toast } = setup();
-      choose(P.playersPerTeam.label, '7');
       typeInto(colorLabel(1), '#00ff00');
       typeInto(colorLabel(2), '#ffff00');
       typeInto(P.template.header, '⚽ Amistoso');
@@ -615,7 +599,6 @@ describe('PreferencesEditor', () => {
 
       const expected = {
         ...DEFAULT_PREFERENCES,
-        playersPerTeam: 7,
         header: '⚽ Amistoso',
         location: 'Cancha de ejemplo, Calle Principal 123. https://maps.app.goo.gl/ejemplo',
         footer: 'Confirmen',
@@ -634,13 +617,6 @@ describe('PreferencesEditor', () => {
       expect(toast.message()).toBe(P.saved);
     });
 
-    it('goes back to "any" size when that option is chosen', () => {
-      const { choose, button, service } = setup(mine);
-      choose(P.playersPerTeam.label, '');
-      button(P.save).click();
-      expect(service.active()?.playersPerTeam).toBeNull();
-    });
-
     it('cleans the preferences before keeping them, and the form shows what was kept', () => {
       const { fixture, typeInto, field, button, service } = setup();
       const long = 'x'.repeat(250);
@@ -657,7 +633,7 @@ describe('PreferencesEditor', () => {
       const { fixture, field, checkedIcon, button, service } = setup(mine);
       button(P.restore).click();
       fixture.detectChanges();
-      expect(checkedIcon(P.playersPerTeam.label)).toBe(P.playersPerTeam.any);
+      expect(checkedIcon(P.template.numbering)).toBe(P.template.numberingDot);
       expect((field(P.template.header) as HTMLInputElement).value).toBe('');
       expect((field(P.template.location) as HTMLInputElement).value).toBe('');
       expect(service.active()).toEqual(mine);

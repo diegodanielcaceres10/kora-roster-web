@@ -108,14 +108,6 @@ export const FriendlyStore = signalStore(
       // Everybody has a team. A team never takes more players than its size, so with nobody
       // left without a team every team is full.
       isComplete: computed(() => teams() !== null && pool().length === 0),
-      // Set when the person usually plays a team size and this list is not that many
-      // players for the teams in use. It is only a notice: it never stops the draw.
-      sizeMismatch: computed(() => {
-        const perTeam = preferences.active()?.playersPerTeam;
-        const teams = teamCount();
-        const count = playerCount();
-        return perTeam && count !== perTeam * teams ? { perTeam, teams, count } : null;
-      }),
       // What the story image is made from: only names, goalkeepers, titles and colors.
       storyInput: computed((): StoryInput | null => {
         const current = teams();

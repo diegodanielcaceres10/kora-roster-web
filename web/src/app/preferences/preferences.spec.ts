@@ -1,4 +1,4 @@
-import { MAX_TEAM_SIZE, MAX_TEAMS, MIN_TEAM_SIZE, MIN_TEAMS } from '../core/draw-teams';
+import { MAX_TEAMS, MIN_TEAMS } from '../core/draw-teams';
 import { DEFAULT_TEAM_ICONS } from '../core/format-teams';
 import {
   colorToIcon,
@@ -15,8 +15,7 @@ const DEFAULT_COLORS = ['#e53935', '#1e88e5', '#43a047', '#fdd835', '#8e24aa', '
 const withTeams = (teams: unknown) => ({ teams });
 
 describe('DEFAULT_PREFERENCES', () => {
-  it('lets any team size, 2 teams, no header, location or footer and dotted numbers', () => {
-    expect(DEFAULT_PREFERENCES.playersPerTeam).toBeNull();
+  it('has 2 teams, no header, location or footer and dotted numbers', () => {
     expect(DEFAULT_PREFERENCES.teamCount).toBe(2);
     expect([DEFAULT_PREFERENCES.header, DEFAULT_PREFERENCES.footer]).toEqual(['', '']);
     expect(DEFAULT_PREFERENCES.numbering).toBe('dot');
@@ -28,10 +27,10 @@ describe('DEFAULT_PREFERENCES', () => {
     expect(new Set(DEFAULT_PREFERENCES.teams.map((team) => team.icon)).size).toBe(6);
   });
 
-  it('offers the six team circles, from 2 to 6 teams, and a team size from 5 to 11', () => {
+  it('offers the six team circles and from 2 to 6 teams, and texts of up to 200 characters', () => {
     expect(TEAM_ICONS).toEqual(DEFAULT_TEAM_ICONS);
     expect([MIN_TEAMS, MAX_TEAMS]).toEqual([2, 6]);
-    expect([MIN_TEAM_SIZE, MAX_TEAM_SIZE, HEADER_MAX]).toEqual([5, 11, 200]);
+    expect(HEADER_MAX).toBe(200);
   });
 });
 
@@ -54,7 +53,6 @@ describe('sanitizePreferences', () => {
 
   it('keeps a complete valid set of preferences exactly as it is', () => {
     const valid: Preferences = {
-      playersPerTeam: 7,
       teamCount: 4,
       teams: [
         { icon: '🟢', color: '#00ff00' },
@@ -75,13 +73,12 @@ describe('sanitizePreferences', () => {
   it('drops anything it does not know', () => {
     const result = sanitizePreferences({ ...DEFAULT_PREFERENCES, evil: '<script>' });
     expect(Object.keys(result).sort()).toEqual(
-      ['footer', 'header', 'location', 'numbering', 'playersPerTeam', 'teamCount', 'teams'].sort(),
+      ['footer', 'header', 'location', 'numbering', 'teamCount', 'teams'].sort(),
     );
   });
 
   it('gives the same result when it is applied twice', () => {
     const messy = {
-      playersPerTeam: '9',
       teamCount: 9,
       teams: [{ icon: '🔵' }, { icon: '🔵', color: 'X' }, 5],
       header: 7,
@@ -90,17 +87,16 @@ describe('sanitizePreferences', () => {
     expect(sanitizePreferences(once)).toEqual(once);
   });
 
-  describe('players per team', () => {
-    it.each([5, 7, 11])('accepts %i', (playersPerTeam) => {
-      expect(sanitizePreferences({ playersPerTeam }).playersPerTeam).toBe(playersPerTeam);
+  describe('the team size that an earlier version kept', () => {
+    it('is not a preference any more, so it is not kept', () => {
+      const result = sanitizePreferences({ playersPerTeam: 7, header: 'Hola' });
+      expect(result).not.toHaveProperty('playersPerTeam');
+      expect(result.header).toBe('Hola');
     });
 
-    it.each([[null], [4], [12], [0], [-5], [7.5], ['7'], [NaN], [undefined]])(
-      'turns %j into "any"',
-      (playersPerTeam) => {
-        expect(sanitizePreferences({ playersPerTeam }).playersPerTeam).toBeNull();
-      },
-    );
+    it('is not in the default preferences either', () => {
+      expect(DEFAULT_PREFERENCES).not.toHaveProperty('playersPerTeam');
+    });
   });
 
   describe('number of teams', () => {

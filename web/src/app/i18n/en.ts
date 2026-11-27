@@ -55,11 +55,6 @@ export const en = {
     eyebrow: 'Matchday preferences',
     title: 'Settings',
     description: 'They are saved on this device and used when you build teams while signed in.',
-    playersPerTeam: {
-      label: 'Players per team',
-      any: 'Any',
-      selected: (label: string) => `${label} selected`,
-    },
     teamCount: { label: 'Number of teams', default: (n: number) => `${n} by default` },
     teams: {
       iconLabel: (team: string) => `${team}: icon`,
@@ -228,10 +223,6 @@ export const en = {
       remove: (name: string) => `Remove ${name}`,
       markGoalkeeper: (name: string) => `Mark ${name} as goalkeeper`,
       unmarkGoalkeeper: (name: string) => `Unmark ${name} as goalkeeper`,
-      sizeNotice: (perTeam: number, teams: number, count: number) =>
-        teams === 2
-          ? `You usually play ${perTeam} vs ${perTeam}, but this list has ${count === 1 ? '1 player' : `${count} players`}.`
-          : `You usually play with ${perTeam} per team: ${teams} teams need ${perTeam * teams} players, but this list has ${count}.`,
       teamsLabel: 'Number of teams to draw',
       teamsSignIn: 'Sign in to use 3 and 4 teams.',
       teamsPremium: '5 and 6 teams come with Premium, coming soon.',

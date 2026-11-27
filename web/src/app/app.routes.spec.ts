@@ -306,7 +306,7 @@ describe('app routes', () => {
   describe('the tool with the preferences of the person', () => {
     afterEach(() => localStorage.clear());
 
-    it('warns about the team size, and then draws with their icons and message', async () => {
+    it('has no warning about the team size, and draws with their icons and message', async () => {
       saveSession(TEST_PREFERENCES);
       const { harness, root } = await open('/es/friendly');
       const T = DICTIONARIES.es.tool;
@@ -319,7 +319,7 @@ describe('app routes', () => {
       root.querySelector('app-paste-step footer ui-button button') as HTMLButtonElement
     ).click();
       harness.fixture.detectChanges();
-      expect(root.textContent).toContain(T.preview.sizeNotice(7, 2, 12));
+      expect(root.textContent).not.toContain('Sueles jugar');
 
       const draw = Array.from(root.querySelectorAll('ui-button button')).find(
         (b) => b.textContent?.trim() === T.preview.drawTeams,

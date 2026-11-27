@@ -1,4 +1,4 @@
-import { MAX_TEAM_SIZE, MAX_TEAMS, MIN_TEAM_SIZE, MIN_TEAMS } from '../core/draw-teams';
+import { MAX_TEAMS, MIN_TEAMS } from '../core/draw-teams';
 import { DEFAULT_TEAM_ICONS, Numbering } from '../core/format-teams';
 
 export interface TeamPreference {
@@ -8,7 +8,6 @@ export interface TeamPreference {
 
 export interface Preferences {
   // Players on each team, or null for "any size".
-  playersPerTeam: number | null;
   // How many teams the person usually plays with. The plan may allow fewer.
   teamCount: number;
   // One entry for each of the six possible teams, so changing the number of teams in use
@@ -64,7 +63,6 @@ export function colorToIcon(hex: string): string {
 }
 
 export const DEFAULT_PREFERENCES: Preferences = {
-  playersPerTeam: null,
   teamCount: MIN_TEAMS,
   teams: TEAM_ICONS.map((icon, i) => ({ icon, color: DEFAULT_COLORS[i] })),
   header: '',
@@ -111,17 +109,9 @@ export function sanitizePreferences(value: unknown): Preferences {
       ),
     );
   });
-  const size = raw['playersPerTeam'];
   const count = raw['teamCount'];
 
   return {
-    playersPerTeam:
-      typeof size === 'number' &&
-      Number.isInteger(size) &&
-      size >= MIN_TEAM_SIZE &&
-      size <= MAX_TEAM_SIZE
-        ? size
-        : null,
     teamCount:
       typeof count === 'number' &&
       Number.isInteger(count) &&

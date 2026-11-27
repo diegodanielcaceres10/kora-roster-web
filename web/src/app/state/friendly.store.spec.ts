@@ -516,33 +516,11 @@ describe('FriendlyStore', () => {
       expect(store.teamIcons()).toEqual(DEFAULT_TEAM_ICONS);
     });
 
-    describe('the team size the person usually plays', () => {
-      it.each([
-        [14, null],
-        [12, { perTeam: 7, teams: 2, count: 12 }],
-        [10, { perTeam: 7, teams: 2, count: 10 }],
-        [22, { perTeam: 7, teams: 2, count: 22 }],
-      ])('with %i players the mismatch is %j', (count, expected) => {
-        saveSession(TEST_PREFERENCES);
-        const { store } = inPreview(list(count));
-        expect(store.sizeMismatch()).toEqual(expected);
-      });
-
-      it('is not a mismatch when the person allows any size', () => {
-        saveSession({ ...TEST_PREFERENCES, playersPerTeam: null });
-        expect(inPreview(list(12)).store.sizeMismatch()).toBeNull();
-      });
-
-      it('is not a mismatch for somebody who is not signed in', () => {
-        expect(inPreview(list(12)).store.sizeMismatch()).toBeNull();
-      });
-
-      it('does not stop the draw, which only depends on the 10 to 22 even rule', () => {
-        saveSession(TEST_PREFERENCES);
-        const { store } = inPreview(list(12));
-        expect(store.sizeMismatch()).not.toBeNull();
-        expect(store.canDraw()).toBe(true);
-      });
+    it('has no notice about a usual team size: that is not a preference any more', () => {
+      saveSession(TEST_PREFERENCES);
+      const { store } = inPreview(list(12));
+      expect(store).not.toHaveProperty('sizeMismatch');
+      expect(store.canDraw()).toBe(true);
     });
   });
 
@@ -641,14 +619,6 @@ describe('FriendlyStore', () => {
         expect(text).toContain(`${icon} Team ${i + 1}\n`);
       });
     });
-
-    it('compares the size the person usually plays with the number of teams in use', () => {
-      saveSession({ ...TEST_PREFERENCES, playersPerTeam: 5 });
-      const { store } = inPreview(list(20));
-      expect(store.sizeMismatch()).toEqual({ perTeam: 5, teams: 2, count: 20 });
-      store.setTeamCount(4);
-      expect(store.sizeMismatch()).toBeNull();
-    });
   });
 
   describe('the number of teams the person prefers', () => {
@@ -697,10 +667,9 @@ describe('FriendlyStore', () => {
       expect(store.teamCount()).toBe(4);
     });
 
-    it('checks the size they usually play against the teams they prefer', () => {
-      saveSession({ ...TEST_PREFERENCES, teamCount: 4, playersPerTeam: 5 });
+    it('lets 20 players through with the 4 teams they prefer', () => {
+      saveSession({ ...TEST_PREFERENCES, teamCount: 4 });
       const { store } = inPreview(list(20));
-      expect(store.sizeMismatch()).toBeNull();
       expect(store.countError()).toBeNull();
     });
   });

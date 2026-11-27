@@ -7,7 +7,7 @@ import {
   inject,
   signal,
 } from '@angular/core';
-import { MAX_TEAM_SIZE, MAX_TEAMS, MIN_TEAM_SIZE, MIN_TEAMS } from '../../core/draw-teams';
+import { MAX_TEAMS, MIN_TEAMS } from '../../core/draw-teams';
 import { formatTeamsForWhatsApp, Numbering } from '../../core/format-teams';
 import { StoryInput } from '../../core/story-layout';
 import { I18n } from '../../i18n/i18n';
@@ -65,7 +65,6 @@ const copyOf = (preferences: Preferences): Preferences => ({
 });
 
 const samePreferences = (a: Preferences, b: Preferences): boolean =>
-  a.playersPerTeam === b.playersPerTeam &&
   a.teamCount === b.teamCount &&
   a.header === b.header &&
   a.location === b.location &&
@@ -102,19 +101,6 @@ export class PreferencesEditor {
     () => !samePreferences(this.draft(), this.preferences.active() ?? DEFAULT_PREFERENCES),
   );
   protected readonly lock = signal<{ reason: LockReason; message: string } | null>(null);
-
-  // "Any", then 5v5, 6v6... up to the biggest team there can be.
-  protected readonly sizeOptions = computed<SegmentedOption[]>(() => [
-    { value: '', label: this.t().playersPerTeam.any },
-    ...Array.from({ length: MAX_TEAM_SIZE - MIN_TEAM_SIZE + 1 }, (_, i) => ({
-      value: String(MIN_TEAM_SIZE + i),
-      label: `${MIN_TEAM_SIZE + i}v${MIN_TEAM_SIZE + i}`,
-    })),
-  ]);
-  protected readonly sizeValue = computed(() => this.draft().playersPerTeam?.toString() ?? '');
-  protected readonly sizeLabel = computed(
-    () => this.sizeOptions().find((option) => option.value === this.sizeValue())?.label ?? '',
-  );
 
   protected readonly teamCountOptions = computed<SegmentedOption[]>(() =>
     Array.from({ length: MAX_TEAMS - MIN_TEAMS + 1 }, (_, i) => MIN_TEAMS + i).map((count) => {
@@ -245,10 +231,6 @@ export class PreferencesEditor {
 
   protected teamTitle(index: number): string {
     return this.i18n.t().tool.teamTitle(index + 1);
-  }
-
-  protected setSize(value: string): void {
-    this.draft.update((d) => ({ ...d, playersPerTeam: value === '' ? null : Number(value) }));
   }
 
   protected setTeamCount(value: string): void {

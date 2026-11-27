@@ -148,14 +148,9 @@ describe('dictionaries', () => {
   });
 
   describe('the notice about the usual team size', () => {
-    it.each([
-      ['en', 'You usually play 7 vs 7, but this list has 12 players.', '1 player.'],
-      ['es', 'Sueles jugar 7 contra 7, pero esta lista tiene 12 jugadores.', '1 jugador.'],
-      ['pt', 'Você costuma jogar 7 contra 7, mas esta lista tem 12 jogadores.', '1 jogador.'],
-    ] as const)('says what is usual and what the list has in %s', (lang, text, one) => {
-      const { sizeNotice } = DICTIONARIES[lang].tool.preview;
-      expect(sizeNotice(7, 2, 12)).toBe(text);
-      expect(sizeNotice(7, 2, 1).endsWith(one)).toBe(true);
+    it.each([['en'], ['es'], ['pt']] as const)('is gone in %s, as the size is not a preference', (lang) => {
+      expect(DICTIONARIES[lang].tool.preview).not.toHaveProperty('sizeNotice');
+      expect(DICTIONARIES[lang].preferences).not.toHaveProperty('playersPerTeam');
     });
   });
 
@@ -176,20 +171,6 @@ describe('dictionaries', () => {
       ['pt', 'São 16 jogadores e com 3 times o número precisa ser múltiplo de 3.'],
     ] as const)('explains an uneven count with 3 teams in %s', (lang, text) => {
       expect(DICTIONARIES[lang].tool.preview.status.uneven(16, 3)).toBe(text);
-    });
-
-    it.each([
-      ['en', 'You usually play with 7 per team: 3 teams need 21 players, but this list has 12.'],
-      [
-        'es',
-        'Sueles jugar con 7 por equipo: 3 equipos necesitan 21 jugadores, pero esta lista tiene 12.',
-      ],
-      [
-        'pt',
-        'Você costuma jogar com 7 por time: 3 times precisam de 21 jogadores, mas esta lista tem 12.',
-      ],
-    ] as const)('compares the usual size with more than 2 teams in %s', (lang, text) => {
-      expect(DICTIONARIES[lang].tool.preview.sizeNotice(7, 3, 12)).toBe(text);
     });
   });
 
@@ -334,15 +315,13 @@ describe('dictionaries', () => {
     );
 
     it.each([
-      ['en', 'Any', '7v7 selected', '2 by default', 'Save preferences'],
-      ['es', 'Libre', '7v7 seleccionado', '2 por defecto', 'Guardar preferencias'],
-      ['pt', 'Livre', '7v7 selecionado', '2 por padrão', 'Salvar preferências'],
+      ['en', '2 by default', 'Save preferences'],
+      ['es', '2 por defecto', 'Guardar preferencias'],
+      ['pt', '2 por padrão', 'Salvar preferências'],
     ] as const)(
       'name the choices of the preferences in %s',
-      (lang, any, selected, byDefault, save) => {
+      (lang, byDefault, save) => {
         const { preferences } = DICTIONARIES[lang];
-        expect(preferences.playersPerTeam.any).toBe(any);
-        expect(preferences.playersPerTeam.selected('7v7')).toBe(selected);
         expect(preferences.teamCount.default(2)).toBe(byDefault);
         expect(preferences.save).toBe(save);
       },
