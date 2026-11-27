@@ -626,7 +626,34 @@ export function layoutStory(input: StoryInput, measure: Measure): StoryLayout {
       height: panelHeight,
       radius: RADIUS,
       fill: theme.teamPanel.fill,
-      stroke: { color: team.color || theme.teamPanel.stroke, width: 2.5 },
+      // Subtle border: team color at ~44% opacity, thinner stroke
+      stroke: { color: (team.color || theme.teamPanel.stroke) + '70', width: 1.5 },
+    });
+
+    // Header background tint — drawn after panel rect so it sits inside the border
+    // Uses team color at ~18% opacity for a premium, subtle look
+    commands.push({
+      kind: 'rect',
+      role: 'title-bar',
+      team: teamIdx,
+      x: panelX + 1.5,
+      y: panelY + 1.5,
+      width: colWidth - 3,
+      height: headerH - 1.5,
+      radius: RADIUS - 1,
+      fill: (team.color || theme.teamPanel.stroke) + '2E',
+    });
+    // Square off the bottom corners of the header tint (canvas rounded-rect bleeds into body)
+    commands.push({
+      kind: 'rect',
+      role: 'title-bar',
+      team: teamIdx,
+      x: panelX + 1.5,
+      y: panelY + headerH / 2,
+      width: colWidth - 3,
+      height: headerH / 2,
+      radius: 0,
+      fill: (team.color || theme.teamPanel.stroke) + '2E',
     });
 
     // Panel Header (e.g. "TEAM ORO" ... "7 JUG.")
@@ -644,6 +671,7 @@ export function layoutStory(input: StoryInput, measure: Measure): StoryLayout {
       text: teamTitleText,
       size: 22,
       weight: 'bold',
+      // Keep team color for title text — readable on the subtle tint background
       color: team.color,
       align: 'left',
     });
