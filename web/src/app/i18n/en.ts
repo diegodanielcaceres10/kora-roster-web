@@ -38,16 +38,6 @@ export const en = {
   locks: {
     signInLink: 'Sign in',
     premiumLabel: 'Premium',
-    premiumSoon: 'Available with Premium, coming soon.',
-  },
-  premiumCard: {
-    title: 'Premium',
-    intro: 'What comes with Premium:',
-    moreTeams: 'More teams (5 and 6)',
-    logo: 'The logo of your organization',
-    records: 'Record of friendlies and players',
-    attendance: 'Attendance control',
-    signUps: 'Sign-ups by link',
   },
   preferences: {
     teamsSection: 'Team customization',

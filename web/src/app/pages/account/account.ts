@@ -15,12 +15,11 @@ import { I18n } from '../../i18n/i18n';
 import { PageMeta } from '../../i18n/page-meta';
 import { UiButton, UiIcon } from '../../ui';
 import { PreferencesEditor } from './preferences-editor';
-import { PremiumCard } from './premium-card';
 
 @Component({
   selector: 'app-account',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [UiButton, UserAvatar, PreferencesEditor, PremiumCard, UiIcon],
+  imports: [UiButton, UserAvatar, PreferencesEditor, UiIcon],
   templateUrl: './account.html',
 })
 export class Account {

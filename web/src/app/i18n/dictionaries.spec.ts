@@ -147,6 +147,17 @@ describe('dictionaries', () => {
     });
   });
 
+  describe('the texts of the Premium card', () => {
+    it.each([['en'], ['es'], ['pt']] as const)('are gone in %s, as the card is', (lang) => {
+      expect(DICTIONARIES[lang]).not.toHaveProperty('premiumCard');
+      expect(DICTIONARIES[lang].locks).not.toHaveProperty('premiumSoon');
+    });
+
+    it.each([['en'], ['es'], ['pt']] as const)('keep the label of the locked options in %s', (lang) => {
+      expect(DICTIONARIES[lang].locks.premiumLabel).toBe('Premium');
+    });
+  });
+
   describe('the notice about the usual team size', () => {
     it.each([['en'], ['es'], ['pt']] as const)('is gone in %s, as the size is not a preference', (lang) => {
       expect(DICTIONARIES[lang].tool.preview).not.toHaveProperty('sizeNotice');

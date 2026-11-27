@@ -216,13 +216,27 @@ describe('Account page', () => {
       expect(el.querySelector('app-premium-card')).toBeNull();
     });
 
-    it('is shown to somebody who is signed in, above the preferences', async () => {
+    it('is not shown to somebody who is signed in either: the page goes from the profile to the preferences', async () => {
       localStorage.setItem(SESSION_KEY, JSON.stringify(SAVED));
       const { el } = await setup();
-      const card = el.querySelector('app-premium-card') as HTMLElement;
+      expect(el.querySelector('app-premium-card')).toBeNull();
+      expect(el.textContent).not.toContain('Lo que viene con Premium');
+      const profile = el.querySelector('[data-profile]') as HTMLElement;
       const editor = el.querySelector('app-preferences-editor') as HTMLElement;
-      expect(card).not.toBeNull();
-      expect(card.compareDocumentPosition(editor) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+      expect(
+        profile.compareDocumentPosition(editor) & Node.DOCUMENT_POSITION_FOLLOWING,
+      ).toBeTruthy();
+    });
+
+    it('has nothing about what comes with Premium, in any language', async () => {
+      localStorage.setItem(SESSION_KEY, JSON.stringify(SAVED));
+      const { el, settle } = await setup();
+      for (const lang of ['en', 'es', 'pt'] as const) {
+        TestBed.inject(I18n).setLang(lang);
+        await settle();
+        expect(el.querySelector('h2')?.textContent ?? '').not.toMatch(/^\s*Premium\s*$/);
+        expect(el.querySelectorAll('ul button[aria-disabled="true"]')).toHaveLength(0);
+      }
     });
   });
 
