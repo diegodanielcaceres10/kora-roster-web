@@ -20,6 +20,7 @@ import { DEFAULT_TEAM_ICONS, formatTeamsForWhatsApp } from '../core/format-teams
 import { parsePastedNames } from '../core/parse-players';
 import { StoryInput } from '../core/story-layout';
 import { I18n } from '../i18n/i18n';
+import { buildStoryInput } from '../image/story-input';
 import { Entitlements } from '../plans/entitlements';
 import { colorToIcon, DEFAULT_PREFERENCES } from '../preferences/preferences';
 import { PreferencesService } from '../preferences/preferences-service';
@@ -115,7 +116,7 @@ export const FriendlyStore = signalStore(
         const { teamTitle, result } = i18n.t().tool;
         const colors = teamColors();
         const prefs = preferences.active();
-        return {
+        return buildStoryInput({
           teams: current.map((team, i) => ({
             title: teamTitle(i + 1),
             color: colors[i],
@@ -127,7 +128,7 @@ export const FriendlyStore = signalStore(
           confirmed: result.storyConfirmed,
           brand: result.storyBrand,
           theme: theme.mode(),
-        };
+        });
       }),
       whatsappText: computed(() => {
         const current = teams();

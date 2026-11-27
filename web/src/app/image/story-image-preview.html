@@ -1,0 +1,21 @@
+<div data-image class="space-y-3">
+  @if (imageUrl(); as url) {
+    <img
+      [src]="url"
+      [alt]="alt()"
+      class="mx-auto block max-h-[65vh] w-auto max-w-full rounded-xl border border-line shadow-xs"
+    />
+  } @else if (!imageFailed()) {
+    <p
+      role="status"
+      class="mx-auto flex aspect-[9/16] max-h-[65vh] w-full max-w-[18rem] items-center justify-center rounded-xl border border-dashed border-line text-sm text-ink-muted"
+    >
+      {{ loadingText() }}
+    </p>
+  }
+  @if (imageFailed()) {
+    <p role="alert" class="text-sm font-semibold text-red-700 dark:text-red-300">
+      {{ failedText() }}
+    </p>
+  }
+</div>

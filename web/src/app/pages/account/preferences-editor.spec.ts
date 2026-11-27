@@ -276,7 +276,7 @@ describe('PreferencesEditor', () => {
         { name: T.tool.playerName(2), isGoalkeeper: false },
         { name: T.tool.playerName(3), isGoalkeeper: false },
       ]);
-      expect(input.location).toBe(P.template.locationSample);
+      expect(input.location).toBe('');
       expect(input).not.toHaveProperty('header');
       expect([input.footer, input.numbering]).toEqual(['', 'dot']);
       expect([input.confirmed, input.brand]).toEqual([

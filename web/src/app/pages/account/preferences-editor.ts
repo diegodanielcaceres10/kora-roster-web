@@ -1,17 +1,10 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  DestroyRef,
-  effect,
-  inject,
-  signal,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { MAX_TEAMS, MIN_TEAMS } from '../../core/draw-teams';
 import { formatTeamsForWhatsApp, Numbering } from '../../core/format-teams';
 import { StoryInput } from '../../core/story-layout';
 import { I18n } from '../../i18n/i18n';
-import { STORY_BLOB } from '../../image/story-image';
+import { StoryImagePreview } from '../../image/story-image-preview';
+import { buildStoryInput } from '../../image/story-input';
 import { Entitlements, LockReason } from '../../plans/entitlements';
 import { LockNotice } from '../../plans/lock-notice';
 import {
@@ -46,9 +39,6 @@ const NUMBERINGS: readonly Numbering[] = ['dot', 'paren', 'dash', 'none'];
 
 type PreviewView = 'message' | 'image';
 
-// How long the template has to stay still before the image of the preview is made again: making
-// it takes a moment, so it is not made for every letter that is typed.
-const IMAGE_PAUSE_MS = 300;
 const HEX_COLOR = /^#[0-9a-f]{6}$/i;
 
 const TILE =
@@ -76,7 +66,7 @@ const samePreferences = (a: Preferences, b: Preferences): boolean =>
 @Component({
   selector: 'app-preferences-editor',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [LockNotice, UiBadge, UiButton, UiCard, UiIcon, UiInput, UiSegmented],
+  imports: [LockNotice, StoryImagePreview, UiBadge, UiButton, UiCard, UiIcon, UiInput, UiSegmented],
   host: { class: 'block' },
   templateUrl: './preferences-editor.html',
 })
@@ -85,7 +75,6 @@ export class PreferencesEditor {
   private readonly preferences = inject(PreferencesService);
   private readonly toast = inject(ToastService);
   private readonly entitlements = inject(Entitlements);
-  private readonly createBlob = inject(STORY_BLOB);
   private readonly theme = inject(Theme);
 
   protected readonly t = computed(() => this.i18n.t().preferences);
@@ -163,67 +152,29 @@ export class PreferencesEditor {
 
   // The image is made with the same code as the one that is downloaded, from the same kind of
   // input, so what is seen here is what comes out.
-  private readonly previewStory = computed(
+  protected readonly previewStory = computed(
     (): StoryInput => {
-      const { teams, teamCount, footer, numbering } = this.draft();
+      const { teams, teamCount, location, footer, numbering } = this.draft();
       const { result } = this.i18n.t().tool;
-      return {
+      return buildStoryInput({
         teams: teams.slice(0, teamCount).map((team, i) => ({
           title: this.teamTitle(i),
           color: team.color,
           players: this.sampleTeams()[i],
         })),
-        location: this.previewLocation(),
+        location,
         footer,
         numbering,
         confirmed: result.storyConfirmed,
         brand: result.storyBrand,
         theme: this.theme.mode(),
-      };
+      });
     },
     // The draft changes with every letter of the header or the footer, but the image only changes
     // when what it draws changes, so an equal input is not a new input.
     { equal: (a, b) => JSON.stringify(a) === JSON.stringify(b) },
   );
-  protected readonly imageUrl = signal<string | null>(null);
-  protected readonly imageFailed = signal(false);
   protected readonly imageFailedText = computed(() => this.i18n.t().tool.result.imageFailed);
-  private lastMade: StoryInput | null = null;
-  private turn = 0;
-
-  constructor() {
-    // Only while the tab of the image is on, and only when the input is not the one already made.
-    effect((onCleanup) => {
-      if (this.previewView() !== 'image') return;
-      const input = this.previewStory();
-      if (input === this.lastMade) return;
-      const timer = setTimeout(() => void this.makeImage(input), IMAGE_PAUSE_MS);
-      onCleanup(() => clearTimeout(timer));
-    });
-    inject(DestroyRef).onDestroy(() => {
-      this.turn++;
-      const url = this.imageUrl();
-      if (url) URL.revokeObjectURL(url);
-    });
-  }
-
-  private async makeImage(input: StoryInput): Promise<void> {
-    const turn = ++this.turn;
-    this.lastMade = input;
-    this.imageFailed.set(false);
-    try {
-      const blob = await this.createBlob(input);
-      // An older image that arrives after a newer one is not wanted.
-      if (turn !== this.turn) return;
-      const previous = this.imageUrl();
-      this.imageUrl.set(URL.createObjectURL(blob));
-      if (previous) URL.revokeObjectURL(previous);
-    } catch {
-      if (turn !== this.turn) return;
-      this.lastMade = null;
-      this.imageFailed.set(true);
-    }
-  }
 
   protected setView(value: string): void {
     if (value === 'message' || value === 'image') this.previewView.set(value);
