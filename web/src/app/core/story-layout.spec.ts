@@ -84,25 +84,10 @@ describe('layoutStory', () => {
   });
 
   describe('the pills on top', () => {
-    const pills = (layout: StoryLayout) => ({
-      statusRect: rects(layout, 'status-pill')[0],
-      statusText: texts(layout, 'status-pill')[0],
-    });
-
-    it('says what the teams are at the right: their size and that they are confirmed', () => {
-      const { statusRect, statusText } = pills(layoutStory(input(teams(2, 7)), measure));
-      expect(statusText.text).toBe('7V7 CONFIRMED');
-      expect(statusRect.x + statusRect.width).toBeCloseTo(INNER_LEFT + INNER_WIDTH, 5);
-    });
-
-    it('takes the size from the longest team when they are not the same size', () => {
-      const { statusText } = pills(layoutStory(input([team(0, 5), team(1, 6)]), measure));
-      expect(statusText.text).toBe('6V6 CONFIRMED');
-    });
-
-    it('leaves the pill out when there is nothing to say', () => {
-      const layout = layoutStory(input([team(0, 0)], { confirmed: '  ' }), measure);
+    it('omits the status pill', () => {
+      const layout = layoutStory(input(teams(2, 7)), measure);
       expect(rects(layout, 'status-pill')).toHaveLength(0);
+      expect(texts(layout, 'status-pill')).toHaveLength(0);
     });
   });
 
@@ -115,16 +100,13 @@ describe('layoutStory', () => {
         name: texts(layout, 'wordmark')[0],
         tagRect: rects(layout, 'brand-pill')[0],
         tagText: texts(layout, 'brand-pill')[0],
-        statusRect: rects(layout, 'status-pill')[0],
       };
     };
 
-    it('starts with the mark of Kora at the left of the first row, as tall as the row', () => {
-      const { mark, statusRect } = logo();
+    it('starts with the mark of Kora at the left of the first row, square-sized', () => {
+      const { mark } = logo();
       expect(mark.x).toBe(INNER_LEFT);
-      expect(mark.y).toBe(statusRect.y);
       expect(mark.width).toBe(mark.height);
-      expect(mark.height).toBe(statusRect.height);
     });
 
     it('writes KORA right after the mark, in capitals and aligned to the left', () => {
@@ -352,20 +334,21 @@ describe('layoutStory', () => {
       expect(lines[1].y).toBeGreaterThan(lines[0].y);
     });
 
-    it('never needs more than two lines: the rest is cut with an ellipsis', () => {
-      const { lines, card } = where({ location: LONG });
-      expect(lines).toHaveLength(2);
-      expect(lines[1].text.endsWith('…')).toBe(true);
-      expect(measure(lines[1].text, lines[1].size, lines[1].weight)).toBeLessThanOrEqual(
-        INNER_WIDTH - 40,
-      );
-      expect(card.height).toBe(where({ location: LONG }).card.height);
+    it('wraps long text across as many lines as needed without ellipsis', () => {
+      const { lines } = where({ location: LONG });
+      expect(lines.length).toBeGreaterThan(2);
+      expect(lines.every((line) => !line.text.endsWith('…'))).toBe(true);
+      for (const line of lines) {
+        expect(measure(line.text, line.size, line.weight)).toBeLessThanOrEqual(INNER_WIDTH - 40);
+      }
     });
 
-    it('cuts a word wider than the line, such as a long link, with an ellipsis', () => {
-      const { lines } = where({ location: `https://maps.app.goo.gl/${'a'.repeat(200)}` });
-      expect(lines.length).toBeLessThanOrEqual(2);
-      expect(lines.at(-1)?.text.endsWith('…')).toBe(true);
+    it('breaks a word wider than the line, such as a long link, without ellipsis', () => {
+      const link = `https://maps.app.goo.gl/${'a'.repeat(200)}`;
+      const { lines } = where({ location: link });
+      expect(lines.length).toBeGreaterThan(2);
+      expect(lines.every((line) => !line.text.endsWith('…'))).toBe(true);
+      expect(lines.map((l) => l.text).join('')).toBe(link);
       for (const line of lines) {
         expect(measure(line.text, line.size, line.weight)).toBeLessThanOrEqual(INNER_WIDTH - 40);
       }
@@ -411,21 +394,26 @@ describe('layoutStory', () => {
     });
   });
 
-  describe('the header of the preferences', () => {
-    it('is not drawn in the image, even if the input still carries it', () => {
-      const withHeader = Object.assign(input(teams(2, 7)), { header: 'Martes 20:30 // Cancha 1' });
-      const layout = layoutStory(withHeader, measure);
-      const roles = layout.commands.map((c) => String(c.role));
-      expect(roles).not.toContain('header-card');
-      expect(roles).not.toContain('header');
-      expect(layout.commands.some((c) => c.kind === 'text' && c.text.includes('MARTES'))).toBe(
-        false,
-      );
+  describe('the header and footer of the preferences', () => {
+    it('draws the header card above location and panels, wrapping without ellipsis', () => {
+      const longHeader = Array.from({ length: 18 }, (_, i) => `Partido${i}`).join(' ');
+      const layout = layoutStory(input(teams(2, 7), { header: longHeader, location: 'Cancha 1' }), measure);
+      const card = rects(layout, 'header-card')[0];
+      const lines = texts(layout, 'header');
+      expect(card).toBeDefined();
+      expect(lines.length).toBeGreaterThan(1);
+      expect(lines.every((l) => !l.text.endsWith('…'))).toBe(true);
+      expect(card.y + card.height).toBeLessThan(rects(layout, 'location-card')[0].y);
     });
 
-    it('leaves the same layout as an image without it', () => {
-      const withHeader = Object.assign(input(teams(2, 7)), { header: 'Martes 20:30' });
-      expect(layoutStory(withHeader, measure)).toEqual(layoutStory(input(teams(2, 7)), measure));
+    it('draws the footer message above the brand line, wrapping without ellipsis', () => {
+      const longFooter = Array.from({ length: 18 }, (_, i) => `Confirmar${i}`).join(' ');
+      const layout = layoutStory(input(teams(2, 7), { footer: longFooter }), measure);
+      const footerLines = texts(layout, 'footer');
+      const brand = texts(layout, 'brand')[0];
+      expect(footerLines.length).toBeGreaterThan(1);
+      expect(footerLines.every((l) => !l.text.endsWith('…'))).toBe(true);
+      expect(footerLines.at(-1)!.y).toBeLessThan(brand.y);
     });
   });
 
@@ -531,18 +519,6 @@ describe('layoutStory', () => {
       expect(heightOf(4, 11)).toBeLessThan(72);
       expect(heightOf(4, 11)).toBeGreaterThanOrEqual(48);
     });
-
-    it.each([
-      [2, 7, '7V7'],
-      [3, 5, '5V5V5'],
-      [4, 6, '6V6V6V6'],
-    ])(
-      'says the size of every team in the status pill (%i teams of %i)',
-      (count, size, expected) => {
-        const { layout } = grid(count, size);
-        expect(texts(layout, 'status-pill')[0].text).toBe(`${expected} CONFIRMED`);
-      },
-    );
   });
 
   describe('footer and brand', () => {

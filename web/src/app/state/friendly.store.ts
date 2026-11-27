@@ -122,6 +122,7 @@ export const FriendlyStore = signalStore(
             color: colors[i],
             players: team.map((p) => ({ name: p.name, isGoalkeeper: p.isGoalkeeper })),
           })),
+          header: prefs?.header ?? '',
           location: prefs?.location ?? '',
           footer: prefs?.footer ?? '',
           numbering: prefs?.numbering ?? 'dot',

@@ -154,7 +154,7 @@ export class PreferencesEditor {
   // input, so what is seen here is what comes out.
   protected readonly previewStory = computed(
     (): StoryInput => {
-      const { teams, teamCount, location, footer, numbering } = this.draft();
+      const { teams, teamCount, header, location, footer, numbering } = this.draft();
       const { result } = this.i18n.t().tool;
       return buildStoryInput({
         teams: teams.slice(0, teamCount).map((team, i) => ({
@@ -162,6 +162,7 @@ export class PreferencesEditor {
           color: team.color,
           players: this.sampleTeams()[i],
         })),
+        header,
         location,
         footer,
         numbering,

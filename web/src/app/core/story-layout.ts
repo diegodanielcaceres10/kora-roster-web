@@ -24,7 +24,9 @@ export interface StoryTeam {
 
 export interface StoryInput {
   teams: readonly StoryTeam[];
-  // Where the pitch is. It gets a card of its own under the top row, in up to two lines.
+  // Optional message header shown above the location and teams.
+  header?: string;
+  // Where the pitch is. It gets a card of its own under the top row, wrapping without ellipsis.
   location: string;
   footer: string;
   numbering: Numbering;
@@ -41,6 +43,7 @@ export type RectRole =
   | 'title-bar'
   | 'highlight'
   | 'matchday-card'
+  | 'header-card'
   | 'location-card'
   | 'player-row'
   | 'badge';
@@ -48,6 +51,7 @@ export type RectRole =
 export type TextRole =
   | 'brand-pill'
   | 'status-pill'
+  | 'header'
   | 'location'
   | 'footer'
   | 'brand'
@@ -162,12 +166,15 @@ const TAG_PAD_X = 18;
 const TAG_HEIGHT = 34;
 const LOGO_GAP = 14;
 
-// The location card: the text as typed (a link has capitals that matter), in the normal weight,
-// in one line or two, in a card that is as tall as the header card when it takes one line.
+// Header, location and footer: wrapped without ellipsis across as many lines as needed.
+const HEADER_SIZE = 24;
+const HEADER_LINE_HEIGHT = 32;
+const HEADER_PAD_Y = 14;
 const LOCATION_SIZE = 22;
 const LOCATION_LINE_HEIGHT = 30;
 const LOCATION_PAD_Y = 13;
-const LOCATION_MAX_LINES = 2;
+const FOOTER_SIZE = 22;
+const FOOTER_LINE_HEIGHT = 30;
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
@@ -206,32 +213,51 @@ function truncate(
 
 const tidy = (text: string) => text.replace(/\s+/g, ' ').trim();
 
-// Breaks the text into at most `maxLines` lines that fit in `maxWidth`. What does not fit in the
-// last line is cut with an ellipsis, and so is a word that is wider than a whole line.
-function wrap(
+// Breaks the text into as many lines as needed to fit in `maxWidth` without ellipsis.
+// A single word wider than `maxWidth` is split across lines by character.
+function wrapLines(
   text: string,
   maxWidth: number,
   size: number,
   weight: FontWeight,
   measure: Measure,
-  maxLines: number,
 ): string[] {
+  if (!text) return [];
   const lines: string[] = [];
-  let rest = text.split(' ');
-  while (rest.length > 0 && lines.length < maxLines) {
-    if (lines.length === maxLines - 1) {
-      lines.push(truncate(rest.join(' '), maxWidth, size, weight, measure));
-      break;
+  let current = '';
+
+  const pushWord = (word: string) => {
+    if (measure(word, size, weight) <= maxWidth) {
+      current = word;
+      return;
     }
-    let line = rest[0];
-    let taken = 1;
-    while (taken < rest.length && measure(`${line} ${rest[taken]}`, size, weight) <= maxWidth) {
-      line = `${line} ${rest[taken]}`;
-      taken++;
+    let chunk = '';
+    for (const ch of Array.from(word)) {
+      const next = chunk + ch;
+      if (chunk && measure(next, size, weight) > maxWidth) {
+        lines.push(chunk);
+        chunk = ch;
+      } else {
+        chunk = next;
+      }
     }
-    lines.push(truncate(line, maxWidth, size, weight, measure));
-    rest = rest.slice(taken);
+    current = chunk;
+  };
+
+  for (const word of text.split(' ')) {
+    if (!current) {
+      pushWord(word);
+      continue;
+    }
+    const candidate = `${current} ${word}`;
+    if (measure(candidate, size, weight) <= maxWidth) {
+      current = candidate;
+    } else {
+      lines.push(current);
+      pushWord(word);
+    }
   }
+  if (current) lines.push(current);
   return lines;
 }
 
@@ -269,14 +295,28 @@ export function layoutStory(input: StoryInput, measure: Measure): StoryLayout {
   const headerH = 56;
   const panelPadY = 16;
   const pillHeight = 56;
+  const headerText = tidy(input.header ?? '');
+  const headerLines = headerText
+    ? wrapLines(headerText, innerWidth - 40, HEADER_SIZE, 'bold', measure)
+    : [];
+  const headerCardHeight =
+    headerLines.length > 0 ? 2 * HEADER_PAD_Y + headerLines.length * HEADER_LINE_HEIGHT : 0;
+
   const locationText = tidy(input.location);
   const locationLines = locationText
-    ? wrap(locationText, innerWidth - 40, LOCATION_SIZE, 'normal', measure, LOCATION_MAX_LINES)
+    ? wrapLines(locationText, innerWidth - 40, LOCATION_SIZE, 'normal', measure)
     : [];
   const locationHeight =
     locationLines.length > 0
       ? 2 * LOCATION_PAD_Y + locationLines.length * LOCATION_LINE_HEIGHT
       : 0;
+
+  const footerText = tidy(input.footer);
+  const footerLines = footerText
+    ? wrapLines(footerText, innerWidth - 40, FOOTER_SIZE, 'normal', measure)
+    : [];
+  const footerHeight = footerLines.length > 0 ? footerLines.length * FOOTER_LINE_HEIGHT : 0;
+
   const isTwoTeams = teamCount === 2;
   const matchdayHeight = isTwoTeams ? 116 : 0;
   const brandHeight = 36;
@@ -284,26 +324,28 @@ export function layoutStory(input: StoryInput, measure: Measure): StoryLayout {
   const aboveHeight =
     pillHeight +
     GAP +
+    (headerCardHeight > 0 ? headerCardHeight + GAP : 0) +
     (locationHeight > 0 ? locationHeight + GAP : 0) +
     (matchdayHeight > 0 ? matchdayHeight + GAP : 0);
+  const belowHeight = (footerHeight > 0 ? footerHeight + GAP : 0) + brandHeight;
 
   // Dynamic slot height according to player count so rows are comfortable
   // 5-8 players: 68-72px; 9-11 players: 58-64px; 12+ players: 48-54px.
-  // With one row of panels the budget is fixed. With two rows (3 or 4 teams) they have to share
-  // what is left of the plate, so the slots are the tallest ones that still fit.
+  // When the content exceeds MAX_CONTENT_H, shrink slots so everything fits inside the plate.
   let slotH = clamp(Math.floor(620 / maxPlayers), MIN_SLOT, MAX_SLOT);
-  if (rows > 1) {
-    const panelsBudget = MAX_CONTENT_H - aboveHeight - GAP - brandHeight;
-    const panelBudget = (panelsBudget - GAP * (rows - 1)) / rows;
-    const playersBudget = panelBudget - headerH - 2 * panelPadY;
-    slotH = fitSlot(playersBudget, maxPlayers);
+  const panelsBudget = MAX_CONTENT_H - aboveHeight - GAP - belowHeight;
+  const panelBudget = (panelsBudget - GAP * (rows - 1)) / rows;
+  const playersBudget = panelBudget - headerH - 2 * panelPadY;
+  const fittedSlot = fitSlot(playersBudget, maxPlayers);
+  if (rows > 1 || fittedSlot < slotH) {
+    slotH = fittedSlot;
   }
   const rowGap = gapOf(slotH);
   const playersAreaH = maxPlayers * slotH + (maxPlayers - 1) * rowGap;
   const panelHeight = headerH + panelPadY + playersAreaH + panelPadY;
   const panelsHeight = rows * panelHeight + (rows - 1) * GAP;
 
-  const totalContentH = aboveHeight + panelsHeight + GAP + brandHeight;
+  const totalContentH = aboveHeight + panelsHeight + GAP + belowHeight;
 
   // Center vertical layout inside the 1920 story canvas
   const startY = Math.max(PLATE_MARGIN + 24, Math.floor((STORY_HEIGHT - totalContentH) / 2));
@@ -323,9 +365,7 @@ export function layoutStory(input: StoryInput, measure: Measure): StoryLayout {
     stroke: { color: theme.plate.stroke, width: 2 },
   });
 
-  // 1. Top row: the logo at the left and the status pill at the right
-  const pillSize = 24;
-  const pillPadX = 24;
+  // 1. Top row: the logo and brand tag at the left
   const rowCenter = startY + pillHeight / 2;
 
   commands.push({
@@ -375,44 +415,38 @@ export function layoutStory(input: StoryInput, measure: Measure): StoryLayout {
     align: 'center',
   });
 
-  // The size of the longest team once for every team: 7V7 for two, 5V5V5 for three, 5V5V5V5 for four.
-  const longest = Math.max(0, ...input.teams.map((t) => t.players.length));
-  const statusText = [
-    longest > 0 ? Array.from({ length: input.teams.length }, () => longest).join('V') : '',
-    tidy(input.confirmed).toUpperCase(),
-  ]
-    .filter(Boolean)
-    .join(' ');
-
-  if (statusText) {
-    const statusWidth = measure(statusText, pillSize, 'bold') + 2 * pillPadX;
-    const statusX = left + innerWidth - statusWidth;
-    commands.push({
-      kind: 'rect',
-      role: 'status-pill',
-      x: statusX,
-      y: startY,
-      width: statusWidth,
-      height: pillHeight,
-      radius: pillHeight / 2,
-      fill: theme.statusPill.fill,
-    });
-    commands.push({
-      kind: 'text',
-      role: 'status-pill',
-      x: statusX + statusWidth / 2,
-      y: startY + pillHeight / 2,
-      text: statusText,
-      size: pillSize,
-      weight: 'bold',
-      color: theme.statusPill.text,
-      align: 'center',
-    });
-  }
-
   let currentY = startY + pillHeight + GAP;
 
-  // 2. Location card (if a location is provided), under the top row
+  // 2. Message header card (if provided), under the top row
+  if (headerCardHeight > 0) {
+    commands.push({
+      kind: 'rect',
+      role: 'header-card',
+      x: left,
+      y: currentY,
+      width: innerWidth,
+      height: headerCardHeight,
+      radius: 18,
+      fill: theme.infoCard.fill,
+      stroke: { color: theme.infoCard.stroke, width: 1.5 },
+    });
+    headerLines.forEach((line, i) => {
+      commands.push({
+        kind: 'text',
+        role: 'header',
+        x: left + 20,
+        y: currentY + HEADER_PAD_Y + HEADER_LINE_HEIGHT / 2 + i * HEADER_LINE_HEIGHT,
+        text: line,
+        size: HEADER_SIZE,
+        weight: 'bold',
+        color: theme.infoCard.text,
+        align: 'left',
+      });
+    });
+    currentY += headerCardHeight + GAP;
+  }
+
+  // 3. Location card (if a location is provided), under the header/top row
   if (locationHeight > 0) {
     commands.push({
       kind: 'rect',
@@ -724,7 +758,25 @@ export function layoutStory(input: StoryInput, measure: Measure): StoryLayout {
 
   currentY += panelsHeight + GAP;
 
-  // 5. Footer & Brand at the bottom of the plate
+  // 5. Footer message (if provided), above the brand line
+  if (footerHeight > 0) {
+    footerLines.forEach((line, i) => {
+      commands.push({
+        kind: 'text',
+        role: 'footer',
+        x: STORY_WIDTH / 2,
+        y: currentY + FOOTER_LINE_HEIGHT / 2 + i * FOOTER_LINE_HEIGHT,
+        text: line,
+        size: FOOTER_SIZE,
+        weight: 'normal',
+        color: theme.infoCard.text,
+        align: 'center',
+      });
+    });
+    currentY += footerHeight + GAP;
+  }
+
+  // 6. Brand at the bottom of the plate
   const brandText = tidy(input.brand || 'GENERADO CON KORA ROSTER').toUpperCase();
   commands.push({
     kind: 'text',

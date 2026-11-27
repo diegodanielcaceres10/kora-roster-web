@@ -3,6 +3,7 @@ import { StoryInput, StoryTeam } from '../core/story-layout';
 
 export interface StoryInputOptions {
   teams: readonly StoryTeam[];
+  header?: string;
   location: string;
   footer: string;
   numbering: Numbering;
@@ -18,6 +19,7 @@ export interface StoryInputOptions {
 export function buildStoryInput(options: StoryInputOptions): StoryInput {
   return {
     teams: options.teams,
+    header: options.header ?? '',
     location: options.location,
     footer: options.footer,
     numbering: options.numbering,
