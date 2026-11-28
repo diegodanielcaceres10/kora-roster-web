@@ -5,10 +5,10 @@ import { I18n } from '../../i18n/i18n';
 import { STORY_BLOB } from '../../image/story-image';
 import type { StoryInput } from '../../core/story-layout';
 import { DEFAULT_PREFERENCES, Preferences } from '../../preferences/preferences';
-import { PreferencesService } from '../../preferences/preferences-service';
+import { UserPreferences } from '../../preferences/user-preferences';
 import { TEST_PREFERENCES } from '../../preferences/testing';
 import { Theme } from '../../theme/theme';
-import { ToastService } from '../../ui';
+import { Toast } from '../../ui';
 import { PreferencesEditor } from './preferences-editor';
 
 const T = DICTIONARIES.es;
@@ -102,15 +102,15 @@ function setup(saved?: Preferences) {
     preview,
     colorLabel,
     create,
-    service: TestBed.inject(PreferencesService),
-    toast: TestBed.inject(ToastService),
+    service: TestBed.inject(UserPreferences),
+    toast: TestBed.inject(Toast),
   };
 }
 
 describe('PreferencesEditor', () => {
   beforeEach(() => localStorage.clear());
   afterEach(() => {
-    TestBed.inject(ToastService).dismiss();
+    TestBed.inject(Toast).dismiss();
     localStorage.clear();
     document.documentElement.lang = 'en';
   });

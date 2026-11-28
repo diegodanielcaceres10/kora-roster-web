@@ -1,4 +1,4 @@
-import { browserStorage } from './storage';
+import { browserStorage } from './browser-storage';
 
 describe('browserStorage', () => {
   it('gives the local storage of the page', () => {

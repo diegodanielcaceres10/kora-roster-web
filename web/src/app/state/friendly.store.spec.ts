@@ -4,7 +4,7 @@ import { makeCredential, provideFakeGoogle } from '../auth/testing';
 import { drawTeams } from '../core/draw-teams';
 import { DEFAULT_TEAM_ICONS } from '../core/format-teams';
 import { I18n } from '../i18n/i18n';
-import { PreferencesService } from '../preferences/preferences-service';
+import { UserPreferences } from '../preferences/user-preferences';
 import { saveSession, TEST_PREFERENCES } from '../preferences/testing';
 import { FriendlyStore, Player } from './friendly.store';
 
@@ -505,7 +505,7 @@ describe('FriendlyStore', () => {
 
     it('uses new preferences as soon as they are saved', () => {
       const { store } = drawn(undefined);
-      TestBed.inject(PreferencesService).save(TEST_PREFERENCES);
+      TestBed.inject(UserPreferences).save(TEST_PREFERENCES);
       expect(store.whatsappText().startsWith('⚽ Amistoso\n\n🟢 Team 1')).toBe(true);
     });
 
@@ -655,7 +655,7 @@ describe('FriendlyStore', () => {
     it('follows new preferences while the person has picked nothing', () => {
       saveSession(TEST_PREFERENCES);
       const { store } = setup();
-      TestBed.inject(PreferencesService).save({ ...TEST_PREFERENCES, teamCount: 3 });
+      TestBed.inject(UserPreferences).save({ ...TEST_PREFERENCES, teamCount: 3 });
       expect(store.teamCount()).toBe(3);
     });
 
@@ -663,7 +663,7 @@ describe('FriendlyStore', () => {
       saveSession(TEST_PREFERENCES);
       const { store } = setup();
       store.setTeamCount(4);
-      TestBed.inject(PreferencesService).save({ ...TEST_PREFERENCES, teamCount: 3 });
+      TestBed.inject(UserPreferences).save({ ...TEST_PREFERENCES, teamCount: 3 });
       expect(store.teamCount()).toBe(4);
     });
 

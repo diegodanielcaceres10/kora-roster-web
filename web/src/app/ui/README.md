@@ -254,7 +254,7 @@ title and take the full width.
 />
 ```
 
-### `ToastService` and `UiToastHost` · `<ui-toast-host>`
+### `Toast` and `UiToastHost` · `<ui-toast-host>`
 
 A short message at the bottom of the screen.
 
@@ -300,7 +300,7 @@ Not components, but just as easy to duplicate by accident:
 - `environments/` (next to `app/`): the settings that change per environment, `googleClientId` and
   `siteUrl`, in `environment.ts` (production) and `environment.development.ts` (local). They
   are public values, never secrets. `provideEnvironment` hands them to the app.
-- `preferences/`: `PreferencesService` (`active()` for the person who is signed in, `save()`),
+- `preferences/`: `UserPreferences` (`active()` for the person who is signed in, `save()`),
   `sanitizePreferences` and `DEFAULT_PREFERENCES`. They hold the number of teams in use and an
   icon and a color for each of the six possible teams. The quick match reads them through
   `FriendlyStore` (`teamIcons`, `whatsappText`, `sizeMismatch`): use those instead of asking the

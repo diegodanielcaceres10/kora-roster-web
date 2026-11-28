@@ -23,7 +23,7 @@ import { I18n } from '../i18n/i18n';
 import { buildStoryInput } from '../image/story-input';
 import { Entitlements } from '../plans/entitlements';
 import { colorToIcon, DEFAULT_PREFERENCES } from '../preferences/preferences';
-import { PreferencesService } from '../preferences/preferences-service';
+import { UserPreferences } from '../preferences/user-preferences';
 import { Theme } from '../theme/theme';
 
 export interface Player {
@@ -67,7 +67,7 @@ export const FriendlyStore = signalStore(
   withState(initialState),
   withComputed(({ players, teams, pool, teamCountChoice }) => {
     const i18n = inject(I18n);
-    const preferences = inject(PreferencesService);
+    const preferences = inject(UserPreferences);
     const entitlements = inject(Entitlements);
     const theme = inject(Theme);
 

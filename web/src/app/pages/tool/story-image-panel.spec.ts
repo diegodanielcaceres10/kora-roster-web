@@ -8,7 +8,7 @@ import { STORY_BLOB } from '../../image/story-image';
 import { Preferences } from '../../preferences/preferences';
 import { saveSession } from '../../preferences/testing';
 import { FriendlyStore } from '../../state/friendly.store';
-import { ToastService } from '../../ui';
+import { Toast } from '../../ui';
 import { StoryImagePanel } from './story-image-panel';
 
 const T = DICTIONARIES.es.tool;
@@ -69,7 +69,7 @@ function setup(options: Options = {}) {
     image,
     notice,
     press,
-    toast: TestBed.inject(ToastService),
+    toast: TestBed.inject(Toast),
   };
 }
 

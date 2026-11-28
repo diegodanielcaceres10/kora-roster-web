@@ -1,7 +1,7 @@
 import { Injectable, signal } from '@angular/core';
 
 @Injectable({ providedIn: 'root' })
-export class ToastService {
+export class Toast {
   private readonly current = signal<string | null>(null);
   private timer: ReturnType<typeof setTimeout> | undefined;
 

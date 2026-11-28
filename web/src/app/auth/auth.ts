@@ -4,7 +4,7 @@ import { I18n } from '../i18n/i18n';
 import { GOOGLE_CLIENT_ID } from './config';
 import { AuthUser, claimsToUser, decodeCredential } from './credential';
 import { GOOGLE_IDENTITY } from './google-identity';
-import { browserStorage } from './storage';
+import { browserStorage } from '../platform/browser-storage';
 
 const SESSION_KEY = 'kora:session';
 

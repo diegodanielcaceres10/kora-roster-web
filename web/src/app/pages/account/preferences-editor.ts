@@ -13,11 +13,11 @@ import {
   HEADER_MAX,
   Preferences,
 } from '../../preferences/preferences';
-import { PreferencesService } from '../../preferences/preferences-service';
+import { UserPreferences } from '../../preferences/user-preferences';
 import { Theme } from '../../theme/theme';
 import {
   SegmentedOption,
-  ToastService,
+  Toast,
   UiBadge,
   UiButton,
   UiCard,
@@ -72,8 +72,8 @@ const samePreferences = (a: Preferences, b: Preferences): boolean =>
 })
 export class PreferencesEditor {
   private readonly i18n = inject(I18n);
-  private readonly preferences = inject(PreferencesService);
-  private readonly toast = inject(ToastService);
+  private readonly preferences = inject(UserPreferences);
+  private readonly toast = inject(Toast);
   private readonly entitlements = inject(Entitlements);
   private readonly theme = inject(Theme);
 

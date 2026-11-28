@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@a
 import { I18n } from '../../i18n/i18n';
 import { Entitlements } from '../../plans/entitlements';
 import { FriendlyStore, Player } from '../../state/friendly.store';
-import { ToastService, UiBadge, UiButton, UiCard, UiIcon, UiIconButton, UiKbd } from '../../ui';
+import { Toast, UiBadge, UiButton, UiCard, UiIcon, UiIconButton, UiKbd } from '../../ui';
 import { StoryImagePanel } from './story-image-panel';
 
 const PANEL = 'rounded-2xl border border-line bg-surface shadow-xs';
@@ -37,7 +37,7 @@ const pad = (n: number): string => String(n).padStart(2, '0');
 export class ResultStep {
   protected readonly store = inject(FriendlyStore);
   private readonly i18n = inject(I18n);
-  private readonly toast = inject(ToastService);
+  private readonly toast = inject(Toast);
   private readonly entitlements = inject(Entitlements);
 
   protected readonly t = computed(() => this.i18n.t().tool);

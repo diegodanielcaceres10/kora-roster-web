@@ -5,7 +5,7 @@ import { STORY_BLOB } from '../../image/story-image';
 import { Entitlements, LockReason } from '../../plans/entitlements';
 import { LockNotice } from '../../plans/lock-notice';
 import { FriendlyStore } from '../../state/friendly.store';
-import { ToastService, UiButton, UiIcon } from '../../ui';
+import { Toast, UiButton, UiIcon } from '../../ui';
 
 // The browser starts a download as soon as the link is clicked, but it is given time to read the
 // image before it is freed.
@@ -26,7 +26,7 @@ export class StoryImagePanel {
   private readonly store = inject(FriendlyStore);
   private readonly entitlements = inject(Entitlements);
   private readonly i18n = inject(I18n);
-  private readonly toast = inject(ToastService);
+  private readonly toast = inject(Toast);
   private readonly createBlob = inject(STORY_BLOB);
   private readonly delivery = inject(STORY_DELIVERY);
 

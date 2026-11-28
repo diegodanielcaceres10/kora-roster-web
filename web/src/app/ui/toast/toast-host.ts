@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { ToastService } from './toast-service';
+import { Toast } from './toast';
 import { UiIcon } from '../icon/icon';
 
 @Component({
@@ -9,5 +9,5 @@ import { UiIcon } from '../icon/icon';
   templateUrl: './toast-host.html',
 })
 export class UiToastHost {
-  protected readonly toast = inject(ToastService);
+  protected readonly toast = inject(Toast);
 }

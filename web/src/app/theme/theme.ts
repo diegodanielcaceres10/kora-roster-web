@@ -1,6 +1,6 @@
 import { DOCUMENT } from '@angular/common';
 import { inject, Injectable, signal } from '@angular/core';
-import { browserStorage } from '../auth/storage';
+import { browserStorage } from '../platform/browser-storage';
 
 export type ThemeMode = 'light' | 'dark';
 

@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { Auth } from '../auth/auth';
 import { makeCredential, provideFakeGoogle } from '../auth/testing';
 import { DEFAULT_PREFERENCES, Preferences } from './preferences';
-import { PreferencesService } from './preferences-service';
+import { UserPreferences } from './user-preferences';
 import { TEST_PREFERENCES } from './testing';
 
 const KEY = (id: string) => `kora:prefs:${id}`;
@@ -19,13 +19,13 @@ async function setup() {
   const google = provideFakeGoogle();
   TestBed.configureTestingModule({ providers: google.providers });
   const auth = TestBed.inject(Auth);
-  const service = TestBed.inject(PreferencesService);
+  const service = TestBed.inject(UserPreferences);
   await auth.renderButton(document.createElement('div'));
   const signIn = (sub = ME) => google.fake.pick(makeCredential({ sub }));
   return { auth, service, signIn };
 }
 
-describe('PreferencesService', () => {
+describe('UserPreferences', () => {
   beforeEach(() => localStorage.clear());
   afterEach(() => {
     localStorage.clear();

@@ -5,7 +5,7 @@ import { I18n } from '../../i18n/i18n';
 import { Preferences } from '../../preferences/preferences';
 import { saveSession, TEST_PREFERENCES } from '../../preferences/testing';
 import { FriendlyStore } from '../../state/friendly.store';
-import { ToastService } from '../../ui';
+import { Toast } from '../../ui';
 import { ResultStep } from './result-step';
 
 const T = DICTIONARIES.es.tool;
@@ -30,7 +30,7 @@ function setup(preferences?: Preferences, confirmed = false) {
     Array.from(el.querySelectorAll('ui-button button')).find((b) =>
       b.textContent?.includes(text),
     ) as HTMLButtonElement;
-  return { fixture, el, store, byText, toast: TestBed.inject(ToastService) };
+  return { fixture, el, store, byText, toast: TestBed.inject(Toast) };
 }
 
 function setClipboard(writeText?: (text: string) => Promise<void>) {
@@ -45,7 +45,7 @@ describe('ResultStep', () => {
     Reflect.deleteProperty(navigator, 'clipboard');
     localStorage.clear();
     vi.restoreAllMocks();
-    TestBed.inject(ToastService).dismiss();
+    TestBed.inject(Toast).dismiss();
     document.documentElement.lang = 'en';
   });
 

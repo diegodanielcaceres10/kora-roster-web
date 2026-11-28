@@ -13,7 +13,7 @@ export { UiLogo } from './logo/logo';
 export { UiSegmented, type SegmentedOption } from './segmented/segmented';
 export { UiSelect, type SelectOption } from './select/select';
 export { UiTextarea } from './textarea/textarea';
-export { ToastService } from './toast/toast-service';
+export { Toast } from './toast/toast';
 export { UiToastHost } from './toast/toast-host';
 export { UiStepHeader, type StepHeaderStep, type StepState } from './step-header/step-header';
 export { UiStat, type StatNoteTone, type StatTone } from './stat/stat';

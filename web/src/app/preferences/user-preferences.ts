@@ -2,7 +2,7 @@ import { DOCUMENT } from '@angular/common';
 import { inject, Injectable, linkedSignal } from '@angular/core';
 import { Auth } from '../auth/auth';
 import { AuthUser } from '../auth/credential';
-import { browserStorage } from '../auth/storage';
+import { browserStorage } from '../platform/browser-storage';
 import { Preferences, sanitizePreferences } from './preferences';
 
 const KEY_PREFIX = 'kora:prefs:';
@@ -13,7 +13,7 @@ const VERSION = 2;
 // The preferences of whoever is signed in, kept in the browser under their Google id.
 // Without a session there are none: the app behaves as it does for any visitor.
 @Injectable({ providedIn: 'root' })
-export class PreferencesService {
+export class UserPreferences {
   private readonly auth = inject(Auth);
   private readonly storage = browserStorage(inject(DOCUMENT));
 

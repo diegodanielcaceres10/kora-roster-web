@@ -1,11 +1,11 @@
 import { TestBed } from '@angular/core/testing';
-import { ToastService } from './toast-service';
+import { Toast } from './toast';
 
-describe('ToastService', () => {
+describe('Toast', () => {
   beforeEach(() => vi.useFakeTimers());
   afterEach(() => vi.useRealTimers());
 
-  const create = () => TestBed.inject(ToastService);
+  const create = () => TestBed.inject(Toast);
 
   it('starts without a message', () => {
     expect(create().message()).toBeNull();

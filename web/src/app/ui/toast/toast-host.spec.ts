@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { ToastService } from './toast-service';
+import { Toast } from './toast';
 import { UiToastHost } from './toast-host';
 
 describe('UiToastHost', () => {
@@ -10,7 +10,7 @@ describe('UiToastHost', () => {
     const fixture = TestBed.createComponent(UiToastHost);
     fixture.detectChanges();
     const region = () => fixture.nativeElement.querySelector('[role="status"]') as HTMLElement;
-    return { fixture, region, toast: TestBed.inject(ToastService) };
+    return { fixture, region, toast: TestBed.inject(Toast) };
   }
 
   it('keeps an empty status region in the page before any message', () => {
