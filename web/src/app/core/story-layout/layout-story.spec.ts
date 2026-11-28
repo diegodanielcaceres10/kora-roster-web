@@ -1,15 +1,14 @@
-import {
-  layoutStory,
+import { layoutStory } from './layout-story';
+import { STORY_HEIGHT, STORY_WIDTH } from './metrics';
+import type {
+  ImageCommand,
   Measure,
   RectCommand,
-  STORY_HEIGHT,
-  STORY_WIDTH,
   StoryInput,
   StoryLayout,
   StoryTeam,
   TextCommand,
-} from './story-layout';
-import type { ImageCommand } from './story-layout';
+} from './types';
 
 // A made-up font where every character is as wide as 55% of its size.
 const measure: Measure = (text, size) => text.length * size * 0.55;
