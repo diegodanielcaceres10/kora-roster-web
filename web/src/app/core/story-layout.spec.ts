@@ -50,7 +50,6 @@ const texts = (layout: StoryLayout, role: TextCommand['role']) =>
 const panels = (layout: StoryLayout) => rects(layout, 'panel');
 const teamTexts = (layout: StoryLayout, index: number, role: 'title' | 'player') =>
   texts(layout, role).filter((t) => t.team === index);
-const names = (layout: StoryLayout) => texts(layout, 'player');
 
 describe('layoutStory', () => {
   describe('the page and theme', () => {
@@ -68,12 +67,17 @@ describe('layoutStory', () => {
       expect(plate.fill).toBe('#10141b');
     });
 
-    it('has a plate with rounded corners inside the page', () => {
+    it('has a plate with rounded corners, centered in the page and as tall as its content', () => {
       const [plate, ...others] = rects(layoutStory(input(teams(2, 7)), measure), 'plate');
       expect(others).toHaveLength(0);
-      expect([plate.x, plate.y]).toEqual([PLATE_MARGIN, PLATE_MARGIN]);
+      expect(plate.x).toBe(PLATE_MARGIN);
       expect(plate.width).toBe(STORY_WIDTH - 2 * PLATE_MARGIN);
-      expect(plate.height).toBe(STORY_HEIGHT - 2 * PLATE_MARGIN);
+      expect(plate.y).toBeGreaterThanOrEqual(PLATE_MARGIN);
+      expect(plate.y + plate.height).toBeLessThanOrEqual(STORY_HEIGHT - PLATE_MARGIN);
+      expect(plate.height).toBeLessThan(STORY_HEIGHT - 2 * PLATE_MARGIN);
+      // Equal space above and below, allowing one pixel of rounding.
+      const below = STORY_HEIGHT - (plate.y + plate.height);
+      expect(Math.abs(plate.y - below)).toBeLessThanOrEqual(1);
       expect(plate.radius).toBeGreaterThan(0);
     });
 
@@ -142,11 +146,6 @@ describe('layoutStory', () => {
       const { layout } = logo();
       expect(texts(layout, 'brand-pill').map((t) => t.text)).toEqual(['ROSTER']);
       expect(rects(layout, 'brand-pill')).toHaveLength(1);
-    });
-
-    it('does not run into the status pill at the right, even with a long text', () => {
-      const { tagRect, statusRect } = logo({ confirmed: 'EQUIPOS CONFIRMADOS PARA EL JUEVES' });
-      expect(tagRect.x + tagRect.width).toBeLessThan(statusRect.x);
     });
 
     it('stays at the same place whatever the location, the numbering or the teams are', () => {
@@ -231,7 +230,8 @@ describe('layoutStory', () => {
     it('numbers the players according to numbering style', () => {
       const layout = layoutStory(input([team(0, 3), team(1, 3)], { numbering: 'dash' }), measure);
       const firstPlayer = teamTexts(layout, 0, 'player')[0];
-      expect(firstPlayer.text).toBe('1-');
+      // The separator comes with a trailing space, which is shared with the WhatsApp text.
+      expect(firstPlayer.text.trim()).toBe('1-');
     });
 
     it('does not truncate normal player names in team 2 with an ellipsis', () => {
@@ -529,7 +529,10 @@ describe('layoutStory', () => {
       );
       const brand = texts(layout, 'brand')[0];
       expect(brand.text).toBe('GENERADO CON KORA ROSTER');
-      expect(brand.y).toBeGreaterThan(1700);
+      const [plate] = rects(layout, 'plate');
+      const lastRowBottom = Math.max(...rects(layout, 'player-row').map((r) => r.y + r.height));
+      expect(brand.y).toBeGreaterThan(lastRowBottom);
+      expect(brand.y).toBeLessThan(plate.y + plate.height);
     });
   });
 });

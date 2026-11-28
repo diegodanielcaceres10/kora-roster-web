@@ -333,14 +333,14 @@ describe('PreferencesEditor', () => {
       expect(t.create).not.toHaveBeenCalled();
     });
 
-    it('does not make the same image again when the tab comes back with nothing changed', async () => {
+    it('makes the image again when the tab comes back, as the preview is built anew', async () => {
       const t = setup();
       await open(t);
       tab(t, P.preview.messageTab).click();
       t.fixture.detectChanges();
       await open(t);
-      expect(t.create).toHaveBeenCalledTimes(1);
-      expect(image(t)?.getAttribute('src')).toBe('blob:preview-1');
+      expect(t.create).toHaveBeenCalledTimes(2);
+      expect(image(t)?.getAttribute('src')).toBe('blob:preview-2');
     });
 
     it('makes a new one when something changed while the other tab was on', async () => {
@@ -354,13 +354,13 @@ describe('PreferencesEditor', () => {
       expect(lastInput(t).location).toBe('Cancha Norte');
     });
 
-    it('does not make a new image when only the header is typed, as the image has no header', async () => {
+    it('makes a new image when the header is typed, as the image shows it', async () => {
       const t = setup();
       await open(t);
       t.typeInto(P.template.header, 'Jueves 21hs');
       await settle(t);
-      expect(t.create).toHaveBeenCalledTimes(1);
-      expect(image(t)?.getAttribute('src')).toBe('blob:preview-1');
+      expect(t.create).toHaveBeenCalledTimes(2);
+      expect(lastInput(t).header).toBe('Jueves 21hs');
     });
 
     it('makes a new one when the theme changes, as the image takes its colors', async () => {
@@ -603,10 +603,13 @@ describe('PreferencesEditor', () => {
         location: 'Cancha de ejemplo, Calle Principal 123. https://maps.app.goo.gl/ejemplo',
         footer: 'Confirmen',
         numbering: 'paren' as const,
+        // The six icons are always different, so teams 3 and 4 give up the icons that 1 and 2 took.
         teams: [
           { icon: '🟢', color: '#00ff00' },
           { icon: '🟡', color: '#ffff00' },
-          ...DEFAULT_PREFERENCES.teams.slice(2),
+          { ...DEFAULT_PREFERENCES.teams[2], icon: '🔴' },
+          { ...DEFAULT_PREFERENCES.teams[3], icon: '🔵' },
+          ...DEFAULT_PREFERENCES.teams.slice(4),
         ],
       };
       expect(service.active()).toEqual(expected);
@@ -709,13 +712,8 @@ describe('PreferencesEditor', () => {
         'true',
         'true',
       ]);
-      expect(ctx.radios(group).map((r) => r.textContent?.includes(T.locks.premiumLabel))).toEqual([
-        false,
-        false,
-        false,
-        true,
-        true,
-      ]);
+      const hasLock = (r: HTMLElement) => r.querySelector('ui-icon[data-icon="lock"]') !== null;
+      expect(ctx.radios(group).map(hasLock)).toEqual([false, false, false, true, true]);
     });
 
     it('always shows all 6 teams, with 5 and 6 locked for non-premium accounts', () => {

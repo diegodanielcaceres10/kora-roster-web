@@ -466,12 +466,12 @@ describe('FriendlyStore', () => {
       expect(store.whatsappText().startsWith('⚽ Amistoso\n\n🟢 Team 1')).toBe(true);
     });
 
-    it('gives the location to the story image, and not the header, which is for the message', () => {
+    it('gives the header and the location to the story image, as well as to the message', () => {
       const { store } = drawn({
         ...TEST_PREFERENCES,
         location: 'Cancha de ejemplo, Calle Principal 123. https://maps.app.goo.gl/ejemplo',
       });
-      expect(store.storyInput()).not.toHaveProperty('header');
+      expect(store.storyInput()?.header).toBe(TEST_PREFERENCES.header);
       expect(store.whatsappText().startsWith('⚽ Amistoso')).toBe(true);
       expect(store.storyInput()?.location).toBe(
         'Cancha de ejemplo, Calle Principal 123. https://maps.app.goo.gl/ejemplo',
@@ -882,11 +882,14 @@ describe('FriendlyStore', () => {
       expect([input?.location, input?.footer, input?.numbering]).toEqual(['', '', 'dot']);
     });
 
-    it('uses the footer, numbering and colors of the person who is signed in, and no header', () => {
+    it('uses the header, footer, numbering and colors of the person who is signed in', () => {
       saveSession({ ...TEST_PREFERENCES, numbering: 'dash' });
       const input = drawn().store.storyInput();
-      expect(input).not.toHaveProperty('header');
-      expect([input?.footer, input?.numbering]).toEqual(['Confirmen', 'dash']);
+      expect([input?.header, input?.footer, input?.numbering]).toEqual([
+        TEST_PREFERENCES.header,
+        'Confirmen',
+        'dash',
+      ]);
       expect(input?.teams.map((team) => team.color)).toEqual(['#00ff00', '#ffff00']);
     });
 

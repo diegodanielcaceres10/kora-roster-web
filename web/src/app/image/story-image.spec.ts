@@ -401,7 +401,7 @@ describe('createStoryBlob', () => {
     expect([raw.width, raw.height]).toEqual([1080, 1920]);
     expect(raw.getContext).toHaveBeenCalledWith('2d');
     expect(raw.toBlob).toHaveBeenCalledWith(expect.any(Function), 'image/png');
-    expect(texts.map((t) => t.text)).toContain('Team 1');
+    expect(texts.map((t) => t.text)).toContain('TEAM 1');
   });
 
   it('measures the text with the canvas that will draw it', async () => {

@@ -390,7 +390,6 @@ describe('PreviewStep', () => {
     const countStatus = (el: HTMLElement) => el.querySelector('p[role="status"]')?.textContent;
     const notice = (el: HTMLElement) =>
       el.querySelector('app-lock-notice [role="status"]')?.textContent?.replace(/\s+/g, ' ').trim();
-    const locks = DICTIONARIES.es.locks;
 
     it('offers 2 to 6 teams, with 2 chosen', () => {
       const { el } = setup(list(12));
@@ -413,13 +412,8 @@ describe('PreviewStep', () => {
         'true',
         'true',
       ]);
-      expect(radios(el).map((r) => r.textContent?.includes(locks.premiumLabel))).toEqual([
-        false,
-        false,
-        false,
-        true,
-        true,
-      ]);
+      const hasLock = (r: HTMLElement) => r.querySelector('ui-icon[data-icon="lock"]') !== null;
+      expect(radios(el).map(hasLock)).toEqual([false, true, true, true, true]);
     });
 
     it('opens 3 and 4 with an account, and keeps 5 and 6 for Premium', () => {

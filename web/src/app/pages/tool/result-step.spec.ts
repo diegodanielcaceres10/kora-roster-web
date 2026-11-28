@@ -229,12 +229,15 @@ describe('ResultStep', () => {
       expect(icons(el)).toEqual([]);
     });
 
-    it('stacks the teams in their column, and makes two columns on extra-wide screens from 3 teams', () => {
+    it('stacks the teams in a single column, however many teams there are', () => {
+      expect(grid(setup().el).className).toContain('grid-cols-1');
       expect(grid(setup().el).className).not.toContain('2xl:grid-cols-2');
       TestBed.resetTestingModule();
-      expect(grid(setupMany(3, 18).el).className).toContain('2xl:grid-cols-2');
+      expect(grid(setupMany(3, 18).el).className).toContain('grid-cols-1');
+      expect(grid(setupMany(3, 18).el).className).not.toContain('2xl:grid-cols-2');
       TestBed.resetTestingModule();
-      expect(grid(setupMany(4, 20).el).className).toContain('2xl:grid-cols-2');
+      expect(grid(setupMany(4, 20).el).className).toContain('grid-cols-1');
+      expect(grid(setupMany(4, 20).el).className).not.toContain('2xl:grid-cols-2');
     });
 
     it('writes every team in the text for WhatsApp', () => {
@@ -989,10 +992,10 @@ describe('ResultStep', () => {
 
     it('gives every team its own color on top', () => {
       const { el } = setup(undefined, true);
-      const [a, b] = Array.from(el.querySelectorAll('ui-card section'));
-      expect(a.className).toContain('border-t-primary');
-      expect(b.className).not.toContain('border-t-primary');
-      expect(b.className).toContain('border-t-slate-600');
+      const [a, b] = Array.from(el.querySelectorAll('ui-card section')) as HTMLElement[];
+      expect(a.style.borderTopColor).not.toBe('');
+      expect(b.style.borderTopColor).not.toBe('');
+      expect(a.style.borderTopColor).not.toBe(b.style.borderTopColor);
     });
 
     it('puts the actions in order: copy, download the image, and start over', () => {
@@ -1095,10 +1098,11 @@ describe('ResultStep', () => {
     });
 
     describe('a team', () => {
-      it('says how many places it has and how many goalkeepers', () => {
+      it('says how many players it has out of its places, and how many goalkeepers', () => {
         const { teamCards, text } = edit('drawn');
         for (const card of teamCards()) {
-          expect(text(card)).toContain(T.result.quota(6));
+          expect(text(card)).toContain(T.result.playersOf);
+          expect(text(card.querySelector('[data-count]'))).toBe('6/6');
           expect(text(card.querySelector('[data-team-goalkeepers]'))).toBe(
             T.result.goalkeeperCount(1),
           );
@@ -1262,7 +1266,7 @@ describe('ResultStep', () => {
         result.hintTitle,
         result.swapHint,
         result.cancelSelection,
-        result.quota(6),
+        result.playersBadge(6),
         result.toolsTitle,
         result.redraw,
         result.confirm,
