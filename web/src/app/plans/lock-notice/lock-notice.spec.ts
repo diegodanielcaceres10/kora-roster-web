@@ -1,9 +1,9 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { I18n } from '../i18n/i18n';
-import { DICTIONARIES } from '../i18n/dictionaries';
+import { I18n } from '../../i18n/i18n';
+import { DICTIONARIES } from '../../i18n/dictionaries';
 import { LockNotice } from './lock-notice';
-import { LockReason } from './entitlements';
+import { LockReason } from '../entitlements';
 
 function setup(lang: 'en' | 'es' | 'pt' = 'es') {
   TestBed.configureTestingModule({ providers: [provideRouter([])] });

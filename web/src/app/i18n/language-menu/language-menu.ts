@@ -7,9 +7,9 @@ import {
   viewChild,
 } from '@angular/core';
 import { Router } from '@angular/router';
-import { UiIcon, UiIconButton } from '../ui';
-import { I18n } from './i18n';
-import { type Lang, switchLanguageUrl } from './languages';
+import { UiIcon, UiIconButton } from '../../ui';
+import { I18n } from '../i18n';
+import { type Lang, switchLanguageUrl } from '../languages';
 
 // Each language is named in itself, so a person who cannot read the current one still finds theirs.
 const OPTIONS: readonly { lang: Lang; name: string }[] = [

@@ -1,7 +1,7 @@
 import { Routes } from '@angular/router';
 import { SUPPORTED_LANGS } from './i18n/languages';
 import { langGuard } from './i18n/lang.guard';
-import { RedirectToLanguage } from './i18n/redirect-to-language';
+import { RedirectToLanguage } from './i18n/redirect-to-language/redirect-to-language';
 import { Shell } from './layout/shell';
 
 export const routes: Routes = [

@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { AuthUser } from './credential';
+import { AuthUser } from '../credential';
 import { UserAvatar } from './user-avatar';
 
 const USER: AuthUser = {

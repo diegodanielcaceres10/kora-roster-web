@@ -10,11 +10,11 @@ import {
   viewChild,
 } from '@angular/core';
 import { Auth } from '../../auth/auth';
-import { UserAvatar } from '../../auth/user-avatar';
+import { UserAvatar } from '../../auth/user-avatar/user-avatar';
 import { I18n } from '../../i18n/i18n';
 import { PageMeta } from '../../i18n/page-meta';
 import { UiButton, UiIcon } from '../../ui';
-import { PreferencesEditor } from './preferences-editor';
+import { PreferencesEditor } from './preferences-editor/preferences-editor';
 
 @Component({
   selector: 'app-account',

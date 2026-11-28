@@ -1,6 +1,6 @@
 import { afterNextRender, ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { pickLanguage } from './languages';
+import { pickLanguage } from '../languages';
 
 // Prerendered at "/", so the redirect runs in the browser only. The links are for
 // visitors without JavaScript.

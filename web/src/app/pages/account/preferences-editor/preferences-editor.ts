@@ -1,12 +1,12 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
-import { MAX_TEAMS, MIN_TEAMS } from '../../core/draw-teams';
-import { formatTeamsForWhatsApp, Numbering } from '../../core/format-teams';
-import { StoryInput } from '../../core/story-layout';
-import { I18n } from '../../i18n/i18n';
-import { StoryImagePreview } from '../../image/story-image-preview';
-import { buildStoryInput } from '../../image/story-input';
-import { Entitlements, LockReason } from '../../plans/entitlements';
-import { LockNotice } from '../../plans/lock-notice';
+import { MAX_TEAMS, MIN_TEAMS } from '../../../core/draw-teams';
+import { formatTeamsForWhatsApp, Numbering } from '../../../core/format-teams';
+import { StoryInput } from '../../../core/story-layout';
+import { I18n } from '../../../i18n/i18n';
+import { StoryImagePreview } from '../../../image/story-image-preview/story-image-preview';
+import { buildStoryInput } from '../../../image/story-input';
+import { Entitlements, LockReason } from '../../../plans/entitlements';
+import { LockNotice } from '../../../plans/lock-notice/lock-notice';
 import {
   colorToIcon,
   DEFAULT_PREFERENCES,
@@ -15,9 +15,9 @@ import {
   Preferences,
   samePreferences,
   withIconsFromColors,
-} from '../../preferences/preferences';
-import { UserPreferences } from '../../preferences/user-preferences';
-import { Theme } from '../../theme/theme';
+} from '../../../preferences/preferences';
+import { UserPreferences } from '../../../preferences/user-preferences';
+import { Theme } from '../../../theme/theme';
 import {
   SegmentedOption,
   Toast,
@@ -27,7 +27,7 @@ import {
   UiIcon,
   UiInput,
   UiSegmented,
-} from '../../ui';
+} from '../../../ui';
 
 // Three numbered players for each of the six teams, the first one in goal.
 const sampleTeamsOf = (name: (n: number) => string) =>

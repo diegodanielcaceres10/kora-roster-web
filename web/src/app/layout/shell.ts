@@ -1,10 +1,10 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { RouterLink, RouterOutlet } from '@angular/router';
 import { Auth } from '../auth/auth';
-import { UserAvatar } from '../auth/user-avatar';
+import { UserAvatar } from '../auth/user-avatar/user-avatar';
 import { I18n } from '../i18n/i18n';
-import { LanguageMenu } from '../i18n/language-menu';
-import { ThemeToggle } from '../theme/theme-toggle';
+import { LanguageMenu } from '../i18n/language-menu/language-menu';
+import { ThemeToggle } from '../theme/theme-toggle/theme-toggle';
 import { UiIcon, UiIconLink, UiLogo } from '../ui';
 
 @Component({

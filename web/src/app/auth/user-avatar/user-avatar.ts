@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
-import { AuthUser } from './credential';
+import { AuthUser } from '../credential';
 
 // The photo of the person, or their initial when Google sent none. It is decoration:
 // whatever links to it gives it a name.

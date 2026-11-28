@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { I18n } from '../i18n/i18n';
-import { UiIcon, UiIconButton } from '../ui';
-import { Theme } from './theme';
+import { I18n } from '../../i18n/i18n';
+import { UiIcon, UiIconButton } from '../../ui';
+import { Theme } from '../theme';
 
 // The moon asks for dark mode, the sun for light mode: the icon shows where it will go.
 @Component({

@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
-import { I18n } from './i18n';
+import { I18n } from '../i18n';
 import { LanguageMenu } from './language-menu';
 
 function setup(lang: 'en' | 'es' | 'pt', url = '/es/friendly') {

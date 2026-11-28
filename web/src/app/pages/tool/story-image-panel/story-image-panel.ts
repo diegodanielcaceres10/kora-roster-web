@@ -3,7 +3,7 @@ import { I18n } from '../../../i18n/i18n';
 import { STORY_DELIVERY, storyFileName } from '../../../image/story-delivery';
 import { STORY_BLOB } from '../../../image/story-image';
 import { Entitlements, LockReason } from '../../../plans/entitlements';
-import { LockNotice } from '../../../plans/lock-notice';
+import { LockNotice } from '../../../plans/lock-notice/lock-notice';
 import { FriendlyStore } from '../../../state/friendly.store';
 import { Toast, UiButton, UiIcon } from '../../../ui';
 

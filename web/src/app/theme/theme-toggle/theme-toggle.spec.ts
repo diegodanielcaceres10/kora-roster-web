@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
-import { DICTIONARIES } from '../i18n/dictionaries';
-import { I18n } from '../i18n/i18n';
-import { Theme } from './theme';
+import { DICTIONARIES } from '../../i18n/dictionaries';
+import { I18n } from '../../i18n/i18n';
+import { Theme } from '../theme';
 import { ThemeToggle } from './theme-toggle';
 
 function setup(lang: 'en' | 'es' | 'pt', saved?: 'light' | 'dark') {

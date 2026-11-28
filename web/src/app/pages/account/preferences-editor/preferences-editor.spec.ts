@@ -1,14 +1,14 @@
 import { TestBed } from '@angular/core/testing';
-import { provideFakeGoogle } from '../../auth/testing';
-import { DICTIONARIES } from '../../i18n/dictionaries';
-import { I18n } from '../../i18n/i18n';
-import { STORY_BLOB } from '../../image/story-image';
-import type { StoryInput } from '../../core/story-layout';
-import { DEFAULT_PREFERENCES, Preferences } from '../../preferences/preferences';
-import { UserPreferences } from '../../preferences/user-preferences';
-import { TEST_PREFERENCES } from '../../preferences/testing';
-import { Theme } from '../../theme/theme';
-import { Toast } from '../../ui';
+import { provideFakeGoogle } from '../../../auth/testing';
+import { DICTIONARIES } from '../../../i18n/dictionaries';
+import { I18n } from '../../../i18n/i18n';
+import { STORY_BLOB } from '../../../image/story-image';
+import type { StoryInput } from '../../../core/story-layout';
+import { DEFAULT_PREFERENCES, Preferences } from '../../../preferences/preferences';
+import { UserPreferences } from '../../../preferences/user-preferences';
+import { TEST_PREFERENCES } from '../../../preferences/testing';
+import { Theme } from '../../../theme/theme';
+import { Toast } from '../../../ui';
 import { PreferencesEditor } from './preferences-editor';
 
 const T = DICTIONARIES.es;

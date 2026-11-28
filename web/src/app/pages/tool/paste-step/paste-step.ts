@@ -10,7 +10,7 @@ import { checkPlayerCount } from '../../../core/draw-teams';
 import { parsePastedNames } from '../../../core/parse-players';
 import { I18n } from '../../../i18n/i18n';
 import { Entitlements, LockReason } from '../../../plans/entitlements';
-import { LockNotice } from '../../../plans/lock-notice';
+import { LockNotice } from '../../../plans/lock-notice/lock-notice';
 import { FriendlyStore } from '../../../state/friendly.store';
 import { UiBadge, UiButton, UiCard, UiIcon, UiTextarea } from '../../../ui';
 import { countStatus } from '../count-status';

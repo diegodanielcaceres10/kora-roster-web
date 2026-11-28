@@ -7,8 +7,8 @@ import {
   input,
   signal,
 } from '@angular/core';
-import { StoryInput } from '../core/story-layout';
-import { STORY_BLOB } from './story-image';
+import { StoryInput } from '../../core/story-layout';
+import { STORY_BLOB } from '../story-image';
 
 // How long the input has to stay still before the image is generated again.
 const IMAGE_PAUSE_MS = 300;

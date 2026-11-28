@@ -10,7 +10,7 @@ import {
 } from '@angular/core';
 import { I18n } from '../../../i18n/i18n';
 import { Entitlements, LockReason } from '../../../plans/entitlements';
-import { LockNotice } from '../../../plans/lock-notice';
+import { LockNotice } from '../../../plans/lock-notice/lock-notice';
 import { FriendlyStore, Player } from '../../../state/friendly.store';
 import {
   SegmentedOption,
