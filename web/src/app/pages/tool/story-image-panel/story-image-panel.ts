@@ -1,11 +1,11 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
-import { I18n } from '../../i18n/i18n';
-import { STORY_DELIVERY, storyFileName } from '../../image/story-delivery';
-import { STORY_BLOB } from '../../image/story-image';
-import { Entitlements, LockReason } from '../../plans/entitlements';
-import { LockNotice } from '../../plans/lock-notice';
-import { FriendlyStore } from '../../state/friendly.store';
-import { Toast, UiButton, UiIcon } from '../../ui';
+import { I18n } from '../../../i18n/i18n';
+import { STORY_DELIVERY, storyFileName } from '../../../image/story-delivery';
+import { STORY_BLOB } from '../../../image/story-image';
+import { Entitlements, LockReason } from '../../../plans/entitlements';
+import { LockNotice } from '../../../plans/lock-notice';
+import { FriendlyStore } from '../../../state/friendly.store';
+import { Toast, UiButton, UiIcon } from '../../../ui';
 
 // The browser starts a download as soon as the link is clicked, but it is given time to read the
 // image before it is freed.

@@ -1,9 +1,9 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
-import { I18n } from '../../i18n/i18n';
-import { Entitlements } from '../../plans/entitlements';
-import { FriendlyStore, Player } from '../../state/friendly.store';
-import { Toast, UiBadge, UiButton, UiCard, UiIcon, UiIconButton, UiKbd } from '../../ui';
-import { StoryImagePanel } from './story-image-panel';
+import { I18n } from '../../../i18n/i18n';
+import { Entitlements } from '../../../plans/entitlements';
+import { FriendlyStore, Player } from '../../../state/friendly.store';
+import { Toast, UiBadge, UiButton, UiCard, UiIcon, UiIconButton, UiKbd } from '../../../ui';
+import { StoryImagePanel } from '../story-image-panel/story-image-panel';
 
 const PANEL = 'rounded-2xl border border-line bg-surface shadow-xs';
 const FOCUS =

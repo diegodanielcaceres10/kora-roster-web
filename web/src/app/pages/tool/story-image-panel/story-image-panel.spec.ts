@@ -1,14 +1,14 @@
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { DICTIONARIES } from '../../i18n/dictionaries';
-import { I18n } from '../../i18n/i18n';
-import { STORY_DELIVERY } from '../../image/story-delivery';
-import { STORY_BLOB } from '../../image/story-image';
-import { Preferences } from '../../preferences/preferences';
-import { saveSession } from '../../preferences/testing';
-import { FriendlyStore } from '../../state/friendly.store';
-import { Toast } from '../../ui';
+import { DICTIONARIES } from '../../../i18n/dictionaries';
+import { I18n } from '../../../i18n/i18n';
+import { STORY_DELIVERY } from '../../../image/story-delivery';
+import { STORY_BLOB } from '../../../image/story-image';
+import { Preferences } from '../../../preferences/preferences';
+import { saveSession } from '../../../preferences/testing';
+import { FriendlyStore } from '../../../state/friendly.store';
+import { Toast } from '../../../ui';
 import { StoryImagePanel } from './story-image-panel';
 
 const T = DICTIONARIES.es.tool;

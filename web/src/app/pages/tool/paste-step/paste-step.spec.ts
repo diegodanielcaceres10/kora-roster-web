@@ -1,9 +1,9 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { DICTIONARIES } from '../../i18n/dictionaries';
-import { I18n } from '../../i18n/i18n';
-import { saveSession } from '../../preferences/testing';
-import { FriendlyStore } from '../../state/friendly.store';
+import { DICTIONARIES } from '../../../i18n/dictionaries';
+import { I18n } from '../../../i18n/i18n';
+import { saveSession } from '../../../preferences/testing';
+import { FriendlyStore } from '../../../state/friendly.store';
 import { PasteStep } from './paste-step';
 
 const T = DICTIONARIES.es.tool;

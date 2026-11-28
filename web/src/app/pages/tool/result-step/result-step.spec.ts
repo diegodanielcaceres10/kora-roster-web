@@ -1,11 +1,11 @@
 import { TestBed } from '@angular/core/testing';
-import { drawTeams } from '../../core/draw-teams';
-import { DICTIONARIES } from '../../i18n/dictionaries';
-import { I18n } from '../../i18n/i18n';
-import { Preferences } from '../../preferences/preferences';
-import { saveSession, TEST_PREFERENCES } from '../../preferences/testing';
-import { FriendlyStore } from '../../state/friendly.store';
-import { Toast } from '../../ui';
+import { drawTeams } from '../../../core/draw-teams';
+import { DICTIONARIES } from '../../../i18n/dictionaries';
+import { I18n } from '../../../i18n/i18n';
+import { Preferences } from '../../../preferences/preferences';
+import { saveSession, TEST_PREFERENCES } from '../../../preferences/testing';
+import { FriendlyStore } from '../../../state/friendly.store';
+import { Toast } from '../../../ui';
 import { ResultStep } from './result-step';
 
 const T = DICTIONARIES.es.tool;

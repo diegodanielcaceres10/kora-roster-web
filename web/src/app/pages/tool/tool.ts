@@ -4,9 +4,9 @@ import { PageMeta } from '../../i18n/page-meta';
 import { Entitlements } from '../../plans/entitlements';
 import { FriendlyStore } from '../../state/friendly.store';
 import { type StepHeaderStep, type StepState, UiStat, UiStepHeader } from '../../ui';
-import { PasteStep } from './paste-step';
-import { PreviewStep } from './preview-step';
-import { ResultStep } from './result-step';
+import { PasteStep } from './paste-step/paste-step';
+import { PreviewStep } from './preview-step/preview-step';
+import { ResultStep } from './result-step/result-step';
 
 const ORDER = ['paste', 'preview', 'result'] as const;
 

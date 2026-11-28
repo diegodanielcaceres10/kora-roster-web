@@ -8,10 +8,10 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { I18n } from '../../i18n/i18n';
-import { Entitlements, LockReason } from '../../plans/entitlements';
-import { LockNotice } from '../../plans/lock-notice';
-import { FriendlyStore, Player } from '../../state/friendly.store';
+import { I18n } from '../../../i18n/i18n';
+import { Entitlements, LockReason } from '../../../plans/entitlements';
+import { LockNotice } from '../../../plans/lock-notice';
+import { FriendlyStore, Player } from '../../../state/friendly.store';
 import {
   SegmentedOption,
   UiBadge,
@@ -23,8 +23,8 @@ import {
   UiListRow,
   UiSegmented,
   UiStat,
-} from '../../ui';
-import { countStatus } from './count-status';
+} from '../../../ui';
+import { countStatus } from '../count-status';
 
 @Component({
   selector: 'app-preview-step',
