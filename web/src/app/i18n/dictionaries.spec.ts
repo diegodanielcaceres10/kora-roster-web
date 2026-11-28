@@ -152,10 +152,6 @@ describe('dictionaries', () => {
       expect(DICTIONARIES[lang]).not.toHaveProperty('premiumCard');
       expect(DICTIONARIES[lang].locks).not.toHaveProperty('premiumSoon');
     });
-
-    it.each([['en'], ['es'], ['pt']] as const)('keep the label of the locked options in %s', (lang) => {
-      expect(DICTIONARIES[lang].locks.premiumLabel).toBe('Premium');
-    });
   });
 
   describe('the notice about the usual team size', () => {
@@ -474,7 +470,6 @@ describe('dictionaries', () => {
       (lang) => {
         const { result } = DICTIONARIES[lang].tool;
         expect(result.imageHint.length).toBeGreaterThan(10);
-        expect(result.quota(6)).toContain('6');
         expect(result.waiting(3)).toContain('3');
         expect(result.placed(10, 11)).toContain('10/11');
         for (const text of [

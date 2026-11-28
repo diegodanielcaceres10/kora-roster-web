@@ -3,6 +3,7 @@ import {
   completeTeams,
   drawTeams,
   DrawResult,
+  findPlayer,
   keepersFirst,
   MAX_TEAM_SIZE,
   MIN_TEAM_SIZE,
@@ -467,5 +468,26 @@ describe('completeTeams', () => {
     const all = squad(12, 2);
     const run = () => completeTeams([[all[0]], []], all.slice(1), 6, seeded(9));
     expect(run()).toEqual(run());
+  });
+});
+
+describe('findPlayer', () => {
+  const groups = [[{ id: 'a' }, { id: 'b' }], [], [{ id: 'c' }, { id: 'b' }]];
+
+  it('gives the group where the player is, and the player', () => {
+    expect(findPlayer(groups, 'c')).toEqual({ group: 2, player: { id: 'c' } });
+  });
+
+  it('gives the very same player, not a copy', () => {
+    expect(findPlayer(groups, 'a')?.player).toBe(groups[0][0]);
+  });
+
+  it('keeps the first group when the id is in more than one', () => {
+    expect(findPlayer(groups, 'b')?.group).toBe(0);
+  });
+
+  it('gives null when nobody has that id', () => {
+    expect(findPlayer(groups, 'z')).toBeNull();
+    expect(findPlayer([], 'a')).toBeNull();
   });
 });

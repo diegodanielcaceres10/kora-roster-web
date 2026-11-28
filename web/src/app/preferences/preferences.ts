@@ -126,3 +126,21 @@ export function sanitizePreferences(value: unknown): Preferences {
     numbering: NUMBERINGS.find((numbering) => numbering === raw['numbering']) ?? 'dot',
   };
 }
+
+// A copy in which every team has the icon that matches its color.
+export const withIconsFromColors = (preferences: Preferences): Preferences => ({
+  ...preferences,
+  teams: preferences.teams.map((team) => ({
+    ...team,
+    icon: colorToIcon(team.color),
+  })),
+});
+
+export const samePreferences = (a: Preferences, b: Preferences): boolean =>
+  a.teamCount === b.teamCount &&
+  a.header === b.header &&
+  a.location === b.location &&
+  a.footer === b.footer &&
+  a.numbering === b.numbering &&
+  a.teams.length === b.teams.length &&
+  a.teams.every((team, i) => team.color === b.teams[i].color && team.icon === b.teams[i].icon);

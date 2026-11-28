@@ -100,10 +100,7 @@ export class PreviewStep {
     [2, 3, 4, 5, 6].map((count) => {
       const locked = this.entitlements.teamsLock(count);
       const option: SegmentedOption = { value: String(count), label: String(count) };
-      if (locked) {
-        option.locked = locked;
-        if (locked === 'premium') option.lockedLabel = this.i18n.t().locks.premiumLabel;
-      }
+      if (locked) option.locked = locked;
       return option;
     }),
   );

@@ -114,7 +114,7 @@ const LOCKABLE: SegmentedOption[] = [
   { value: '2', label: '2' },
   { value: '3', label: '3' },
   { value: '4', label: '4', locked: 'sign-in' },
-  { value: '5', label: '5', locked: 'premium', lockedLabel: 'Premium' },
+  { value: '5', label: '5', locked: 'premium' },
 ];
 
 @Component({
@@ -153,7 +153,7 @@ function setupLocked() {
 }
 
 describe('UiSegmented with locked options', () => {
-  it('draws a lock on every locked option, without showing the lock label', () => {
+  it('draws a lock on every locked option and keeps its own label', () => {
     const { radios } = setupLocked();
     const locks = radios().map((r) => r.querySelector('ui-icon[data-icon="lock"]') !== null);
     expect(locks).toEqual([false, false, true, true]);

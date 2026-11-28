@@ -279,10 +279,7 @@ describe('PreferencesEditor', () => {
       expect(input.header).toBe('');
       expect(input.location).toBe('');
       expect([input.footer, input.numbering]).toEqual(['', 'dot']);
-      expect([input.confirmed, input.brand]).toEqual([
-        T.tool.result.storyConfirmed,
-        T.tool.result.storyBrand,
-      ]);
+      expect(input.brand).toBe(T.tool.result.storyBrand);
       expect(input.theme).toBe('light');
     });
 

@@ -37,7 +37,6 @@ export const en = {
   },
   locks: {
     signInLink: 'Sign in',
-    premiumLabel: 'Premium',
   },
   preferences: {
     teamsSection: 'Team customization',
@@ -257,7 +256,6 @@ export const en = {
       hintTitle: 'Tactical controls:',
       escKey: 'Esc',
       cancelSelection: 'Cancels the selection',
-      quota: (n: number) => `Assigned quota: ${n} places`,
       playersOf: 'Players:',
       goalkeeperCount: (n: number) => (n === 1 ? '1 goalkeeper' : `${n} goalkeepers`),
       goalkeeperShort: 'GK',
@@ -282,7 +280,6 @@ export const en = {
       playersBadge: (n: number) => (n === 1 ? '1 player' : `${n} players`),
       statPlayers: 'Total players',
       statGoalkeepers: 'Goalkeepers',
-      storyConfirmed: 'confirmed',
       storyBrand: 'Made with Kora Roster',
     },
   },

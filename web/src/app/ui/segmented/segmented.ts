@@ -16,8 +16,6 @@ export interface SegmentedOption {
   label: string;
   // Why the option is closed. A locked option cannot be chosen, but it can be touched.
   locked?: 'sign-in' | 'premium';
-  // Short text shown next to the lock, for example "Premium".
-  lockedLabel?: string;
 }
 
 const OPTION_BASE =

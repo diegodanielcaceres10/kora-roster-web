@@ -893,17 +893,11 @@ describe('FriendlyStore', () => {
       expect(input?.teams.map((team) => team.color)).toEqual(['#00ff00', '#ffff00']);
     });
 
-    it('says that the teams are confirmed and who made them, in the language of the person', () => {
+    it('says who made the teams, in the language of the person', () => {
       const { store, i18n } = drawn();
-      expect([store.storyInput()?.confirmed, store.storyInput()?.brand]).toEqual([
-        'confirmed',
-        'Made with Kora Roster',
-      ]);
+      expect(store.storyInput()?.brand).toBe('Made with Kora Roster');
       i18n.setLang('es');
-      expect([store.storyInput()?.confirmed, store.storyInput()?.brand]).toEqual([
-        'confirmado',
-        'Generado con Kora Roster',
-      ]);
+      expect(store.storyInput()?.brand).toBe('Generado con Kora Roster');
       i18n.setLang('pt');
       expect(store.storyInput()?.brand).toBe('Gerado com Kora Roster');
     });

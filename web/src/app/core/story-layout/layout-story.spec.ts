@@ -35,7 +35,6 @@ const input = (list: StoryTeam[], extra: Partial<StoryInput> = {}): StoryInput =
   location: '',
   footer: '',
   numbering: 'dot',
-  confirmed: 'confirmed',
   brand: 'GENERADO CON KORA ROSTER',
   ...extra,
 });
@@ -83,14 +82,6 @@ describe('layoutStory', () => {
     it('is the first thing drawn, so that everything else goes on top of it', () => {
       const layout = layoutStory(input(teams(2, 7)), measure);
       expect(layout.commands[0]).toMatchObject({ kind: 'rect', role: 'plate' });
-    });
-  });
-
-  describe('the pills on top', () => {
-    it('omits the status pill', () => {
-      const layout = layoutStory(input(teams(2, 7)), measure);
-      expect(rects(layout, 'status-pill')).toHaveLength(0);
-      expect(texts(layout, 'status-pill')).toHaveLength(0);
     });
   });
 

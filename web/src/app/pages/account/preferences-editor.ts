@@ -11,7 +11,10 @@ import {
   colorToIcon,
   DEFAULT_PREFERENCES,
   HEADER_MAX,
+  HEX_COLOR,
   Preferences,
+  samePreferences,
+  withIconsFromColors,
 } from '../../preferences/preferences';
 import { UserPreferences } from '../../preferences/user-preferences';
 import { Theme } from '../../theme/theme';
@@ -39,29 +42,10 @@ const NUMBERINGS: readonly Numbering[] = ['dot', 'paren', 'dash', 'none'];
 
 type PreviewView = 'message' | 'image';
 
-const HEX_COLOR = /^#[0-9a-f]{6}$/i;
-
 const TILE =
   'inline-flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-xl text-amber-700 dark:text-primary';
 const SECTION_TITLE = 'mr-auto font-display text-base font-black uppercase tracking-tight text-ink';
 const FIELD_LABEL = 'block font-mono text-[11px] font-bold uppercase tracking-wider text-ink-muted';
-
-const copyOf = (preferences: Preferences): Preferences => ({
-  ...preferences,
-  teams: preferences.teams.map((team) => ({
-    ...team,
-    icon: colorToIcon(team.color),
-  })),
-});
-
-const samePreferences = (a: Preferences, b: Preferences): boolean =>
-  a.teamCount === b.teamCount &&
-  a.header === b.header &&
-  a.location === b.location &&
-  a.footer === b.footer &&
-  a.numbering === b.numbering &&
-  a.teams.length === b.teams.length &&
-  a.teams.every((team, i) => team.color === b.teams[i].color && team.icon === b.teams[i].icon);
 
 @Component({
   selector: 'app-preferences-editor',
@@ -84,7 +68,7 @@ export class PreferencesEditor {
   protected readonly fieldLabel = FIELD_LABEL;
 
   protected readonly draft = signal<Preferences>(
-    copyOf(this.preferences.active() ?? DEFAULT_PREFERENCES),
+    withIconsFromColors(this.preferences.active() ?? DEFAULT_PREFERENCES),
   );
   protected readonly hasChanges = computed(
     () => !samePreferences(this.draft(), this.preferences.active() ?? DEFAULT_PREFERENCES),
@@ -95,10 +79,7 @@ export class PreferencesEditor {
     Array.from({ length: MAX_TEAMS - MIN_TEAMS + 1 }, (_, i) => MIN_TEAMS + i).map((count) => {
       const locked = this.entitlements.teamsLock(count);
       const option: SegmentedOption = { value: String(count), label: String(count) };
-      if (locked) {
-        option.locked = locked;
-        if (locked === 'premium') option.lockedLabel = this.i18n.t().locks.premiumLabel;
-      }
+      if (locked) option.locked = locked;
       return option;
     }),
   );
@@ -166,7 +147,6 @@ export class PreferencesEditor {
         location,
         footer,
         numbering,
-        confirmed: result.storyConfirmed,
         brand: result.storyBrand,
         theme: this.theme.mode(),
       });
@@ -204,7 +184,7 @@ export class PreferencesEditor {
     const normalized = color.toLowerCase();
     if (!HEX_COLOR.test(normalized)) return;
     this.draft.update((d) => {
-      const next = copyOf(d);
+      const next = withIconsFromColors(d);
       next.teams[index].color = normalized;
       next.teams[index].icon = colorToIcon(normalized);
       return next;
@@ -249,11 +229,11 @@ export class PreferencesEditor {
 
   protected save(): void {
     this.preferences.save(this.draft());
-    this.draft.set(copyOf(this.preferences.active() ?? DEFAULT_PREFERENCES));
+    this.draft.set(withIconsFromColors(this.preferences.active() ?? DEFAULT_PREFERENCES));
     this.toast.show(this.t().saved);
   }
 
   protected restore(): void {
-    this.draft.set(copyOf(DEFAULT_PREFERENCES));
+    this.draft.set(withIconsFromColors(DEFAULT_PREFERENCES));
   }
 }

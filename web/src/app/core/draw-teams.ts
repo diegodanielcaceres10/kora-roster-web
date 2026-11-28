@@ -109,3 +109,15 @@ export function completeTeams<T extends { isGoalkeeper: boolean }>(
 
   return result.map(keepersFirst);
 }
+
+// Where a player is among the groups (the teams and whoever has no team), and the player itself.
+export function findPlayer<T extends { id: string }>(
+  groups: readonly (readonly T[])[],
+  id: string,
+): { group: number; player: T } | null {
+  for (let group = 0; group < groups.length; group++) {
+    const player = groups[group].find((p) => p.id === id);
+    if (player) return { group, player };
+  }
+  return null;
+}

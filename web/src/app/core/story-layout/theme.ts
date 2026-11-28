@@ -5,7 +5,6 @@ export interface ThemeTokens {
   plate: { fill: string; stroke: string };
   brandPill: { fill: string; stroke: string; text: string };
   wordmark: string;
-  statusPill: { fill: string; text: string };
   infoCard: { fill: string; stroke: string; text: string; icon: string };
   matchdayCard: { fill: string; stroke: string; label: string; text: string };
   vsBadge: { fill: string; border: string; text: string; subtext: string };
@@ -21,7 +20,6 @@ const DARK_THEME: ThemeTokens = {
   plate: { fill: '#10141b', stroke: '#1f2633' },
   brandPill: { fill: '#1a1811', stroke: '#f59e0b40', text: '#f59e0b' },
   wordmark: '#f8fafc',
-  statusPill: { fill: '#f59e0b', text: '#0a0d12' },
   infoCard: { fill: '#161b24', stroke: '#242c3b', text: '#e2e8f0', icon: '#f59e0b' },
   matchdayCard: { fill: '#161b24', stroke: '#242c3b', label: '#94a3b8', text: '#ffffff' },
   vsBadge: { fill: '#0a0d12', border: '#f59e0b60', text: '#f59e0b', subtext: '#94a3b8' },
@@ -37,7 +35,6 @@ const LIGHT_THEME: ThemeTokens = {
   plate: { fill: '#ffffff', stroke: '#e2e8f0' },
   brandPill: { fill: '#fff8e6', stroke: '#fde68a', text: '#b45309' },
   wordmark: '#0f172a',
-  statusPill: { fill: '#f59e0b', text: '#ffffff' },
   infoCard: { fill: '#f8fafc', stroke: '#e2e8f0', text: '#1e293b', icon: '#b45309' },
   matchdayCard: { fill: '#f8fafc', stroke: '#e2e8f0', label: '#64748b', text: '#0f172a' },
   vsBadge: { fill: '#0f172a', border: '#f59e0b60', text: '#f59e0b', subtext: '#94a3b8' },

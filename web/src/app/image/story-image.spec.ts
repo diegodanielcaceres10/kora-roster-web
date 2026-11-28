@@ -375,7 +375,6 @@ describe('createStoryBlob', () => {
     location: 'Cancha de ejemplo',
     footer: '',
     numbering: 'dot',
-    confirmed: 'confirmed',
     brand: 'Made with Kora Roster',
   };
 

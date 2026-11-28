@@ -205,10 +205,10 @@ A radio group shown as segments, for choosing one of a few options (the language
 - Two-way value: `[(value)]`
 - Arrow keys move and select, with wrap-around; Home and End jump; only the selected option is
   reachable with Tab
-- An option can be locked: `locked: 'sign-in' | 'premium'`, plus an optional `lockedLabel` such as
-  "Premium". It shows a lock, reads as `aria-disabled`, never becomes the value, and touching it
-  emits `(lockedSelect)` with the option so the screen can explain why (see `LockNotice`). The
-  arrow keys still reach it without selecting it.
+- An option can be locked: `locked: 'sign-in' | 'premium'`. It shows a lock, reads as
+  `aria-disabled`, never becomes the value, and touching it emits `(lockedSelect)` with the option
+  so the screen can explain why (see `LockNotice`). The arrow keys still reach it without
+  selecting it.
 
 ### `UiKbd` · `<ui-kbd>`
 

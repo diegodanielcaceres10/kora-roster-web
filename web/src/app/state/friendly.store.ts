@@ -12,6 +12,7 @@ import {
   checkPlayerCount,
   completeTeams,
   drawTeams,
+  findPlayer,
   keepersFirst,
   MAX_TEAMS,
   MIN_TEAMS,
@@ -126,7 +127,6 @@ export const FriendlyStore = signalStore(
           location: prefs?.location ?? '',
           footer: prefs?.footer ?? '',
           numbering: prefs?.numbering ?? 'dot',
-          confirmed: result.storyConfirmed,
           brand: result.storyBrand,
           theme: theme.mode(),
         });
@@ -252,10 +252,10 @@ export const FriendlyStore = signalStore(
         if (to !== 'pool' && !(Number.isInteger(to) && to >= 0 && to < teams.length)) return;
         const groups = groupsOf(teams, store.pool());
         const target = to === 'pool' ? teams.length : to;
-        const from = groups.findIndex((group) => group.some((p) => p.id === id));
-        if (from < 0 || from === target) return;
+        const found = findPlayer(groups, id);
+        if (!found || found.group === target) return;
         if (target < teams.length && groups[target].length >= size) return;
-        const player = groups[from].find((p) => p.id === id) as Player;
+        const { group: from, player } = found;
         place(
           groups.map((group, i) =>
             i === from
@@ -292,11 +292,11 @@ export const FriendlyStore = signalStore(
         const teams = store.teams();
         if (!teams) return;
         const groups = groupsOf(teams, store.pool());
-        const groupA = groups.findIndex((group) => group.some((p) => p.id === idA));
-        const groupB = groups.findIndex((group) => group.some((p) => p.id === idB));
-        if (groupA < 0 || groupB < 0 || groupA === groupB) return;
-        const a = groups[groupA].find((p) => p.id === idA) as Player;
-        const b = groups[groupB].find((p) => p.id === idB) as Player;
+        const foundA = findPlayer(groups, idA);
+        const foundB = findPlayer(groups, idB);
+        if (!foundA || !foundB || foundA.group === foundB.group) return;
+        const { group: groupA, player: a } = foundA;
+        const { group: groupB, player: b } = foundB;
         const replace = (group: Player[], out: Player, into: Player) =>
           keepersFirst(group.map((p) => (p.id === out.id ? into : p)));
         place(

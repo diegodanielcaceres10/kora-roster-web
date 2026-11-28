@@ -7,7 +7,6 @@ export interface StoryInputOptions {
   location: string;
   footer: string;
   numbering: Numbering;
-  confirmed: string;
   brand: string;
   theme: 'light' | 'dark';
 }
@@ -23,7 +22,6 @@ export function buildStoryInput(options: StoryInputOptions): StoryInput {
     location: options.location,
     footer: options.footer,
     numbering: options.numbering,
-    confirmed: options.confirmed,
     brand: options.brand,
     theme: options.theme,
   };

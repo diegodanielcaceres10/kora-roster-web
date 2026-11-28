@@ -41,7 +41,6 @@ export const es: Dictionary = {
   },
   locks: {
     signInLink: 'Iniciar sesión',
-    premiumLabel: 'Premium',
   },
   preferences: {
     teamsSection: 'Personalización de equipos',
@@ -260,7 +259,6 @@ export const es: Dictionary = {
       hintTitle: 'Interacción táctica:',
       escKey: 'Esc',
       cancelSelection: 'Cancela la selección',
-      quota: (n) => `Cupo asignado: ${n} plazas`,
       playersOf: 'Jugadores:',
       goalkeeperCount: (n) => (n === 1 ? '1 arquero' : `${n} arqueros`),
       goalkeeperShort: 'ARQ',
@@ -285,7 +283,6 @@ export const es: Dictionary = {
       playersBadge: (n) => (n === 1 ? '1 jugador' : `${n} jugadores`),
       statPlayers: 'Total de jugadores',
       statGoalkeepers: 'Arqueros',
-      storyConfirmed: 'confirmado',
       storyBrand: 'Generado con Kora Roster',
     },
   },

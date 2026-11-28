@@ -5,8 +5,10 @@ import {
   DEFAULT_PREFERENCES,
   HEADER_MAX,
   Preferences,
+  samePreferences,
   sanitizePreferences,
   TEAM_ICONS,
+  withIconsFromColors,
 } from './preferences';
 
 const DEFAULT_COLORS = ['#e53935', '#1e88e5', '#43a047', '#fdd835', '#8e24aa', '#fb8c00'];
@@ -279,5 +281,87 @@ describe('sanitizePreferences', () => {
     ])('maps %s to %s', (hex, expected) => {
       expect(colorToIcon(hex)).toBe(expected);
     });
+  });
+});
+
+describe('withIconsFromColors', () => {
+  const withFirstColor = (color: string): Preferences => ({
+    ...DEFAULT_PREFERENCES,
+    teams: DEFAULT_PREFERENCES.teams.map((team, i) => (i === 0 ? { ...team, color } : team)),
+  });
+
+  it('gives every team the icon that matches its color', () => {
+    expect(withIconsFromColors(withFirstColor('#00ff00')).teams[0]).toEqual({
+      icon: '🟢',
+      color: '#00ff00',
+    });
+  });
+
+  it('keeps the icons of the default colors as they are', () => {
+    expect(withIconsFromColors(DEFAULT_PREFERENCES)).toEqual(DEFAULT_PREFERENCES);
+  });
+
+  it('keeps every other field', () => {
+    const preferences: Preferences = {
+      ...DEFAULT_PREFERENCES,
+      teamCount: 4,
+      header: 'Jueves',
+      location: 'Cancha 2',
+      footer: 'Confirmen',
+      numbering: 'dash',
+    };
+    const result = withIconsFromColors(preferences);
+    expect([
+      result.teamCount,
+      result.header,
+      result.location,
+      result.footer,
+      result.numbering,
+    ]).toEqual([4, 'Jueves', 'Cancha 2', 'Confirmen', 'dash']);
+  });
+
+  it('gives a copy and does not change the preferences it receives', () => {
+    const preferences = withFirstColor('#00ff00');
+    const before = JSON.stringify(preferences);
+    const result = withIconsFromColors(preferences);
+    expect(result).not.toBe(preferences);
+    expect(result.teams).not.toBe(preferences.teams);
+    expect(JSON.stringify(preferences)).toBe(before);
+  });
+});
+
+describe('samePreferences', () => {
+  const copy = (): Preferences => JSON.parse(JSON.stringify(DEFAULT_PREFERENCES));
+
+  it('is true for preferences with the same content, even if they are another object', () => {
+    expect(samePreferences(DEFAULT_PREFERENCES, copy())).toBe(true);
+  });
+
+  it.each([
+    ['team count', { teamCount: 3 }],
+    ['header', { header: 'Jueves' }],
+    ['location', { location: 'Cancha 2' }],
+    ['footer', { footer: 'Confirmen' }],
+    ['numbering', { numbering: 'dash' as const }],
+  ])('is false when the %s is not the same', (_, patch) => {
+    expect(samePreferences(DEFAULT_PREFERENCES, { ...copy(), ...patch })).toBe(false);
+  });
+
+  it('is false when the color of a team is not the same', () => {
+    const other = copy();
+    other.teams[2].color = '#000000';
+    expect(samePreferences(DEFAULT_PREFERENCES, other)).toBe(false);
+  });
+
+  it('is false when the icon of a team is not the same', () => {
+    const other = copy();
+    other.teams[2].icon = '⚫';
+    expect(samePreferences(DEFAULT_PREFERENCES, other)).toBe(false);
+  });
+
+  it('is false when there are not the same number of teams', () => {
+    const other = copy();
+    other.teams = other.teams.slice(0, 5);
+    expect(samePreferences(DEFAULT_PREFERENCES, other)).toBe(false);
   });
 });

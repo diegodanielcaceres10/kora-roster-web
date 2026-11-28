@@ -22,7 +22,6 @@ export interface StoryInput {
   location: string;
   footer: string;
   numbering: Numbering;
-  confirmed: string;
   brand: string;
   theme?: 'light' | 'dark';
 }
@@ -30,7 +29,6 @@ export interface StoryInput {
 export type RectRole =
   | 'plate'
   | 'brand-pill'
-  | 'status-pill'
   | 'panel'
   | 'title-bar'
   | 'highlight'
@@ -42,7 +40,6 @@ export type RectRole =
 
 export type TextRole =
   | 'brand-pill'
-  | 'status-pill'
   | 'header'
   | 'location'
   | 'footer'
